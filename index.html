@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Iron Pulse | Gym Motivation Hub</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #040405;
+            --bg-panel: #101219;
+            --text-primary: #f5f7ff;
+            --text-muted: rgba(245, 247, 255, 0.7);
+            --accent: #ff512f;
+            --accent-2: #dd2476;
+            --accent-yellow: #f6c343;
+            --card-border: rgba(255, 255, 255, 0.08);
+            --glass: rgba(255, 255, 255, 0.05);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Space Grotesk", sans-serif;
+            color: var(--text-primary);
+            background: radial-gradient(circle at top, rgba(255, 81, 47, 0.1), transparent 45%),
+                radial-gradient(circle at 20% 20%, rgba(221, 36, 118, 0.25), transparent 35%),
+                var(--bg-dark);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: rgba(4, 4, 5, 0.85);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem clamp(1rem, 4vw, 3rem);
+        }
+
+        .logo {
+            font-weight: 700;
+            letter-spacing: 1px;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .logo span {
+            color: var(--accent-yellow);
+            font-size: 1.4rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.25rem;
+            font-size: 0.95rem;
+        }
+
+        .nav-links a {
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.78rem;
+        }
+
+        .btn {
+            border: none;
+            padding: 0.85rem 1.75rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            border-radius: 999px;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .btn-primary {
+            background-image: linear-gradient(135deg, var(--accent), var(--accent-2));
+            color: #fff;
+            box-shadow: 0 20px 40px rgba(255, 81, 47, 0.3);
+        }
+
+        .btn-outline {
+            border: 1px solid var(--card-border);
+            color: var(--text-muted);
+            background: transparent;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+        }
+
+        main {
+            padding: clamp(2rem, 5vw, 4rem) clamp(1rem, 5vw, 4rem) 6rem;
+        }
+
+        .hero {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 3rem;
+            align-items: center;
+            padding: clamp(2rem, 5vw, 4rem);
+            border-radius: 2rem;
+            background: linear-gradient(145deg, rgba(255, 81, 47, 0.1), rgba(4, 4, 5, 0.9));
+            border: 1px solid var(--card-border);
+        }
+
+        .hero h1 {
+            font-size: clamp(2.3rem, 6vw, 3.8rem);
+            line-height: 1.1;
+            margin-bottom: 1rem;
+        }
+
+        .hero p {
+            color: var(--text-muted);
+            max-width: 480px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 1rem;
+            margin: 2.5rem 0;
+        }
+
+        .stat-card {
+            padding: 1.25rem;
+            border-radius: 1rem;
+            background: var(--bg-panel);
+            border: 1px solid var(--card-border);
+            text-align: center;
+        }
+
+        .stat-card strong {
+            display: block;
+            font-size: 2rem;
+            margin-bottom: 0.25rem;
+            color: var(--accent-yellow);
+        }
+
+        .hero-panel {
+            background: var(--bg-panel);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            border: 1px solid var(--card-border);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.35);
+        }
+
+        .hero-panel .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            border-radius: 999px;
+            padding: 0.35rem 1rem;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            background: rgba(255, 255, 255, 0.08);
+            margin-bottom: 1rem;
+        }
+
+        .section {
+            margin-top: clamp(3rem, 7vw, 5rem);
+        }
+
+        .section-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .section-head h2 {
+            margin: 0;
+            font-size: clamp(1.6rem, 4vw, 2.45rem);
+        }
+
+        .grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        @media (min-width: 768px) {
+            .grid-3 {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
+
+        .workout-card {
+            background: var(--bg-panel);
+            border-radius: 1.5rem;
+            padding: 1.75rem;
+            border: 1px solid var(--card-border);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .workout-card h3 {
+            margin: 0;
+        }
+
+        .workout-card ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .motivation-board {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .motivation-card {
+            padding: 1.5rem;
+            border-radius: 1.25rem;
+            border: 1px solid var(--card-border);
+            background: var(--glass);
+            min-height: 220px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .quote {
+            font-size: 1.1rem;
+            margin: 1rem 0 0.5rem;
+        }
+
+        .range-wrapper {
+            margin-top: auto;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            accent-color: var(--accent);
+        }
+
+        .stories {
+            background: linear-gradient(120deg, rgba(255, 81, 47, 0.18), rgba(16, 18, 25, 0.95));
+            padding: clamp(2rem, 4vw, 3rem);
+            border-radius: 2rem;
+            border: 1px solid var(--card-border);
+        }
+
+        .story {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .story-card {
+            background: rgba(0, 0, 0, 0.35);
+            padding: 1.5rem;
+            border-radius: 1.25rem;
+            border: 1px solid var(--card-border);
+        }
+
+        .story-card strong {
+            color: var(--accent-yellow);
+        }
+
+        .cta {
+            margin-top: 4rem;
+            padding: clamp(2.5rem, 5vw, 3.5rem);
+            border-radius: 2rem;
+            text-align: center;
+            border: 1px solid var(--card-border);
+            background: linear-gradient(145deg, rgba(16, 18, 25, 0.9), rgba(255, 81, 47, 0.12));
+        }
+
+        .cta h3 {
+            font-size: clamp(1.8rem, 4vw, 2.8rem);
+            margin-bottom: 0.5rem;
+        }
+
+        footer {
+            padding: 2rem clamp(1rem, 5vw, 4rem) 3rem;
+            text-align: center;
+            color: var(--text-muted);
+            border-top: 1px solid var(--card-border);
+            background: rgba(0, 0, 0, 0.35);
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                width: 100%;
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+
+            nav {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .hero {
+                padding: 2rem 1.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <nav>
+            <div class="logo"><span>*</span>Iron Pulse</div>
+            <div class="nav-links">
+                <a href="#programs">Programs</a>
+                <a href="#motivation">Mindset</a>
+                <a href="#stories">Stories</a>
+                <a href="#cta">Join</a>
+            </div>
+            <button class="btn btn-primary" id="hero-cta">Start Today</button>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div>
+                <p class="badge" style="letter-spacing:2px;">Daily Grind - No Excuses</p>
+                <h1>Build strength, discipline, and a body you are proud of.</h1>
+                <p>
+                    Iron Pulse is your training partner. Follow structured workouts, track intensity, and get the
+                    motivation you need to stay consistent, even when the weights feel heavy.
+                </p>
+                <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-top:2rem;">
+                    <button class="btn btn-primary">Download Plan</button>
+                    <button class="btn btn-outline">Watch Trailer</button>
+                </div>
+                <div class="stats">
+                    <div class="stat-card">
+                        <strong>12.4K</strong>
+                        athletes committed
+                    </div>
+                    <div class="stat-card">
+                        <strong>97%</strong>
+                        routine completion
+                    </div>
+                    <div class="stat-card">
+                        <strong>8</strong>
+                        weeks to visible change
+                    </div>
+                    <div class="stat-card">
+                        <strong>24/7</strong>
+                        community support
+                    </div>
+                </div>
+            </div>
+
+            <div class="hero-panel">
+                <div class="badge">
+                    !! Featured Challenge
+                </div>
+                <h2 style="margin-top:0;">Unbreakable 30</h2>
+                <p>30 minutes. 5 compound lifts. Leave the gym knowing you poured everything into those sets.</p>
+                <ul style="list-style:none;padding:0;margin:1.5rem 0;color:var(--text-muted);">
+                    <li>&bull; Warmup flow: 5 mins dynamic priming</li>
+                    <li>&bull; Lift heavy: 4 x 6 barbell complex</li>
+                    <li>&bull; Engine work: EMOM sprint finisher</li>
+                </ul>
+                <div style="display:flex;gap:1rem;align-items:center;">
+                    <button class="btn btn-primary" style="flex:1;">Add To Calendar</button>
+                    <button class="btn btn-outline" style="flex:1;">Save Playlist</button>
+                </div>
+                <p style="font-size:0.85rem;color:var(--text-muted);margin-top:1.5rem;">"Intensity is a choice. Make the
+                    hard choice."</p>
+            </div>
+        </section>
+
+        <section class="section" id="programs">
+            <div class="section-head">
+                <h2>Programs built for every grind.</h2>
+                <p style="color:var(--text-muted);max-width:480px;">Choose a track that matches your goal, whether you
+                    want lean performance, raw strength, or hybrid athleticism. Every plan is periodized and ready to
+                    follow.</p>
+            </div>
+            <div class="grid grid-3">
+                <article class="workout-card">
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <h3>Power Engine</h3>
+                        <span style="color:var(--accent-yellow);font-weight:600;">5x / week</span>
+                    </div>
+                    <p style="color:var(--text-muted);margin:0;">Olympic lifts plus metabolic conditioning to build
+                        explosive power.</p>
+                    <ul>
+                        <li>Heavy complexes with form cues</li>
+                        <li>Track bar speed with RPE</li>
+                        <li>Finish with 800m run intervals</li>
+                    </ul>
+                    <button class="btn btn-outline">View Day 1</button>
+                </article>
+                <article class="workout-card">
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <h3>Hypertrophy Lab</h3>
+                        <span style="color:var(--accent-yellow);font-weight:600;">4x / week</span>
+                    </div>
+                    <p style="color:var(--text-muted);margin:0;">Time under tension training with progressive overload
+                        calculators.</p>
+                    <ul>
+                        <li>Rest pause drop sets built in</li>
+                        <li>Nutrition targets for each block</li>
+                        <li>Weekly pump finisher challenges</li>
+                    </ul>
+                    <button class="btn btn-outline">View Day 1</button>
+                </article>
+                <article class="workout-card">
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <h3>Mobility Armor</h3>
+                        <span style="color:var(--accent-yellow);font-weight:600;">3x / week</span>
+                    </div>
+                    <p style="color:var(--text-muted);margin:0;">Strengthen connective tissue and bulletproof your joints
+                        with athletic flows.</p>
+                    <ul>
+                        <li>Guided breathwork and tempo cues</li>
+                        <li>Trigger point release maps</li>
+                        <li>Test day every third week</li>
+                    </ul>
+                    <button class="btn btn-outline">View Day 1</button>
+                </article>
+            </div>
+        </section>
+
+        <section class="section" id="motivation">
+            <div class="section-head">
+                <h2>Mental reps matter.</h2>
+                <p style="color:var(--text-muted);max-width:520px;">Stay consistent with a motivation board that responds
+                    to your intensity, highlights your streak, and throws a new quote when you need it.</p>
+            </div>
+            <div class="motivation-board">
+                <div class="motivation-card">
+                    <strong style="text-transform:uppercase;letter-spacing:1px;color:var(--accent-yellow);">Daily
+                        Quote</strong>
+                    <p id="quote" class="quote">We are what we repeatedly do. Excellence is a habit.</p>
+                    <p id="quote-author" style="color:var(--text-muted);font-size:0.9rem;">- Aristotle</p>
+                </div>
+                <div class="motivation-card">
+                    <strong style="text-transform:uppercase;letter-spacing:1px;color:var(--accent-yellow);">Intensity
+                        Dial</strong>
+                    <p style="color:var(--text-muted);margin-top:0;">How hard will you push this session?</p>
+                    <div class="range-wrapper">
+                        <input type="range" min="1" max="10" value="6" id="intensity-slider">
+                        <p style="margin-top:0.5rem;">Level: <span id="intensity-value">6</span> - <span
+                                id="intensity-label">Primed</span></p>
+                    </div>
+                </div>
+                <div class="motivation-card">
+                    <strong style="text-transform:uppercase;letter-spacing:1px;color:var(--accent-yellow);">Consistency
+                        Tracker</strong>
+                    <p style="font-size:2.5rem;margin:0;">14 days</p>
+                    <p style="color:var(--text-muted);margin:0;">Day streak activated</p>
+                    <p style="margin-top:auto;">"You are closer than you think, show up again tomorrow."</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section stories" id="stories">
+            <div class="section-head" style="margin-bottom:0;">
+                <div>
+                    <p style="text-transform:uppercase;letter-spacing:2px;color:var(--accent-yellow);margin:0;">Proof</p>
+                    <h2 style="margin-top:0.25rem;">Transformation stories</h2>
+                </div>
+                <p style="color:var(--text-muted);max-width:420px;">Every story starts with day one. Your breakthrough is
+                    one habit away.</p>
+            </div>
+            <div class="story">
+                <article class="story-card">
+                    <strong>@LenaPullups</strong>
+                    <p style="margin:0.75rem 0;color:var(--text-muted);">"I wanted an athletic look, not just skinny. Ninety
+                        days with Power Engine and I hit a bodyweight clean for the first time."</p>
+                    <p style="font-size:0.9rem;">Clean +23 lbs | 3 min faster 1.5 mile</p>
+                </article>
+                <article class="story-card">
+                    <strong>@CoachMarco</strong>
+                    <p style="margin:0.75rem 0;color:var(--text-muted);">"Hypertrophy Lab plus the recovery protocols finally
+                        healed my shoulder. I am stronger and pain free."</p>
+                    <p style="font-size:0.9rem;">+8 lb lean mass | Shoulder ROM 100%</p>
+                </article>
+                <article class="story-card">
+                    <strong>@RunAndLift</strong>
+                    <p style="margin:0.75rem 0;color:var(--text-muted);">"The Mobility Armor flows make my lifts feel
+                        smooth. New morning ritual unlocked."</p>
+                    <p style="font-size:0.9rem;">Zero missed lifts in 6 weeks</p>
+                </article>
+            </div>
+        </section>
+
+        <section class="cta" id="cta">
+            <h3>Pressure makes diamonds. Join the crew.</h3>
+            <p style="color:var(--text-muted);max-width:520px;margin:0 auto 1.5rem;">Weekly programming drops, private
+                community, seasonal challenges, and a coach that answers when you need the push.</p>
+            <div style="display:flex;flex-wrap:wrap;gap:1rem;justify-content:center;">
+                <button class="btn btn-primary">Claim My Spot</button>
+                <button class="btn btn-outline">Preview Inside</button>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>Iron Pulse Collective - Built for the relentless - Train hard, recover harder.</p>
+    </footer>
+
+    <script>
+        const quotes = [
+            { text: "You will not always be motivated, so you must learn to be disciplined.", author: "Unknown" },
+            { text: "Sweat is just fat crying, so let it all out.", author: "Iron Pulse" },
+            { text: "Champions keep going when there is nothing left in the tank.", author: "Andre Ward" },
+            { text: "The body achieves what the mind believes.", author: "Anonymous" },
+            { text: "Most give up at forty percent. Your next PR sits beyond that wall.", author: "Coach Nia" }
+        ];
+
+        const quoteEl = document.getElementById("quote");
+        const authorEl = document.getElementById("quote-author");
+        let quoteIndex = 0;
+
+        function rotateQuote() {
+            quoteIndex = (quoteIndex + 1) % quotes.length;
+            quoteEl.textContent = quotes[quoteIndex].text;
+            authorEl.textContent = "- " + quotes[quoteIndex].author;
+        }
+
+        setInterval(rotateQuote, 6000);
+
+        const intensitySlider = document.getElementById("intensity-slider");
+        const intensityValue = document.getElementById("intensity-value");
+        const intensityLabel = document.getElementById("intensity-label");
+
+        const intensityWords = [
+            "Warming Up", "Focused", "Primed", "Locked In", "Beast Mode",
+            "No Limits", "Unstoppable", "Savage"
+        ];
+
+        function updateIntensity() {
+            const value = parseInt(intensitySlider.value, 10);
+            intensityValue.textContent = value;
+            const index = Math.min(intensityWords.length - 1, Math.floor(value / 2));
+            intensityLabel.textContent = intensityWords[index];
+        }
+
+        intensitySlider.addEventListener("input", updateIntensity);
+        updateIntensity();
+
+        document.getElementById("hero-cta").addEventListener("click", () => {
+            document.getElementById("cta").scrollIntoView({ behavior: "smooth" });
+        });
+    </script>
+</body>
+
+</html>
