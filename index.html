@@ -164,6 +164,28 @@
         .btn:hover {
             transform: translateY(-3px);
         }
+        .day-pill {
+            border: 1px solid var(--card-border);
+            background: transparent;
+            color: var(--text-muted);
+            padding: 0.5rem 1rem;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: background 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .day-pill:hover {
+            transform: translateY(-1px);
+            border-color: var(--accent);
+        }
+
+        .day-pill.active {
+            background-image: linear-gradient(135deg, var(--accent), var(--accent-2));
+            color: #fff;
+            border-color: transparent;
+        }
+
 
         main {
             padding: clamp(2rem, 5vw, 4rem) clamp(1rem, 5vw, 4rem) 6rem;
@@ -737,6 +759,75 @@
         { text: "The body achieves what the mind believes.", author: "Anonymous" },
         { text: "Most give up at forty percent. Your next PR sits beyond that wall.", author: "Coach Nia" }
     ];
+    const WEEKLY_GOAL_KEY = "ironPulseWeeklyGoalDays";
+        const DEFAULT_WEEKLY_GOAL = 4;
+
+    function getWeeklyGoal() {
+            const stored = localStorage.getItem(WEEKLY_GOAL_KEY);
+            const parsed = stored ? parseInt(stored, 10) : NaN;
+            if (!parsed || parsed < 3 || parsed > 7) {
+                return DEFAULT_WEEKLY_GOAL;
+            }
+            return parsed;
+        }
+
+        function setWeeklyGoal(days) {
+            localStorage.setItem(WEEKLY_GOAL_KEY, String(days));
+        }
+    function updateWeeklyGoalUI() {
+            const goal = getWeeklyGoal();
+
+            // Highlight the selected pill
+            const pills = document.querySelectorAll(".day-pill");
+            pills.forEach(pill => {
+                const pillDays = parseInt(pill.getAttribute("data-days"), 10);
+                if (pillDays === goal) {
+                    pill.classList.add("active");
+                } else {
+                    pill.classList.remove("active");
+                }
+            });
+
+            // Update summary text
+            const summaryEl = document.getElementById("weekly-goal-summary");
+            if (summaryEl) {
+                // For now we hardcode progress as 0 / goal; you’ll wire real progress later
+                summaryEl.textContent = `Goal: ${goal} days this week • Progress: 0 / ${goal} sessions logged`;
+            }
+
+            // Update This Week's Focus title if present
+            const focusTitleEl = document.getElementById("weekly-focus-title");
+            if (focusTitleEl) {
+                focusTitleEl.textContent = `${goal}-Day Training Week`;
+            }
+        }
+
+    function initWeeklyGoalControls() {
+            const pills = document.querySelectorAll(".day-pill");
+            if (!pills.length) return;
+
+            const currentGoal = getWeeklyGoal();
+
+            // Initialize active state
+            pills.forEach(pill => {
+                const pillDays = parseInt(pill.getAttribute("data-days"), 10);
+                if (pillDays === currentGoal) {
+                    pill.classList.add("active");
+                }
+
+                pill.addEventListener("click", () => {
+                    const days = parseInt(pill.getAttribute("data-days"), 10);
+                    setWeeklyGoal(days);
+                    updateWeeklyGoalUI();
+                });
+            });
+
+            updateWeeklyGoalUI();
+        }
+
+
+
+
 
     const quoteEl = document.getElementById("quote");
     const authorEl = document.getElementById("quote-author");
@@ -955,6 +1046,10 @@
         rotateQuote?.();          // depending on how your quote is set
         initWeeklyGoalControls(); // from earlier
         initScreens();            // 👈 add this line
+        renderTodaySplit();
+        updateStreak();
+        initWeeklyGoalControls();
+
 
 </script>
 
