@@ -33,7 +33,7 @@
     transform: translateX(2px);
 }
 
-        .bottom-bar {
+.bottom-bar {
     position: fixed;
     left: 0;
     right: 0;
@@ -48,8 +48,8 @@
 
 /* Only show bottom bar on small/medium screens */
 @media (min-width: 769px) {
-    .bottom-bar {
-        display: none;
+.bottom-bar {
+    display: none;
     }
 }
 
@@ -59,333 +59,333 @@
     justify-content: center;
 }
 
-        :root {
-            --bg-dark: #040405;
-            --bg-panel: #101219;
-            --text-primary: #f5f7ff;
-            --text-muted: rgba(245, 247, 255, 0.7);
-            --accent: #ff512f;
-            --accent-2: #dd2476;
-            --accent-yellow: #f6c343;
-            --card-border: rgba(255, 255, 255, 0.08);
-            --glass: rgba(255, 255, 255, 0.05);
+:root {
+    --bg-dark: #040405;
+    --bg-panel: #101219;
+    --text-primary: #f5f7ff;
+    --text-muted: rgba(245, 247, 255, 0.7);
+    --accent: #ff512f;
+    --accent-2: #dd2476;
+    --accent-yellow: #f6c343;
+    --card-border: rgba(255, 255, 255, 0.08);
+    --glass: rgba(255, 255, 255, 0.05);
         }
 
-        * {
-            box-sizing: border-box;
+* {
+    box-sizing: border-box;
+    }
+
+body {
+    margin: 0;
+    font-family: "Space Grotesk", sans-serif;
+    color: var(--text-primary);
+    background: radial-gradient(circle at top, rgba(255, 81, 47, 0.1), transparent 45%),
+        radial-gradient(circle at 20% 20%, rgba(221, 36, 118, 0.25), transparent 35%),
+        var(--bg-dark);
+    min-height: 100vh;
+    line-height: 1.6;
         }
 
-        body {
-            margin: 0;
-            font-family: "Space Grotesk", sans-serif;
-            color: var(--text-primary);
-            background: radial-gradient(circle at top, rgba(255, 81, 47, 0.1), transparent 45%),
-                radial-gradient(circle at 20% 20%, rgba(221, 36, 118, 0.25), transparent 35%),
-                var(--bg-dark);
-            min-height: 100vh;
-            line-height: 1.6;
-        }
+a {
+    color: inherit;
+    text-decoration: none;
+}
 
-        a {
-            color: inherit;
-            text-decoration: none;
-        }
+header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: rgba(4, 4, 5, 0.85);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--card-border);
+}
 
-        header {
-            position: sticky;
-            top: 0;
-            z-index: 10;
-            background: rgba(4, 4, 5, 0.85);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--card-border);
-        }
+nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem clamp(1rem, 4vw, 3rem);
+}
 
-        nav {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 1rem clamp(1rem, 4vw, 3rem);
-        }
+.logo {
+    font-weight: 700;
+    letter-spacing: 1px;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
 
-        .logo {
-            font-weight: 700;
-            letter-spacing: 1px;
-            font-size: 1.2rem;
-            display: flex;
-            align-items: center;
-            gap: 0.35rem;
-        }
+.logo span {
+    color: var(--accent-yellow);
+    font-size: 1.4rem;
+}
 
-        .logo span {
-            color: var(--accent-yellow);
-            font-size: 1.4rem;
-        }
+.nav-links {
+    display: flex;
+    gap: 1.25rem;
+    font-size: 0.95rem;
+}
 
-        .nav-links {
-            display: flex;
-            gap: 1.25rem;
-            font-size: 0.95rem;
-        }
+.nav-links a {
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.78rem;
+}
 
-        .nav-links a {
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-size: 0.78rem;
-        }
+.btn {
+    border: none;
+    padding: 0.85rem 1.75rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
 
-        .btn {
-            border: none;
-            padding: 0.85rem 1.75rem;
-            font-size: 0.95rem;
-            font-weight: 600;
-            border-radius: 999px;
-            cursor: pointer;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
+}
 
-        }
+.btn-primary {
+    background-image: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: #fff;
+    box-shadow: 0 20px 40px rgba(255, 81, 47, 0.3);
+}
 
-        .btn-primary {
-            background-image: linear-gradient(135deg, var(--accent), var(--accent-2));
-            color: #fff;
-            box-shadow: 0 20px 40px rgba(255, 81, 47, 0.3);
-        }
+.btn-outline {
+    border: 1px solid var(--card-border);
+    color: var(--text-muted);
+    background: transparent;
+}
 
-        .btn-outline {
-            border: 1px solid var(--card-border);
-            color: var(--text-muted);
-            background: transparent;
-        }
+.btn:hover {
+    transform: translateY(-3px);
+}
+.day-pill {
+    border: 1px solid var(--card-border);
+    background: transparent;
+    color: var(--text-muted);
+    padding: 0.5rem 1rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+}
 
-        .btn:hover {
-            transform: translateY(-3px);
-        }
-        .day-pill {
-            border: 1px solid var(--card-border);
-            background: transparent;
-            color: var(--text-muted);
-            padding: 0.5rem 1rem;
-            border-radius: 999px;
-            font-size: 0.85rem;
-            cursor: pointer;
-            transition: background 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
-        }
+.day-pill:hover {
+    transform: translateY(-1px);
+    border-color: var(--accent);
+}
 
-        .day-pill:hover {
-            transform: translateY(-1px);
-            border-color: var(--accent);
-        }
-
-        .day-pill.active {
-            background-image: linear-gradient(135deg, var(--accent), var(--accent-2));
-            color: #fff;
-            border-color: transparent;
-        }
+.day-pill.active {
+    background-image: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: #fff;
+    border-color: transparent;
+}
 
 
-        main {
-            padding: clamp(2rem, 5vw, 4rem) clamp(1rem, 5vw, 4rem) 6rem;
-        }
+main {
+    padding: clamp(2rem, 5vw, 4rem) clamp(1rem, 5vw, 4rem) 6rem;
+}
 
-        .hero {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 3rem;
-            align-items: center;
-            padding: clamp(2rem, 5vw, 4rem);
-            border-radius: 2rem;
-            background: linear-gradient(145deg, rgba(255, 81, 47, 0.1), rgba(4, 4, 5, 0.9));
-            border: 1px solid var(--card-border);
-        }
+.hero {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 3rem;
+    align-items: center;
+    padding: clamp(2rem, 5vw, 4rem);
+    border-radius: 2rem;
+    background: linear-gradient(145deg, rgba(255, 81, 47, 0.1), rgba(4, 4, 5, 0.9));
+    border: 1px solid var(--card-border);
+}
 
-        .hero h1 {
-            font-size: clamp(2.3rem, 6vw, 3.8rem);
-            line-height: 1.1;
-            margin-bottom: 1rem;
-        }
+.hero h1 {
+    font-size: clamp(2.3rem, 6vw, 3.8rem);
+    line-height: 1.1;
+    margin-bottom: 1rem;
+}
 
-        .hero p {
-            color: var(--text-muted);
-            max-width: 480px;
-        }
+.hero p {
+    color: var(--text-muted);
+    max-width: 480px;
+}
 
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 1rem;
-            margin: 2.5rem 0;
-        }
+.stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1rem;
+    margin: 2.5rem 0;
+}
 
-        .stat-card {
-            padding: 1.25rem;
-            border-radius: 1rem;
-            background: var(--bg-panel);
-            border: 1px solid var(--card-border);
-            text-align: center;
-        }
+.stat-card {
+    padding: 1.25rem;
+    border-radius: 1rem;
+    background: var(--bg-panel);
+    border: 1px solid var(--card-border);
+    text-align: center;
+}
 
-        .stat-card strong {
-            display: block;
-            font-size: 2rem;
-            margin-bottom: 0.25rem;
-            color: var(--accent-yellow);
-        }
+.stat-card strong {
+    display: block;
+    font-size: 2rem;
+    margin-bottom: 0.25rem;
+    color: var(--accent-yellow);
+}
 
-        .hero-panel {
-            background: var(--bg-panel);
-            border-radius: 1.5rem;
-            padding: 2rem;
-            border: 1px solid var(--card-border);
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.35);
-        }
+.hero-panel {
+    background: var(--bg-panel);
+    border-radius: 1.5rem;
+    padding: 2rem;
+    border: 1px solid var(--card-border);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.35);
+}
 
-        .hero-panel .badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.35rem;
-            border-radius: 999px;
-            padding: 0.35rem 1rem;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            background: rgba(255, 255, 255, 0.08);
-            margin-bottom: 1rem;
-        }
+.hero-panel .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    border-radius: 999px;
+    padding: 0.35rem 1rem;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background: rgba(255, 255, 255, 0.08);
+    margin-bottom: 1rem;
+}
 
-        .section {
-            margin-top: clamp(3rem, 7vw, 5rem);
-        }
+.section {
+    margin-top: clamp(3rem, 7vw, 5rem);
+}
 
-        .section-head {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 1.5rem;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
+.section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
 
-        .section-head h2 {
-            margin: 0;
-            font-size: clamp(1.6rem, 4vw, 2.45rem);
-        }
+.section-head h2 {
+    margin: 0;
+    font-size: clamp(1.6rem, 4vw, 2.45rem);
+}
 
-        .grid {
-            display: grid;
-            gap: 1.5rem;
-        }
+.grid {
+    display: grid;
+    gap: 1.5rem;
+}
 
-        @media (min-width: 768px) {
-            .grid-3 {
-                grid-template-columns: repeat(3, minmax(0, 1fr));
-            }
-        }
+@media (min-width: 768px) {
+    .grid-3 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
 
-        .workout-card {
-            background: var(--bg-panel);
-            border-radius: 1.5rem;
-            padding: 1.75rem;
-            border: 1px solid var(--card-border);
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
+.workout-card {
+    background: var(--bg-panel);
+    border-radius: 1.5rem;
+    padding: 1.75rem;
+    border: 1px solid var(--card-border);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
 
-        .workout-card h3 {
-            margin: 0;
-        }
+.workout-card h3 {
+    margin: 0;
+}
 
-        .workout-card ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            color: var(--text-muted);
-            font-size: 0.95rem;
-        }
+.workout-card ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+}
 
-        .motivation-board {
+.motivation-board {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: 1.5rem;
 }
 
 
-        .motivation-card {
-            padding: 1.5rem;
-            border-radius: 1.25rem;
-            border: 1px solid var(--card-border);
-            background: var(--glass);
-            min-height: 220px;
-            display: flex;
-            flex-direction: column;
-        }
+.motivation-card {
+    padding: 1.5rem;
+    border-radius: 1.25rem;
+    border: 1px solid var(--card-border);
+    background: var(--glass);
+    min-height: 220px;
+    display: flex;
+    flex-direction: column;
+}
 
-        .quote {
-            font-size: 1.1rem;
-            margin: 1rem 0 0.5rem;
-        }
+.quote {
+    font-size: 1.1rem;
+    margin: 1rem 0 0.5rem;
+}
 
-        .range-wrapper {
-            margin-top: auto;
-        }
+.range-wrapper {
+    margin-top: auto;
+}
 
-        input[type="range"] {
-            width: 100%;
-            accent-color: var(--accent);
-        }
+input[type="range"] {
+    width: 100%;
+    accent-color: var(--accent);
+}
 
-        .stories {
-            background: linear-gradient(120deg, rgba(255, 81, 47, 0.18), rgba(16, 18, 25, 0.95));
-            padding: clamp(2rem, 4vw, 3rem);
-            border-radius: 2rem;
-            border: 1px solid var(--card-border);
-        }
+.stories {
+    background: linear-gradient(120deg, rgba(255, 81, 47, 0.18), rgba(16, 18, 25, 0.95));
+    padding: clamp(2rem, 4vw, 3rem);
+    border-radius: 2rem;
+    border: 1px solid var(--card-border);
+}
 
-        .story {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 1.5rem;
-            margin-top: 2rem;
-        }
+.story {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
 
-        .story-card {
-            background: rgba(0, 0, 0, 0.35);
-            padding: 1.5rem;
-            border-radius: 1.25rem;
-            border: 1px solid var(--card-border);
-        }
+.story-card {
+    background: rgba(0, 0, 0, 0.35);
+    padding: 1.5rem;
+    border-radius: 1.25rem;
+    border: 1px solid var(--card-border);
+}
 
-        .story-card strong {
-            color: var(--accent-yellow);
-        }
+.story-card strong {
+    color: var(--accent-yellow);
+}
 
-        .cta {
-            margin-top: 4rem;
-            padding: clamp(2.5rem, 5vw, 3.5rem);
-            border-radius: 2rem;
-            text-align: center;
-            border: 1px solid var(--card-border);
-            background: linear-gradient(145deg, rgba(16, 18, 25, 0.9), rgba(255, 81, 47, 0.12));
-        }
+.cta {
+    margin-top: 4rem;
+    padding: clamp(2.5rem, 5vw, 3.5rem);
+    border-radius: 2rem;
+    text-align: center;
+    border: 1px solid var(--card-border);
+    background: linear-gradient(145deg, rgba(16, 18, 25, 0.9), rgba(255, 81, 47, 0.12));
+}
 
-        .cta h3 {
-            font-size: clamp(1.8rem, 4vw, 2.8rem);
-            margin-bottom: 0.5rem;
-        }
+.cta h3 {
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    margin-bottom: 0.5rem;
+}
 
-        footer {
-            padding: 2rem clamp(1rem, 5vw, 4rem) 3rem;
-            text-align: center;
-            color: var(--text-muted);
-            border-top: 1px solid var(--card-border);
-            background: rgba(0, 0, 0, 0.35);
-        }
+footer {
+    padding: 2rem clamp(1rem, 5vw, 4rem) 3rem;
+    text-align: center;
+    color: var(--text-muted);
+    border-top: 1px solid var(--card-border);
+    background: rgba(0, 0, 0, 0.35);
+}
 
-        @media (max-width: 768px) {
+@media (max-width: 768px) {
     body {
         line-height: 1.5;
     }
@@ -477,6 +477,17 @@
 .hidden {
     display: none;
 }
+.finisher-card.locked {
+    opacity: 0.6;
+    border-style: dashed;
+}
+
+.finisher-card:not(.locked) {
+    opacity: 1;
+    border-style: solid;
+}
+
+
 
     </style>
 </head>
@@ -673,6 +684,35 @@
                 </div>
             </div>
         </section>
+
+        <section class="section" id="finisher">
+            <div class="section-head">
+                <h2>Today’s Finisher</h2>
+                <p style="color:var(--text-muted);max-width:520px;">
+                    Finish your main work first. If you’ve got something left in the tank, unlock today’s optional finisher.
+                </p>
+            </div>
+        
+            <article class="workout-card finisher-card locked" id="finisher-card">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+                    <h3 id="finisher-title" style="margin:0;">Locked</h3>
+                    <span id="finisher-tag" style="color:var(--accent-yellow);font-size:0.85rem;text-transform:uppercase;">
+                        Complete your sets
+                    </span>
+                </div>
+                <p id="finisher-description" style="color:var(--text-muted);margin:0 0 0.75rem 0;">
+                    Check off all exercises in Today’s Split to unlock this finisher.
+                </p>
+                <p id="finisher-status" style="color:var(--text-muted);font-size:0.9rem;margin:0 0 1rem 0;">
+                    Main work first. Earn the extra.
+                </p>
+                <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
+                    <button class="btn btn-primary" id="finisher-do-btn" disabled>Do the Finisher</button>
+                    <button class="btn btn-outline" id="finisher-skip-btn" disabled>Skip for Today</button>
+                </div>
+            </article>
+        </section>
+
 
 
         <section class="cta" id="cta">
@@ -916,6 +956,36 @@
         }
     ];
 
+    const finishers = [
+            {
+                title: "Engine Burnout",
+                tag: "Conditioning",
+                description: "3 rounds: 30s assault bike or fast walk, 30s rest, then 10 burpees.",
+            },
+            {
+                title: "Pump Set",
+                tag: "Hypertrophy",
+                description: "2 sets: 20 slow pushups, 20 band pull-aparts, 30s plank.",
+            },
+            {
+                title: "Core Lock-In",
+                tag: "Core",
+                description: "3 rounds: 20s hollow hold, 20s side plank each side, 10 dead bugs.",
+            },
+            {
+                title: "Leg Burner",
+                tag: "Legs",
+                description: "2 sets: 15 walking lunges, 20 bodyweight squats, 30s wall sit.",
+            }
+        ];
+
+        function getTodayFinisher() {
+            // Simple tie-in: re-use today's split index so finisher "matches" the day
+            const splitIndex = getTodaySplitIndex ? getTodaySplitIndex() : 0;
+            return finishers[splitIndex % finishers.length];
+        }
+
+
     function getTodaySplitIndex() {
         const today = new Date().getDay(); // 0 = Sun, 1 = Mon, ...
         const map = {
@@ -931,46 +1001,76 @@
     }
 
     function renderTodaySplit() {
-        const splitNameEl = document.getElementById("split-name");
-        const splitDaysEl = document.getElementById("split-days");
-        const splitDescEl = document.getElementById("split-description");
+            const splitNameEl = document.getElementById("split-name");
+            const splitDaysEl = document.getElementById("split-days");
+            const splitDescEl = document.getElementById("split-description");
+            const exerciseListEl = document.getElementById("exercise-list");
+
+            if (!splitNameEl || !exerciseListEl) return;
+
+            const split = splits[getTodaySplitIndex()];
+
+            splitNameEl.textContent = split.name;
+            splitDaysEl.textContent = split.days;
+            splitDescEl.textContent = split.description;
+
+            // Clear old list
+            exerciseListEl.innerHTML = "";
+
+            split.exercises.forEach((exercise, index) => {
+                const li = document.createElement("li");
+                li.style.marginBottom = "0.5rem";
+
+                const id = `exercise-${index}`;
+
+                li.innerHTML = `
+            <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;">
+                <input type="checkbox" id="${id}" />
+                <span>${exercise}</span>
+            </label>
+        `;
+
+                exerciseListEl.appendChild(li);
+
+                const checkbox = li.querySelector('input[type="checkbox"]');
+                if (checkbox) {
+                    checkbox.addEventListener("change", () => {
+                        if ("vibrate" in navigator) {
+                            navigator.vibrate(20);
+                        }
+                        checkSplitCompletion();
+                    });
+                }
+            });
+
+            // Ensure finisher starts in locked state
+            checkSplitCompletion();
+        }
+
+    function checkSplitCompletion() {
         const exerciseListEl = document.getElementById("exercise-list");
+        if (!exerciseListEl) {
+            // If for some reason we can't find the list, keep finisher locked
+            updateFinisherLockState(false);
+            return;
+        }
 
-        if (!splitNameEl || !exerciseListEl) return;
+        const checkboxes = exerciseListEl.querySelectorAll('input[type="checkbox"]');
 
-        const split = splits[getTodaySplitIndex()];
+        if (!checkboxes.length) {
+            updateFinisherLockState(false);
+            return;
+        }
 
-        splitNameEl.textContent = split.name;
-        splitDaysEl.textContent = split.days;
-        splitDescEl.textContent = split.description;
-
-        // Clear old list
-        exerciseListEl.innerHTML = "";
-
-        split.exercises.forEach((exercise, index) => {
-            const li = document.createElement("li");
-            li.style.marginBottom = "0.5rem";
-
-            const id = `exercise-${index}`;
-
-            li.innerHTML = `
-                <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;">
-                    <input type="checkbox" id="${id}" />
-                    <span>${exercise}</span>
-                </label>
-            `;
-
-            exerciseListEl.appendChild(li);
-
-            const checkbox = li.querySelector("input");
-            if (checkbox && "vibrate" in navigator) {
-                checkbox.addEventListener("change", () => {
-                    if (checkbox.checked) {
-                        navigator.vibrate(20); // Tiny haptic-style feedback
-                    }
-                });
+        let allChecked = true;
+        checkboxes.forEach(cb => {
+            if (!cb.checked) {
+                allChecked = false;
             }
         });
+
+        // If ALL are checked → unlock, otherwise stay locked
+        updateFinisherLockState(allChecked);
     }
 
     // ===== STREAK TRACKER (localStorage) =====
@@ -1025,9 +1125,64 @@
 
     }
 
-    // ===== INIT =====
-    renderTodaySplit();
-    updateStreak();
+
+
+    function initFinisherControls() {
+            const doBtn = document.getElementById("finisher-do-btn");
+            const skipBtn = document.getElementById("finisher-skip-btn");
+            const statusEl = document.getElementById("finisher-status");
+
+            if (doBtn) {
+                doBtn.addEventListener("click", () => {
+                    if (!statusEl) return;
+                    statusEl.textContent = "Finisher complete. You just built extra capacity for later in the week.";
+                    // Later: increment finishersCompletedThisWeek, maybe build toward rest tokens
+                });
+            }
+
+            if (skipBtn) {
+                skipBtn.addEventListener("click", () => {
+                    if (!statusEl) return;
+                    statusEl.textContent = "Skipped today’s finisher. Recovery is part of progress.";
+                    // No penalty, just a clear message.
+                });
+            }
+        }
+
+
+    function updateFinisherLockState(isUnlocked) {
+        const card = document.getElementById("finisher-card");
+        const titleEl = document.getElementById("finisher-title");
+        const tagEl = document.getElementById("finisher-tag");
+        const descEl = document.getElementById("finisher-description");
+        const statusEl = document.getElementById("finisher-status");
+        const doBtn = document.getElementById("finisher-do-btn");
+        const skipBtn = document.getElementById("finisher-skip-btn");
+
+        if (!card || !titleEl || !tagEl || !descEl || !statusEl || !doBtn || !skipBtn) return;
+
+        if (!isUnlocked) {
+            card.classList.add("locked");
+            titleEl.textContent = "Locked";
+            tagEl.textContent = "Complete your sets";
+            descEl.textContent = "Check off all exercises in Today’s Split to unlock this finisher.";
+            statusEl.textContent = "Main work first. Earn the extra.";
+            doBtn.disabled = true;
+            skipBtn.disabled = true;
+            return;
+        }
+
+        // Unlocked path
+        const finisher = getTodayFinisher();
+        card.classList.remove("locked");
+        titleEl.textContent = finisher.title;
+        tagEl.textContent = finisher.tag;
+        descEl.textContent = finisher.description;
+        statusEl.textContent = "Optional: if you have energy, hit this finisher. Or skip and recover.";
+        doBtn.disabled = false;
+        skipBtn.disabled = false;
+    }
+
     // ===== SERVICE WORKER REGISTRATION =====
         if ("serviceWorker" in navigator) {
             window.addEventListener("load", () => {
@@ -1041,14 +1196,19 @@
                     });
             });
         }
-    renderTodaySplit();
-        updateIntensity?.();      // if you still have this
-        rotateQuote?.();          // depending on how your quote is set
-        initWeeklyGoalControls(); // from earlier
-        initScreens();            // 👈 add this line
-        renderTodaySplit();
-        updateStreak();
-        initWeeklyGoalControls();
+
+        // ===== APP INIT =====
+        window.addEventListener("DOMContentLoaded", () => {
+            renderTodaySplit();          // build today's split + checkboxes
+            initWeeklyGoalControls();    // set up 3–7 day goal buttons
+            initScreens();               // show setup vs daily, depending on localStorage
+            initFinisherControls();      // wire finisher buttons
+
+            // Optional, if you still use these:
+            updateStreak?.();            // only if this function exists
+            updateIntensity?.();         // only if intensity slider still exists
+            rotateQuote?.();             // only if you want quotes rotating on load
+        });
 
 
 </script>
