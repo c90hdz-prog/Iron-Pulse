@@ -5,11 +5,51 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Iron Pulse | Gym Motivation Hub</title>
+    <meta name="theme-color" content="#040405" />
+    
+    <link rel="manifest" href="manifest.webmanifest">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap"
         rel="stylesheet">
     <style>
+        /* Checked exercise styling */
+#exercise-list label {
+    transition: transform 0.15s ease;
+}
+
+#exercise-list input[type="checkbox"]:checked + span {
+    text-decoration: line-through;
+    opacity: 0.7;
+    transform: translateX(2px);
+}
+
+        .bottom-bar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 0.5rem 1rem;
+    background: rgba(4, 4, 5, 0.96);
+    border-top: 1px solid var(--card-border);
+    display: flex;
+    justify-content: center;
+    z-index: 20;
+}
+
+/* Only show bottom bar on small/medium screens */
+@media (min-width: 769px) {
+    .bottom-bar {
+        display: none;
+    }
+}
+
+.bottom-bar-btn {
+    width: 100%;
+    max-width: 480px;
+    justify-content: center;
+}
+
         :root {
             --bg-dark: #040405;
             --bg-panel: #101219;
@@ -232,10 +272,11 @@
         }
 
         .motivation-board {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 1.5rem;
-        }
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+}
+
 
         .motivation-card {
             padding: 1.5rem;
@@ -309,21 +350,98 @@
         }
 
         @media (max-width: 768px) {
-            .nav-links {
-                width: 100%;
-                justify-content: center;
-                flex-wrap: wrap;
-            }
+    body {
+        line-height: 1.5;
+    }
 
-            nav {
-                flex-direction: column;
-                gap: 1rem;
-            }
+    main {
+        padding: 1.5rem 1rem 3rem;
+    }
 
-            .hero {
-                padding: 2rem 1.5rem;
-            }
-        }
+    /* Nav stacks nicely */
+    nav {
+        flex-direction: column;
+        gap: 0.75rem;
+        align-items: flex-start;
+    }
+
+    .nav-links {
+        width: 100%;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        font-size: 0.75rem;
+    }
+
+    /* Hero stacks into one column, centered text */
+    .hero {
+        grid-template-columns: 1fr;
+        padding: 1.75rem 1.25rem;
+        text-align: left;
+    }
+
+    .hero h1 {
+        font-size: 1.9rem;
+    }
+
+    .hero p {
+        max-width: 100%;
+    }
+
+    .stats {
+        margin: 1.5rem 0;
+    }
+
+    /* Make buttons easier to tap */
+    .hero .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* Sections a bit closer together on mobile */
+    .section {
+        margin-top: 2.25rem;
+    }
+
+    .section-head {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .workout-card,
+    .motivation-card,
+    .cta {
+        padding: 1.5rem 1.25rem;
+        border-radius: 1.25rem;
+    }
+
+    /* Quote: big but not overwhelming */
+    .quote {
+        font-size: 1.25rem;
+    }
+}
+.streak-banner {
+    margin-bottom: 1rem;
+    padding: 0.75rem 1rem;
+    border-radius: 999px;
+    background: linear-gradient(135deg, rgba(255, 81, 47, 0.18), rgba(246, 195, 67, 0.12));
+    border: 1px solid var(--card-border);
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-primary);
+}
+
+.streak-banner span {
+    font-weight: 500;
+}
+
+.hidden {
+    display: none;
+}
+
     </style>
 </head>
 
@@ -332,16 +450,18 @@
         <nav>
             <div class="logo"><span>*</span>Iron Pulse</div>
             <div class="nav-links">
-                <a href="#programs">Programs</a>
+                <a href="#split">Today's Split</a>
                 <a href="#motivation">Mindset</a>
-                <a href="#stories">Stories</a>
-                <a href="#cta">Join</a>
             </div>
             <button class="btn btn-primary" id="hero-cta">Start Today</button>
         </nav>
     </header>
 
     <main>
+        <div id="streak-banner" class="streak-banner hidden">
+            <span id="streak-text"></span>
+        </div>
+
         <section class="hero">
             <div>
                 <p class="badge" style="letter-spacing:2px;">Daily Grind - No Excuses</p>
@@ -351,27 +471,35 @@
                     motivation you need to stay consistent, even when the weights feel heavy.
                 </p>
                 <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-top:2rem;">
-                    <button class="btn btn-primary">Download Plan</button>
-                    <button class="btn btn-outline">Watch Trailer</button>
+                    <button class="btn btn-primary" id="add-to-home-btn">
+                        Add to Home Screen
+                    </button>
+                
+                    <a class="btn btn-outline" href="https://www.youtube.com/watch?v=dQw4w9WgXcQ" target="_blank"
+                        rel="noopener noreferrer">
+                        Watch Trailer
+                    </a>
                 </div>
+
                 <div class="stats">
                     <div class="stat-card">
-                        <strong>12.4K</strong>
-                        athletes committed
+                        <strong>4 days</strong>
+                        training goal this week
                     </div>
                     <div class="stat-card">
-                        <strong>97%</strong>
-                        routine completion
+                        <strong id="streak-value">1</strong>
+                        day streak active
                     </div>
                     <div class="stat-card">
-                        <strong>8</strong>
-                        weeks to visible change
+                        <strong>30 min</strong>
+                        minimum effort today
                     </div>
                     <div class="stat-card">
-                        <strong>24/7</strong>
-                        community support
+                        <strong>1 session</strong>
+                        is better than 0
                     </div>
                 </div>
+
             </div>
 
             <div class="hero-panel">
@@ -394,58 +522,29 @@
             </div>
         </section>
 
-        <section class="section" id="programs">
+        <section class="section" id="split">
             <div class="section-head">
-                <h2>Programs built for every grind.</h2>
-                <p style="color:var(--text-muted);max-width:480px;">Choose a track that matches your goal, whether you
-                    want lean performance, raw strength, or hybrid athleticism. Every plan is periodized and ready to
-                    follow.</p>
+                <h2>Today's Split</h2>
+                <p style="color:var(--text-muted);max-width:480px;">
+                    Open this before you train. Get a simple plan for the day, check off each exercise as you finish,
+                    and keep your sessions focused instead of guessing.
+                </p>
             </div>
-            <div class="grid grid-3">
-                <article class="workout-card">
-                    <div style="display:flex;justify-content:space-between;align-items:center;">
-                        <h3>Power Engine</h3>
-                        <span style="color:var(--accent-yellow);font-weight:600;">5x / week</span>
-                    </div>
-                    <p style="color:var(--text-muted);margin:0;">Olympic lifts plus metabolic conditioning to build
-                        explosive power.</p>
-                    <ul>
-                        <li>Heavy complexes with form cues</li>
-                        <li>Track bar speed with RPE</li>
-                        <li>Finish with 800m run intervals</li>
-                    </ul>
-                    <button class="btn btn-outline">View Day 1</button>
-                </article>
-                <article class="workout-card">
-                    <div style="display:flex;justify-content:space-between;align-items:center;">
-                        <h3>Hypertrophy Lab</h3>
-                        <span style="color:var(--accent-yellow);font-weight:600;">4x / week</span>
-                    </div>
-                    <p style="color:var(--text-muted);margin:0;">Time under tension training with progressive overload
-                        calculators.</p>
-                    <ul>
-                        <li>Rest pause drop sets built in</li>
-                        <li>Nutrition targets for each block</li>
-                        <li>Weekly pump finisher challenges</li>
-                    </ul>
-                    <button class="btn btn-outline">View Day 1</button>
-                </article>
-                <article class="workout-card">
-                    <div style="display:flex;justify-content:space-between;align-items:center;">
-                        <h3>Mobility Armor</h3>
-                        <span style="color:var(--accent-yellow);font-weight:600;">3x / week</span>
-                    </div>
-                    <p style="color:var(--text-muted);margin:0;">Strengthen connective tissue and bulletproof your joints
-                        with athletic flows.</p>
-                    <ul>
-                        <li>Guided breathwork and tempo cues</li>
-                        <li>Trigger point release maps</li>
-                        <li>Test day every third week</li>
-                    </ul>
-                    <button class="btn btn-outline">View Day 1</button>
-                </article>
+        
+            <div class="workout-card">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <h3 id="split-name">Loading split...</h3>
+                    <span id="split-days" style="color:var(--accent-yellow);font-weight:600;"></span>
+                </div>
+                <p id="split-description" style="color:var(--text-muted);margin:0 0 1rem 0;">
+                    <!-- Filled by JavaScript -->
+                </p>
+                <ul id="exercise-list" style="list-style:none;padding:0;margin:0;color:var(--text-muted);">
+                    <!-- Exercises with checkboxes will be injected here -->
+                </ul>
             </div>
         </section>
+
 
         <section class="section" id="motivation">
             <div class="section-head">
@@ -454,62 +553,21 @@
                     to your intensity, highlights your streak, and throws a new quote when you need it.</p>
             </div>
             <div class="motivation-board">
-                <div class="motivation-card">
-                    <strong style="text-transform:uppercase;letter-spacing:1px;color:var(--accent-yellow);">Daily
-                        Quote</strong>
-                    <p id="quote" class="quote">We are what we repeatedly do. Excellence is a habit.</p>
-                    <p id="quote-author" style="color:var(--text-muted);font-size:0.9rem;">- Aristotle</p>
-                </div>
-                <div class="motivation-card">
-                    <strong style="text-transform:uppercase;letter-spacing:1px;color:var(--accent-yellow);">Intensity
-                        Dial</strong>
-                    <p style="color:var(--text-muted);margin-top:0;">How hard will you push this session?</p>
-                    <div class="range-wrapper">
-                        <input type="range" min="1" max="10" value="6" id="intensity-slider">
-                        <p style="margin-top:0.5rem;">Level: <span id="intensity-value">6</span> - <span
-                                id="intensity-label">Primed</span></p>
-                    </div>
-                </div>
-                <div class="motivation-card">
-                    <strong style="text-transform:uppercase;letter-spacing:1px;color:var(--accent-yellow);">Consistency
-                        Tracker</strong>
-                    <p style="font-size:2.5rem;margin:0;">14 days</p>
-                    <p style="color:var(--text-muted);margin:0;">Day streak activated</p>
-                    <p style="margin-top:auto;">"You are closer than you think, show up again tomorrow."</p>
+                <div class="motivation-card" style="min-height:260px;">
+                    <strong style="text-transform:uppercase;letter-spacing:1px;color:var(--accent-yellow);">
+                        Daily Quote
+                    </strong>
+                    <p id="quote" class="quote" style="font-size:1.5rem;">
+                        Motivation fades. Discipline doesn’t.
+                    </p>
+                    <p id="quote-author" style="color:var(--text-muted);font-size:0.9rem;">
+                        - Iron Pulse
+                    </p>
                 </div>
             </div>
         </section>
 
-        <section class="section stories" id="stories">
-            <div class="section-head" style="margin-bottom:0;">
-                <div>
-                    <p style="text-transform:uppercase;letter-spacing:2px;color:var(--accent-yellow);margin:0;">Proof</p>
-                    <h2 style="margin-top:0.25rem;">Transformation stories</h2>
-                </div>
-                <p style="color:var(--text-muted);max-width:420px;">Every story starts with day one. Your breakthrough is
-                    one habit away.</p>
-            </div>
-            <div class="story">
-                <article class="story-card">
-                    <strong>@LenaPullups</strong>
-                    <p style="margin:0.75rem 0;color:var(--text-muted);">"I wanted an athletic look, not just skinny. Ninety
-                        days with Power Engine and I hit a bodyweight clean for the first time."</p>
-                    <p style="font-size:0.9rem;">Clean +23 lbs | 3 min faster 1.5 mile</p>
-                </article>
-                <article class="story-card">
-                    <strong>@CoachMarco</strong>
-                    <p style="margin:0.75rem 0;color:var(--text-muted);">"Hypertrophy Lab plus the recovery protocols finally
-                        healed my shoulder. I am stronger and pain free."</p>
-                    <p style="font-size:0.9rem;">+8 lb lean mass | Shoulder ROM 100%</p>
-                </article>
-                <article class="story-card">
-                    <strong>@RunAndLift</strong>
-                    <p style="margin:0.75rem 0;color:var(--text-muted);">"The Mobility Armor flows make my lifts feel
-                        smooth. New morning ritual unlocked."</p>
-                    <p style="font-size:0.9rem;">Zero missed lifts in 6 weeks</p>
-                </article>
-            </div>
-        </section>
+
 
         <section class="cta" id="cta">
             <h3>Pressure makes diamonds. Join the crew.</h3>
@@ -525,51 +583,230 @@
     <footer>
         <p>Iron Pulse Collective - Built for the relentless - Train hard, recover harder.</p>
     </footer>
+<div class="bottom-bar">
+    <button class="btn btn-primary bottom-bar-btn" id="bottom-split-btn">
+        Today's Split
+    </button>
+</div>
 
-    <script>
-        const quotes = [
-            { text: "You will not always be motivated, so you must learn to be disciplined.", author: "Unknown" },
-            { text: "Sweat is just fat crying, so let it all out.", author: "Iron Pulse" },
-            { text: "Champions keep going when there is nothing left in the tank.", author: "Andre Ward" },
-            { text: "The body achieves what the mind believes.", author: "Anonymous" },
-            { text: "Most give up at forty percent. Your next PR sits beyond that wall.", author: "Coach Nia" }
-        ];
+<script>
+    // ===== QUOTES =====
+    const quotes = [
+        { text: "You will not always be motivated, so you must learn to be disciplined.", author: "Unknown" },
+        { text: "Sweat is just fat crying, so let it all out.", author: "Iron Pulse" },
+        { text: "Champions keep going when there is nothing left in the tank.", author: "Andre Ward" },
+        { text: "The body achieves what the mind believes.", author: "Anonymous" },
+        { text: "Most give up at forty percent. Your next PR sits beyond that wall.", author: "Coach Nia" }
+    ];
 
-        const quoteEl = document.getElementById("quote");
-        const authorEl = document.getElementById("quote-author");
-        let quoteIndex = 0;
+    const quoteEl = document.getElementById("quote");
+    const authorEl = document.getElementById("quote-author");
+    let quoteIndex = 0;
 
-        function rotateQuote() {
-            quoteIndex = (quoteIndex + 1) % quotes.length;
-            quoteEl.textContent = quotes[quoteIndex].text;
-            authorEl.textContent = "- " + quotes[quoteIndex].author;
-        }
+    function rotateQuote() {
+        quoteIndex = (quoteIndex + 1) % quotes.length;
+        quoteEl.textContent = quotes[quoteIndex].text;
+        authorEl.textContent = "- " + quotes[quoteIndex].author;
+    }
 
-        setInterval(rotateQuote, 6000);
+    // Rotate quote every 6 seconds
+    setInterval(rotateQuote, 6000);
 
-        const intensitySlider = document.getElementById("intensity-slider");
-        const intensityValue = document.getElementById("intensity-value");
-        const intensityLabel = document.getElementById("intensity-label");
-
-        const intensityWords = [
-            "Warming Up", "Focused", "Primed", "Locked In", "Beast Mode",
-            "No Limits", "Unstoppable", "Savage"
-        ];
-
-        function updateIntensity() {
-            const value = parseInt(intensitySlider.value, 10);
-            intensityValue.textContent = value;
-            const index = Math.min(intensityWords.length - 1, Math.floor(value / 2));
-            intensityLabel.textContent = intensityWords[index];
-        }
-
-        intensitySlider.addEventListener("input", updateIntensity);
-        updateIntensity();
-
-        document.getElementById("hero-cta").addEventListener("click", () => {
-            document.getElementById("cta").scrollIntoView({ behavior: "smooth" });
+    // ===== HERO BUTTON SCROLL =====
+    const heroCta = document.getElementById("hero-cta");
+    if (heroCta) {
+        heroCta.addEventListener("click", () => {
+            document.getElementById("cta")?.scrollIntoView({ behavior: "smooth" });
         });
-    </script>
+    }
+
+    const bottomSplitBtn = document.getElementById("bottom-split-btn");
+    if (bottomSplitBtn) {
+        bottomSplitBtn.addEventListener("click", () => {
+            document.getElementById("split")?.scrollIntoView({ behavior: "smooth" });
+        });
+    }
+
+    // ===== TODAY'S SPLIT DATA =====
+    const splits = [
+        {
+            name: "Push Day – Chest, Shoulders, Triceps",
+            days: "Example: Mon / Thu",
+            description: "Press-focused session with plenty of push volume.",
+            exercises: [
+                "Barbell or DB Bench Press – 4 x 6–8",
+                "Overhead Press – 3 x 8–10",
+                "Incline DB Press – 3 x 10–12",
+                "Lateral Raises – 3 x 15",
+                "Cable Triceps Pushdown – 3 x 12–15"
+            ]
+        },
+        {
+            name: "Pull Day – Back, Biceps",
+            days: "Example: Tue / Fri",
+            description: "Pull-heavy work to build your back and biceps.",
+            exercises: [
+                "Deadlifts or RDL – 4 x 5",
+                "Pull-Ups or Lat Pulldown – 4 x 8–10",
+                "Seated Row – 3 x 10–12",
+                "Face Pulls – 3 x 15",
+                "Barbell or DB Curls – 3 x 10–12"
+            ]
+        },
+        {
+            name: "Leg Day – Quads, Hamstrings, Glutes",
+            days: "Example: Wed / Sat",
+            description: "Lower-body work that actually moves the bar.",
+            exercises: [
+                "Squats – 4 x 5–8",
+                "Romanian Deadlift – 3 x 8–10",
+                "Leg Press or Lunges – 3 x 10–12",
+                "Hamstring Curls – 3 x 12–15",
+                "Calf Raises – 3 x 15–20"
+            ]
+        },
+        {
+            name: "Full Body – Lighter Day",
+            days: "Example: Sunday or optional",
+            description: "Keep the habit alive with lighter full-body work.",
+            exercises: [
+                "Goblet Squats – 3 x 10",
+                "Push-Ups – 3 x AMRAP",
+                "DB Rows – 3 x 10–12",
+                "Plank – 3 x 30–45 seconds"
+            ]
+        }
+    ];
+
+    function getTodaySplitIndex() {
+        const today = new Date().getDay(); // 0 = Sun, 1 = Mon, ...
+        const map = {
+            0: 3, // Sunday -> Full Body
+            1: 0, // Monday -> Push
+            2: 1, // Tuesday -> Pull
+            3: 2, // Wednesday -> Legs
+            4: 0, // Thursday -> Push
+            5: 1, // Friday -> Pull
+            6: 2  // Saturday -> Legs
+        };
+        return map[today] ?? 0;
+    }
+
+    function renderTodaySplit() {
+        const splitNameEl = document.getElementById("split-name");
+        const splitDaysEl = document.getElementById("split-days");
+        const splitDescEl = document.getElementById("split-description");
+        const exerciseListEl = document.getElementById("exercise-list");
+
+        if (!splitNameEl || !exerciseListEl) return;
+
+        const split = splits[getTodaySplitIndex()];
+
+        splitNameEl.textContent = split.name;
+        splitDaysEl.textContent = split.days;
+        splitDescEl.textContent = split.description;
+
+        // Clear old list
+        exerciseListEl.innerHTML = "";
+
+        split.exercises.forEach((exercise, index) => {
+            const li = document.createElement("li");
+            li.style.marginBottom = "0.5rem";
+
+            const id = `exercise-${index}`;
+
+            li.innerHTML = `
+                <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;">
+                    <input type="checkbox" id="${id}" />
+                    <span>${exercise}</span>
+                </label>
+            `;
+
+            exerciseListEl.appendChild(li);
+
+            const checkbox = li.querySelector("input");
+            if (checkbox && "vibrate" in navigator) {
+                checkbox.addEventListener("change", () => {
+                    if (checkbox.checked) {
+                        navigator.vibrate(20); // Tiny haptic-style feedback
+                    }
+                });
+            }
+        });
+    }
+
+    // ===== STREAK TRACKER (localStorage) =====
+    function updateStreak() {
+        const key = "ip_streak";
+        const today = new Date();
+        const todayStr = today.toISOString().slice(0, 10); // YYYY-MM-DD
+
+        let stored;
+        try {
+            stored = JSON.parse(localStorage.getItem(key) || "{}");
+        } catch {
+            stored = {};
+        }
+
+        let streak = stored.streak || 0;
+        let lastDate = stored.lastDate;
+
+        if (!lastDate) {
+            streak = 1;
+        } else if (lastDate === todayStr) {
+            // Same day: keep streak as is
+        } else {
+            const last = new Date(lastDate);
+            const diffMs = today - last;
+            const diffDays = Math.floor(diffMs / 86400000);
+
+            if (diffDays === 1) {
+                streak += 1; // consecutive day
+            } else {
+                streak = 1; // reset
+            }
+        }
+
+        localStorage.setItem(key, JSON.stringify({ streak, lastDate: todayStr }));
+
+        const banner = document.getElementById("streak-banner");
+        const textEl = document.getElementById("streak-text");
+
+        if (banner && textEl) {
+            banner.classList.remove("hidden");
+            if (streak === 1) {
+                textEl.textContent = "Day 1 – You started. Show up again tomorrow.";
+            } else {
+                textEl.textContent = `Streak: ${streak} days in a row. Keep it alive.`;
+            }
+        }
+        const streakValueEl = document.getElementById("streak-value");
+        if (streakValueEl) {
+            streakValueEl.textContent = streak;
+        }
+
+    }
+
+    // ===== INIT =====
+    renderTodaySplit();
+    updateStreak();
+    // ===== SERVICE WORKER REGISTRATION =====
+        if ("serviceWorker" in navigator) {
+            window.addEventListener("load", () => {
+                navigator.serviceWorker
+                    .register("./sw.js")
+                    .then((registration) => {
+                        console.log("Service worker registered:", registration.scope);
+                    })
+                    .catch((err) => {
+                        console.log("Service worker registration failed:", err);
+                    });
+            });
+        }
+
+</script>
+
+
 </body>
 
 </html>
