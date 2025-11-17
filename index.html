@@ -133,6 +133,11 @@
             border-radius: 999px;
             cursor: pointer;
             transition: transform 0.2s ease, box-shadow 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+
         }
 
         .btn-primary {
@@ -504,21 +509,21 @@
 
             <div class="hero-panel">
                 <div class="badge">
-                    !! Featured Challenge
+                    This Week's Focus
                 </div>
-                <h2 style="margin-top:0;">Unbreakable 30</h2>
-                <p>30 minutes. 5 compound lifts. Leave the gym knowing you poured everything into those sets.</p>
+                <h2 style="margin-top:0;">4-Day Upper / Lower Split</h2>
+                <p style="color:var(--text-muted);">
+                    You commited to showing up 4 days this week. Hit your main lifts, move with intent, and leave the gym knowing you did what you said you would.</p>
                 <ul style="list-style:none;padding:0;margin:1.5rem 0;color:var(--text-muted);">
-                    <li>&bull; Warmup flow: 5 mins dynamic priming</li>
-                    <li>&bull; Lift heavy: 4 x 6 barbell complex</li>
-                    <li>&bull; Engine work: EMOM sprint finisher</li>
+                    <li>&bull; Main goal: complete all 4 training days</li>
+                    <li>&bull; Pace yourself: no ego lifting on tired days</li>
+                    <li>&bull; Optional: unlock a finisher if energy is high</li>
                 </ul>
                 <div style="display:flex;gap:1rem;align-items:center;">
-                    <button class="btn btn-primary" style="flex:1;">Add To Calendar</button>
-                    <button class="btn btn-outline" style="flex:1;">Save Playlist</button>
+                    <button class="btn btn-primary" style="flex:1;">Adjust This Week</button>
+                    <button class="btn btn-outline" style="flex:1;">View Weekly Plan</button>
                 </div>
-                <p style="font-size:0.85rem;color:var(--text-muted);margin-top:1.5rem;">"Intensity is a choice. Make the
-                    hard choice."</p>
+                <p style="font-size:0.85rem;color:var(--text-muted);margin-top:1.5rem;">Decide once, follow through all week.</p>
             </div>
         </section>
 
@@ -530,6 +535,11 @@
                     and keep your sessions focused instead of guessing.
                 </p>
             </div>
+            
+
+
+
+
         
             <div class="workout-card">
                 <div style="display:flex;justify-content:space-between;align-items:center;">
@@ -564,6 +574,38 @@
                         - Iron Pulse
                     </p>
                 </div>
+            </div>
+        </section>
+
+
+        <section class="section" id="install">
+            <div class="section-head">
+                <h2>Install Iron Pulse as an App</h2>
+                <p style="color:var(--text-muted);max-width:520px;">
+                    Add Iron Pulse to your home screen so it opens like a dedicated gym app before every session.
+                </p>
+            </div>
+        
+            <div class="grid">
+                <article class="workout-card">
+                    <h3>On Android (Chrome)</h3>
+                    <ul>
+                        <li>1. Open this page in Chrome.</li>
+                        <li>2. Tap the menu button (⋮) in the top-right.</li>
+                        <li>3. Tap <strong>Add to Home screen</strong> or <strong>Install app</strong>.</li>
+                        <li>4. Confirm, then open it from your home screen like any other app.</li>
+                    </ul>
+                </article>
+        
+                <article class="workout-card">
+                    <h3>On iPhone (Safari)</h3>
+                    <ul>
+                        <li>1. Open this page in Safari.</li>
+                        <li>2. Tap the <strong>Share</strong> button (square with arrow).</li>
+                        <li>3. Scroll down and tap <strong>Add to Home Screen</strong>.</li>
+                        <li>4. Name it “Iron Pulse” and tap <strong>Add</strong>.</li>
+                    </ul>
+                </article>
             </div>
         </section>
 
@@ -626,6 +668,13 @@
             document.getElementById("split")?.scrollIntoView({ behavior: "smooth" });
         });
     }
+    const addToHomeBtn = document.getElementById("add-to-home-btn");
+        if (addToHomeBtn) {
+            addToHomeBtn.addEventListener("click", () => {
+                document.getElementById("install")?.scrollIntoView({ behavior: "smooth" });
+            });
+        }
+
 
     // ===== TODAY'S SPLIT DATA =====
     const splits = [
