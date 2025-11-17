@@ -14,6 +14,15 @@
         rel="stylesheet">
     <style>
         /* Checked exercise styling */
+#screen-setup,
+#screen-daily {
+    /* Let JS control visibility */
+}
+
+#screen-daily {
+    display: none; /* first-time visitors see setup */
+}
+
 #exercise-list label {
     transition: transform 0.15s ease;
 }
@@ -458,6 +467,8 @@
                 <a href="#split">Today's Split</a>
                 <a href="#motivation">Mindset</a>
             </div>
+            <a href="#" id="open-settings-btn">Setup</a>
+
             <button class="btn btn-primary" id="hero-cta">Start Today</button>
         </nav>
     </header>
@@ -466,7 +477,7 @@
         <div id="streak-banner" class="streak-banner hidden">
             <span id="streak-text"></span>
         </div>
-
+    <div id="screen-setup">
         <section class="hero">
             <div>
                 <p class="badge" style="letter-spacing:2px;">Daily Grind - No Excuses</p>
@@ -507,11 +518,13 @@
 
             </div>
 
+            
+
             <div class="hero-panel">
                 <div class="badge">
                     This Week's Focus
                 </div>
-                <h2 style="margin-top:0;">4-Day Upper / Lower Split</h2>
+                <h2 id="weely-focus-title" style="margin-top:0;">4-Day Upper / Lower Split</h2>
                 <p style="color:var(--text-muted);">
                     You commited to showing up 4 days this week. Hit your main lifts, move with intent, and leave the gym knowing you did what you said you would.</p>
                 <ul style="list-style:none;padding:0;margin:1.5rem 0;color:var(--text-muted);">
@@ -526,6 +539,68 @@
                 <p style="font-size:0.85rem;color:var(--text-muted);margin-top:1.5rem;">Decide once, follow through all week.</p>
             </div>
         </section>
+        <section class="section" id="weekly-goal">
+    <div class="section-head">
+        <h2>Weekly Training Goal</h2>
+        <p style="color:var(--text-muted);max-width:520px;">
+            Decide how many days you're committing to this week. The app will measure success against this number, not
+            perfection.
+        </p>
+    </div>
+
+    <div class="workout-card">
+        <p style="margin-top:0;color:var(--text-muted);">
+            I'm aiming to train this many days this week:
+        </p>
+        <div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;">
+            <button class="day-pill" data-days="3">3 days</button>
+            <button class="day-pill" data-days="4">4 days</button>
+            <button class="day-pill" data-days="5">5 days</button>
+            <button class="day-pill" data-days="6">6 days</button>
+            <button class="day-pill" data-days="7">7 days</button>
+        </div>
+        <p id="weekly-goal-summary" style="margin:0;color:var(--text-muted);font-size:0.95rem;">
+            Goal: 4 days this week • Progress: 0 / 4 sessions logged
+        </p>
+    </div>
+</section>
+<section class="section" id="install">
+    <div class="section-head">
+        <h2>Install Iron Pulse as an App</h2>
+        <p style="color:var(--text-muted);max-width:520px;">
+            Add Iron Pulse to your home screen so it opens like a dedicated gym app before every session.
+        </p>
+    </div>
+
+    <div class="grid">
+        <article class="workout-card">
+            <h3>On Android (Chrome)</h3>
+            <ul>
+                <li>1. Open this page in Chrome.</li>
+                <li>2. Tap the menu button (⋮) in the top-right.</li>
+                <li>3. Tap <strong>Add to Home screen</strong> or <strong>Install app</strong>.</li>
+                <li>4. Confirm, then open it from your home screen like any other app.</li>
+            </ul>
+        </article>
+
+        <article class="workout-card">
+            <h3>On iPhone (Safari)</h3>
+            <ul>
+                <li>1. Open this page in Safari.</li>
+                <li>2. Tap the <strong>Share</strong> button (square with arrow).</li>
+                <li>3. Scroll down and tap <strong>Add to Home Screen</strong>.</li>
+                <li>4. Name it “Iron Pulse” and tap <strong>Add</strong>.</li>
+            </ul>
+                </article>
+            </div>
+        </section>
+
+
+    </div>    
+        
+<div id="screen-daily">
+
+
 
         <section class="section" id="split">
             <div class="section-head">
@@ -578,39 +653,6 @@
         </section>
 
 
-        <section class="section" id="install">
-            <div class="section-head">
-                <h2>Install Iron Pulse as an App</h2>
-                <p style="color:var(--text-muted);max-width:520px;">
-                    Add Iron Pulse to your home screen so it opens like a dedicated gym app before every session.
-                </p>
-            </div>
-        
-            <div class="grid">
-                <article class="workout-card">
-                    <h3>On Android (Chrome)</h3>
-                    <ul>
-                        <li>1. Open this page in Chrome.</li>
-                        <li>2. Tap the menu button (⋮) in the top-right.</li>
-                        <li>3. Tap <strong>Add to Home screen</strong> or <strong>Install app</strong>.</li>
-                        <li>4. Confirm, then open it from your home screen like any other app.</li>
-                    </ul>
-                </article>
-        
-                <article class="workout-card">
-                    <h3>On iPhone (Safari)</h3>
-                    <ul>
-                        <li>1. Open this page in Safari.</li>
-                        <li>2. Tap the <strong>Share</strong> button (square with arrow).</li>
-                        <li>3. Scroll down and tap <strong>Add to Home Screen</strong>.</li>
-                        <li>4. Name it “Iron Pulse” and tap <strong>Add</strong>.</li>
-                    </ul>
-                </article>
-            </div>
-        </section>
-
-
-
         <section class="cta" id="cta">
             <h3>Pressure makes diamonds. Join the crew.</h3>
             <p style="color:var(--text-muted);max-width:520px;margin:0 auto 1.5rem;">Weekly programming drops, private
@@ -620,6 +662,7 @@
                 <button class="btn btn-outline">Preview Inside</button>
             </div>
         </section>
+</div>
     </main>
 
     <footer>
@@ -632,6 +675,60 @@
 </div>
 
 <script>
+    const ONBOARDED_KEY = "ironPulseOnboarded";
+    const LAST_SCREEN_KEY = "ironPulseLastScreen";
+    function showScreen(name) {
+            const setup = document.getElementById("screen-setup");
+            const daily = document.getElementById("screen-daily");
+            if (!setup || !daily) return;
+
+            if (name === "setup") {
+                setup.style.display = "block";
+                daily.style.display = "none";
+            } else {
+                setup.style.display = "none";
+                daily.style.display = "block";
+            }
+
+            // remember last screen
+            localStorage.setItem(LAST_SCREEN_KEY, name);
+        }
+
+    function initScreens() {
+            const onboarded = localStorage.getItem(ONBOARDED_KEY) === "true";
+            const last = localStorage.getItem(LAST_SCREEN_KEY);
+
+            if (!onboarded) {
+                // first time using the app → show setup
+                showScreen("setup");
+            } else if (last) {
+                // return user → go where they were last
+                showScreen(last);
+            } else {
+                // default for onboarded users
+                showScreen("daily");
+            }
+
+            // Hook up "Start Training" if you want a button for it
+            const startBtn = document.getElementById("start-training-btn");
+            if (startBtn) {
+                startBtn.addEventListener("click", () => {
+                    localStorage.setItem(ONBOARDED_KEY, "true");
+                    showScreen("daily");
+                });
+            }
+
+            // Optional: a way back to setup (like a Settings button)
+            const settingsBtn = document.getElementById("open-settings-btn");
+            if (settingsBtn) {
+                settingsBtn.addEventListener("click", () => {
+                    showScreen("setup");
+                });
+            }
+        }
+
+
+
     // ===== QUOTES =====
     const quotes = [
         { text: "You will not always be motivated, so you must learn to be disciplined.", author: "Unknown" },
@@ -658,7 +755,8 @@
     const heroCta = document.getElementById("hero-cta");
     if (heroCta) {
         heroCta.addEventListener("click", () => {
-            document.getElementById("cta")?.scrollIntoView({ behavior: "smooth" });
+            localStorage.setItem(ONBOARDED_KEY, "true");
+            showScreen("daily");
         });
     }
 
@@ -852,6 +950,11 @@
                     });
             });
         }
+    renderTodaySplit();
+        updateIntensity?.();      // if you still have this
+        rotateQuote?.();          // depending on how your quote is set
+        initWeeklyGoalControls(); // from earlier
+        initScreens();            // 👈 add this line
 
 </script>
 
