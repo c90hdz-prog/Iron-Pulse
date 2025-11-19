@@ -685,7 +685,8 @@
                     <article class="workout-card intro-card">
                         <strong class="card-title">Optional Finisher</strong>
                         <p class="card-desc">
-                            Finish your workout strong. Complete your split to unlock a short optional challenge.
+                            Finish your workout strong. Complete your split to unlock a short, optional challenge when you’ve still got something
+                            left in the tank.
                         </p>
                     </article>
     
@@ -704,8 +705,7 @@
             <div class="section-head">
                 <h2>Weekly Training Goal</h2>
                 <p style="color:var(--text-muted);max-width:520px;">
-                    Decide how many days you're committing to this week. The app will measure success against
-                    this number, not perfection.
+                    Decide how many days you're committing to this week. Iron Pulse measures success against that goal, not perfection.
                 </p>
             </div>
     
@@ -791,8 +791,8 @@
             <div class="section-head">
                 <h2>Today's Split</h2>
                 <p style="color:var(--text-muted);max-width:480px;">
-                    Open this before you train. Get a simple plan for the day, check off each exercise as you finish,
-                    and keep your sessions focused instead of guessing.
+                    Open this before you train. Get a clear plan for the day, check off each exercise as you go, and keep your sessions
+                    focused instead of guessing.
                 </p>
             </div>
             
@@ -884,6 +884,7 @@
 
 
 
+
 </div>
     </main>
 
@@ -970,16 +971,34 @@
     // =============================
     function getWeeklyGoal() {
         const stored = localStorage.getItem(WEEKLY_GOAL_KEY);
-        const parsed = stored ? parseInt(stored, 10) : NaN;
-        if (!isNaN(parsed) && parsed >= 3 && parsed <= 7) {
+        if (!stored) return null;
+
+        const parsed = parseInt(stored, 10);
+        if (isNaN(parsed) || parsed < 3 || parsed > 7) return null;
             return parsed;
-        }
+        
         return DEFAULT_WEEKLY_GOAL;
     }
 
     function setWeeklyGoal(days) {
         localStorage.setItem(WEEKLY_GOAL_KEY, String(days));
     }
+    function hasWeeklyGoal() {
+            return localStorage.getItem(WEEKLY_GOAL_KEY) !== null;
+        }
+    function repositionWeeklyGoalSection() {
+            const daily = document.getElementById("screen-daily");
+            const goalSection = document.getElementById("weekly-goal-control");
+            if (!daily || !goalSection) return;
+
+            if (!hasWeeklyGoal()) {
+                // No goal yet → keep it at the top (before everything)
+                daily.insertBefore(goalSection, daily.firstElementChild);
+            } else {
+                // Goal set → move it to the bottom of the daily screen
+                daily.appendChild(goalSection);
+            }
+        }
 
     // (You may also have streak storage later)
 
@@ -1032,52 +1051,68 @@
     // 5) WEEKLY FOCUS LIVE CARD
     // =============================
     function renderWeeklyFocusLive() {
-        const days = getWeeklyGoal();
-        const labelEl = document.getElementById("weekly-focus-days-label");
-        const summaryEl = document.getElementById("weekly-focus-summary");
+            const days = getWeeklyGoal();
+            const card = document.getElementById("weekly-focus-card");
+            const labelEl = document.getElementById("weekly-focus-days-label");
+            const summaryEl = document.getElementById("weekly-focus-summary");
 
-        if (!labelEl || !summaryEl) return;
+            if (!card || !labelEl || !summaryEl) return;
 
-        labelEl.textContent = `${days} day${days === 1 ? "" : "s"} / week`;
-
-        let message = "";
-        if (days <= 3) {
-            message = `You chose a ${days}-day training week. Focus on high-quality sessions and strong recovery.`;
-        } else if (days === 4 || days === 5) {
-            message = `Aim to train ${days} days this week. Stay consistent and use rest days strategically.`;
-        } else {
-            message = `You picked a ${days}-day grind. Listen to your body and don’t be afraid to adjust if life happens.`;
-        }
-
-        summaryEl.textContent = message;
-    }
-
-    function initWeeklyGoalControls() {
-        const dailyScreen = document.getElementById("screen-daily");
-        if (!dailyScreen) return;
-
-        const pills = dailyScreen.querySelectorAll(".day-pill");
-        if (!pills.length) return;
-
-        const currentGoal = getWeeklyGoal();
-
-        pills.forEach(pill => {
-            const pillDays = parseInt(pill.getAttribute("data-days"), 10);
-            if (pillDays === currentGoal) {
-                pill.classList.add("active");
+            if (!days) {
+                // No weekly goal set yet → hide the card
+                card.style.display = "none";
+                return;
             }
 
-            pill.addEventListener("click", () => {
-                const days = parseInt(pill.getAttribute("data-days"), 10);
-                setWeeklyGoal(days);
-                pills.forEach(p => p.classList.remove("active"));
-                pill.classList.add("active");
-                renderWeeklyFocusLive();
-            });
-        });
+            card.style.display = "block";
+            labelEl.textContent = `${days} day${days === 1 ? "" : "s"} / week`;
 
-        renderWeeklyFocusLive();
-    }
+            let message = "";
+            if (days <= 3) {
+                message = `You chose a ${days}-day training week. Focus on high-quality sessions and strong recovery.`;
+            } else if (days === 4 || days === 5) {
+                message = `Aim to train ${days} days this week. Stay consistent and use rest days strategically.`;
+            } else {
+                message = `You picked a ${days}-day grind. Listen to your body and don’t be afraid to adjust if life happens.`;
+            }
+
+            summaryEl.textContent = message;
+        }
+
+
+    function initWeeklyGoalControls() {
+            const dailyScreen = document.getElementById("screen-daily");
+            if (!dailyScreen) return;
+
+            const pills = dailyScreen.querySelectorAll(".day-pill");
+            if (!pills.length) return;
+
+            const currentGoal = getWeeklyGoal();
+
+            // Initialize active state
+            pills.forEach(pill => {
+                const pillDays = parseInt(pill.getAttribute("data-days"), 10);
+                if (currentGoal && pillDays === currentGoal) {
+                    pill.classList.add("active");
+                }
+
+                pill.addEventListener("click", () => {
+                    const days = parseInt(pill.getAttribute("data-days"), 10);
+                    setWeeklyGoal(days);
+
+                    pills.forEach(p => p.classList.remove("active"));
+                    pill.classList.add("active");
+
+                    renderWeeklyFocusLive();
+                    repositionWeeklyGoalSection();
+                });
+            });
+
+            // Initial render
+            renderWeeklyFocusLive();
+            repositionWeeklyGoalSection();
+        }
+
 
     // =============================
     // 6) TODAY'S SPLIT + FINISHER
@@ -1179,6 +1214,13 @@
         }
 
         localStorage.setItem(LAST_SCREEN_KEY, name);
+
+        const main = document.querySelector("main");
+        if (main && typeof main.scrollTo === "function") {
+            main.scrollTo({ top: 0, behavior: "auto" });
+        } else {
+            window.scrollTo({ top: 0, behavior: "auto" });
+        }
     }
 
     function initScreens() {
