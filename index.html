@@ -17,7 +17,21 @@
 #screen-setup,
 #screen-daily {
     /* Let JS control visibility */
+
+
 }
+
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.nav-actions .btn {
+    padding: 0.55rem 1.25rem;
+    font-size: 0.85rem;
+}
+
 
 #screen-daily {
     display: none; /* first-time visitors see setup */
@@ -450,6 +464,8 @@ footer {
     .cta {
         padding: 1.5rem 1.25rem;
         border-radius: 1.25rem;
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
     }
 
     /* Quote: big but not overwhelming */
@@ -487,7 +503,35 @@ footer {
     border-style: solid;
 }
 
+.card-title {
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--accent-yellow);
+    font-size: 1rem;
+}
 
+.card-desc {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-top: 0.75rem;
+    line-height: 1.45;
+}
+
+.intro-card {
+    min-height: 140px; /* optional */
+}
+.intro-card {
+    opacity: 0;
+    transform: translateY(12px);
+    animation: fadeUp 4s ease forwards;
+}
+
+@keyframes fadeUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
 
     </style>
 </head>
@@ -495,14 +539,22 @@ footer {
 <body>
     <header>
         <nav>
-            <div class="logo"><span>*</span>Iron Pulse</div>
-            <div class="nav-links">
-                <a href="#split">Today's Split</a>
-                <a href="#motivation">Mindset</a>
+            <div class="logo">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;">
+                    <path
+                        d="M12 21s-6.9-4.4-9.5-8.3C.8 9.7 2.2 5.8 5.4 4.3c2-.9 4.3-.2 5.6 1.4 1.3-1.6 3.6-2.3 5.6-1.4 3.2 1.5 4.6 5.4 2.9 8.4C18.9 16.6 12 21 12 21z" />
+                    <polyline points="6 12 9 12 11 8 13 16 15 12 18 12" />
+                </svg>
+                Iron Pulse           
             </div>
-            <a href="#" id="open-settings-btn">Setup</a>
+            
 
-            <button class="btn btn-primary" id="hero-cta">Start Today</button>
+            <div class="nav-actions">
+                <button class="btn btn-outline" id="open-settings-btn">Setup</button>
+                <button class="btn btn-primary" id="hero-cta">Start Today</button>
+            </div>
+
         </nav>
     </header>
 
@@ -530,47 +582,41 @@ footer {
                     </a>
                 </div>
 
-                <div class="stats">
-                    <div class="stat-card">
-                        <strong>4 days</strong>
-                        training goal this week
-                    </div>
-                    <div class="stat-card">
-                        <strong id="streak-value">1</strong>
-                        day streak active
-                    </div>
-                    <div class="stat-card">
-                        <strong>30 min</strong>
-                        minimum effort today
-                    </div>
-                    <div class="stat-card">
-                        <strong>1 session</strong>
-                        is better than 0
-                    </div>
-                </div>
+                
+                    <div class="workout-card intro-card">
 
-            </div>
+                        <strong class="card-title">Weekly Focus</strong>
+                        <p class="card-desc">
+                            Choose how many days you want to train this week. Iron Pulse builds a plan to match your schedule.
+                        </p>
+                    </div>
+
+                    <div class="workout-card intro-card">
+
+                        <strong class="card-title">Today’s Split</strong>
+                        <p class="card-desc">
+                            Open the app each day to see a clear workout. Simple, structured, and easy to follow.
+                        </p>
+                    </div>
+
+                    <div class="workout-card intro-card">
+                        <strong class="card-title">Optional Finisher</strong>
+                        <p class="card-desc">
+                            Finish your workout strong. Complete your split to unlock a short optional challenge.
+                        </p>
+                    </div>
+
+                <div class="workout-card intro-card">
+
+                    <strong class="card-title">Streaks + Rest Days</strong>
+                    <p class="card-desc">
+                        Track your consistency and earn Rest Tokens to stay motivated without burning out.
+                    </p>
+                </div>
 
             
 
-            <div class="hero-panel">
-                <div class="badge">
-                    This Week's Focus
-                </div>
-                <h2 id="weely-focus-title" style="margin-top:0;">4-Day Upper / Lower Split</h2>
-                <p style="color:var(--text-muted);">
-                    You commited to showing up 4 days this week. Hit your main lifts, move with intent, and leave the gym knowing you did what you said you would.</p>
-                <ul style="list-style:none;padding:0;margin:1.5rem 0;color:var(--text-muted);">
-                    <li>&bull; Main goal: complete all 4 training days</li>
-                    <li>&bull; Pace yourself: no ego lifting on tired days</li>
-                    <li>&bull; Optional: unlock a finisher if energy is high</li>
-                </ul>
-                <div style="display:flex;gap:1rem;align-items:center;">
-                    <button class="btn btn-primary" style="flex:1;">Adjust This Week</button>
-                    <button class="btn btn-outline" style="flex:1;">View Weekly Plan</button>
-                </div>
-                <p style="font-size:0.85rem;color:var(--text-muted);margin-top:1.5rem;">Decide once, follow through all week.</p>
-            </div>
+            
         </section>
         <section class="section" id="weekly-goal">
     <div class="section-head">
@@ -632,6 +678,28 @@ footer {
     </div>    
         
 <div id="screen-daily">
+        <section class="section" id="weekly-focus-live">
+            <div class="section-head">
+                <h2>This Week’s Focus</h2>
+                <p style="color:var(--text-muted);max-width:520px;">
+                    Your current training target for the week. Hit your days, use rest when you need it.
+                </p>
+            </div>
+        
+            <article class="workout-card" id="weekly-focus-card">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <h3 style="margin:0;">Training Goal</h3>
+                    <span id="weekly-focus-days-label" style="color:var(--accent-yellow);font-weight:600;">
+                        <!-- JS fills this -->
+                        4 days / week
+                    </span>
+                </div>
+                <p id="weekly-focus-summary" style="color:var(--text-muted);margin:0.75rem 0 0;">
+                    <!-- JS fills this -->
+                    Aim to train 4 days this week. Rest is allowed—consistency over perfection.
+                </p>
+            </article>
+        </section>
 
 
 
@@ -716,14 +784,16 @@ footer {
 
 
         <section class="cta" id="cta">
-            <h3>Pressure makes diamonds. Join the crew.</h3>
-            <p style="color:var(--text-muted);max-width:520px;margin:0 auto 1.5rem;">Weekly programming drops, private
-                community, seasonal challenges, and a coach that answers when you need the push.</p>
+            <h3>Get started with Iron Pulse.</h3>
+            <p style="color:var(--text-muted);max-width:520px;margin:0 auto 1.5rem;">
+                Open this app before you train to see today’s split, optional finisher, and a quote to lock in your mindset.
+            </p>
             <div style="display:flex;flex-wrap:wrap;gap:1rem;justify-content:center;">
-                <button class="btn btn-primary">Claim My Spot</button>
+                <button class="btn btn-primary" id="get-started-btn">Get Started</button>
                 <button class="btn btn-outline">Preview Inside</button>
             </div>
         </section>
+
 </div>
     </main>
 
@@ -732,7 +802,7 @@ footer {
     </footer>
 <div class="bottom-bar">
     <button class="btn btn-primary bottom-bar-btn" id="bottom-split-btn">
-        Today's Split
+        Get Started
     </button>
 </div>
 
@@ -771,16 +841,25 @@ footer {
                 showScreen("daily");
             }
 
-            // Hook up "Start Training" if you want a button for it
-            const startBtn = document.getElementById("start-training-btn");
-            if (startBtn) {
-                startBtn.addEventListener("click", () => {
+            // Top hero button: "Start Today"
+            const heroCta = document.getElementById("hero-cta");
+            if (heroCta) {
+                heroCta.addEventListener("click", () => {
                     localStorage.setItem(ONBOARDED_KEY, "true");
                     showScreen("daily");
                 });
             }
 
-            // Optional: a way back to setup (like a Settings button)
+            // Bottom CTA button: "Get Started"
+            const getStartedBtn = document.getElementById("get-started-btn");
+            if (getStartedBtn) {
+                getStartedBtn.addEventListener("click", () => {
+                    localStorage.setItem(ONBOARDED_KEY, "true");
+                    showScreen("daily");
+                });
+            }
+
+            // Optional: a way back to setup (e.g. a "Setup" / "Settings" link in the nav)
             const settingsBtn = document.getElementById("open-settings-btn");
             if (settingsBtn) {
                 settingsBtn.addEventListener("click", () => {
@@ -789,6 +868,37 @@ footer {
             }
         }
 
+        function getWeeklyGoalDays() {
+                const stored = localStorage.getItem(WEEKLY_GOAL_KEY);
+                const parsed = stored ? parseInt(stored, 10) : NaN;
+                if (!isNaN(parsed) && parsed >= 3 && parsed <= 7) {
+                    return parsed;
+                }
+                // default if nothing chosen yet
+                return 4;
+            }
+
+        function renderWeeklyFocusLive() {
+            const days = getWeeklyGoalDays();
+
+            const labelEl = document.getElementById("weekly-focus-days-label");
+            const summaryEl = document.getElementById("weekly-focus-summary");
+
+            if (!labelEl || !summaryEl) return;
+
+            labelEl.textContent = `${days} day${days === 1 ? "" : "s"} / week`;
+
+            let message = "";
+            if (days <= 3) {
+                message = `You chose a ${days}-day training week. Focus on high-quality sessions and strong recovery.`;
+            } else if (days === 4 || days === 5) {
+                message = `Aim to train ${days} days this week. Stay consistent and use rest days strategically.`;
+            } else {
+                message = `You picked a ${days}-day grind. Listen to your body and don’t be afraid to adjust if life happens.`;
+            }
+
+            summaryEl.textContent = message;
+        }
 
 
     // ===== QUOTES =====
@@ -859,11 +969,14 @@ footer {
                     const days = parseInt(pill.getAttribute("data-days"), 10);
                     setWeeklyGoal(days);
                     updateWeeklyGoalUI();
+                    renderWeeklyFocusLive();   // 🔥 keep page 2 in sync with new goal
                 });
             });
 
             updateWeeklyGoalUI();
+            renderWeeklyFocusLive();           // ✅ make sure live card matches goal on load too
         }
+
 
 
 
@@ -1203,7 +1316,7 @@ footer {
             initWeeklyGoalControls();    // set up 3–7 day goal buttons
             initScreens();               // show setup vs daily, depending on localStorage
             initFinisherControls();      // wire finisher buttons
-
+            renderWeeklyFocusLive();
             // Optional, if you still use these:
             updateStreak?.();            // only if this function exists
             updateIntensity?.();         // only if intensity slider still exists
