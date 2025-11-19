@@ -13,540 +13,610 @@
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap"
         rel="stylesheet">
     <style>
-        /* Checked exercise styling */
-#screen-setup,
-#screen-daily {
-    /* Let JS control visibility */
-
-
-}
-
-.nav-actions {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.nav-actions .btn {
-    padding: 0.55rem 1.25rem;
-    font-size: 0.85rem;
-}
-
-
-#screen-daily {
-    display: none; /* first-time visitors see setup */
-}
-
-#exercise-list label {
-    transition: transform 0.15s ease;
-}
-
-#exercise-list input[type="checkbox"]:checked + span {
-    text-decoration: line-through;
-    opacity: 0.7;
-    transform: translateX(2px);
-}
-
-.bottom-bar {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    padding: 0.5rem 1rem;
-    background: rgba(4, 4, 5, 0.96);
-    border-top: 1px solid var(--card-border);
-    display: flex;
-    justify-content: center;
-    z-index: 20;
-}
-
-/* Only show bottom bar on small/medium screens */
-@media (min-width: 769px) {
-.bottom-bar {
-    display: none;
-    }
-}
-
-.bottom-bar-btn {
-    width: 100%;
-    max-width: 480px;
-    justify-content: center;
-}
-
-:root {
-    --bg-dark: #040405;
-    --bg-panel: #101219;
-    --text-primary: #f5f7ff;
-    --text-muted: rgba(245, 247, 255, 0.7);
-    --accent: #ff512f;
-    --accent-2: #dd2476;
-    --accent-yellow: #f6c343;
-    --card-border: rgba(255, 255, 255, 0.08);
-    --glass: rgba(255, 255, 255, 0.05);
+        /* =========================
+       1) ROOT + GLOBAL RESET
+       ========================= */
+        :root {
+            --bg-dark: #040405;
+            --bg-panel: #101219;
+            --text-primary: #f5f7ff;
+            --text-muted: rgba(245, 247, 255, 0.7);
+            --accent: #ff512f;
+            --accent-2: #dd2476;
+            --accent-yellow: #f6c343;
+            --card-border: rgba(255, 255, 255, 0.08);
+            --glass: rgba(255, 255, 255, 0.05);
         }
-
-* {
-    box-sizing: border-box;
-    }
-
-body {
-    margin: 0;
-    font-family: "Space Grotesk", sans-serif;
-    color: var(--text-primary);
-    background: radial-gradient(circle at top, rgba(255, 81, 47, 0.1), transparent 45%),
-        radial-gradient(circle at 20% 20%, rgba(221, 36, 118, 0.25), transparent 35%),
-        var(--bg-dark);
-    min-height: 100vh;
-    line-height: 1.6;
+    
+        * {
+            box-sizing: border-box;
         }
-
-a {
-    color: inherit;
-    text-decoration: none;
-}
-
-header {
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    background: rgba(4, 4, 5, 0.85);
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid var(--card-border);
-}
-
-nav {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 1rem clamp(1rem, 4vw, 3rem);
-}
-
-.logo {
-    font-weight: 700;
-    letter-spacing: 1px;
-    font-size: 1.2rem;
-    display: flex;
-    align-items: center;
-    gap: 0.35rem;
-}
-
-.logo span {
-    color: var(--accent-yellow);
-    font-size: 1.4rem;
-}
-
-.nav-links {
-    display: flex;
-    gap: 1.25rem;
-    font-size: 0.95rem;
-}
-
-.nav-links a {
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    font-size: 0.78rem;
-}
-
-.btn {
-    border: none;
-    padding: 0.85rem 1.75rem;
-    font-size: 0.95rem;
-    font-weight: 600;
-    border-radius: 999px;
-    cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-
-}
-
-.btn-primary {
-    background-image: linear-gradient(135deg, var(--accent), var(--accent-2));
-    color: #fff;
-    box-shadow: 0 20px 40px rgba(255, 81, 47, 0.3);
-}
-
-.btn-outline {
-    border: 1px solid var(--card-border);
-    color: var(--text-muted);
-    background: transparent;
-}
-
-.btn:hover {
-    transform: translateY(-3px);
-}
-.day-pill {
-    border: 1px solid var(--card-border);
-    background: transparent;
-    color: var(--text-muted);
-    padding: 0.5rem 1rem;
-    border-radius: 999px;
-    font-size: 0.85rem;
-    cursor: pointer;
-    transition: background 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
-}
-
-.day-pill:hover {
-    transform: translateY(-1px);
-    border-color: var(--accent);
-}
-
-.day-pill.active {
-    background-image: linear-gradient(135deg, var(--accent), var(--accent-2));
-    color: #fff;
-    border-color: transparent;
-}
-
-
-main {
-    padding: clamp(2rem, 5vw, 4rem) clamp(1rem, 5vw, 4rem) 6rem;
-}
-
-.day-pill-preview {
-    border: 1px solid var(--card-border);
-    background: transparent;
-    color: var(--text-muted);
-    padding: 0.5rem 1rem;
-    border-radius: 999px;
-    font-size: 0.85rem;
-    cursor: pointer;
-    transition: background 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
-}
-
-.hero {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 3rem;
-    align-items: center;
-    padding: clamp(2rem, 5vw, 4rem);
-    border-radius: 2rem;
-    background: linear-gradient(145deg, rgba(255, 81, 47, 0.1), rgba(4, 4, 5, 0.9));
-    border: 1px solid var(--card-border);
-}
-
-.hero h1 {
-    font-size: clamp(2.3rem, 6vw, 3.8rem);
-    line-height: 1.1;
-    margin-bottom: 1rem;
-}
-
-.hero p {
-    color: var(--text-muted);
-    max-width: 480px;
-}
-
-.stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 1rem;
-    margin: 2.5rem 0;
-}
-
-.stat-card {
-    padding: 1.25rem;
-    border-radius: 1rem;
-    background: var(--bg-panel);
-    border: 1px solid var(--card-border);
-    text-align: center;
-}
-
-.stat-card strong {
-    display: block;
-    font-size: 2rem;
-    margin-bottom: 0.25rem;
-    color: var(--accent-yellow);
-}
-
-.hero-panel {
-    background: var(--bg-panel);
-    border-radius: 1.5rem;
-    padding: 2rem;
-    border: 1px solid var(--card-border);
-    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.35);
-}
-
-.hero-panel .badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    border-radius: 999px;
-    padding: 0.35rem 1rem;
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    background: rgba(255, 255, 255, 0.08);
-    margin-bottom: 1rem;
-}
-
-.section {
-    margin-top: clamp(3rem, 7vw, 5rem);
-}
-
-.section-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 1.5rem;
-    flex-wrap: wrap;
-    gap: 1rem;
-}
-
-.section-head h2 {
-    margin: 0;
-    font-size: clamp(1.6rem, 4vw, 2.45rem);
-}
-
-.grid {
-    display: grid;
-    gap: 1.5rem;
-}
-
-@media (min-width: 768px) {
-    .grid-3 {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-}
-
-.workout-card {
-    background: var(--bg-panel);
-    border-radius: 1.5rem;
-    padding: 1.75rem;
-    border: 1px solid var(--card-border);
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-.workout-card h3 {
-    margin: 0;
-}
-
-.workout-card ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    color: var(--text-muted);
-    font-size: 0.95rem;
-}
-
-.motivation-board {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 1.5rem;
-}
-
-
-.motivation-card {
-    padding: 1.5rem;
-    border-radius: 1.25rem;
-    border: 1px solid var(--card-border);
-    background: var(--glass);
-    min-height: 220px;
-    display: flex;
-    flex-direction: column;
-}
-
-.quote {
-    font-size: 1.1rem;
-    margin: 1rem 0 0.5rem;
-}
-
-.range-wrapper {
-    margin-top: auto;
-}
-
-input[type="range"] {
-    width: 100%;
-    accent-color: var(--accent);
-}
-
-.stories {
-    background: linear-gradient(120deg, rgba(255, 81, 47, 0.18), rgba(16, 18, 25, 0.95));
-    padding: clamp(2rem, 4vw, 3rem);
-    border-radius: 2rem;
-    border: 1px solid var(--card-border);
-}
-
-.story {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 1.5rem;
-    margin-top: 2rem;
-}
-
-.story-card {
-    background: rgba(0, 0, 0, 0.35);
-    padding: 1.5rem;
-    border-radius: 1.25rem;
-    border: 1px solid var(--card-border);
-}
-
-.story-card strong {
-    color: var(--accent-yellow);
-}
-
-.cta {
-    margin-top: 4rem;
-    padding: clamp(2.5rem, 5vw, 3.5rem);
-    border-radius: 2rem;
-    text-align: center;
-    border: 1px solid var(--card-border);
-    background: linear-gradient(145deg, rgba(16, 18, 25, 0.9), rgba(255, 81, 47, 0.12));
-}
-
-.cta h3 {
-    font-size: clamp(1.8rem, 4vw, 2.8rem);
-    margin-bottom: 0.5rem;
-}
-
-footer {
-    padding: 2rem clamp(1rem, 5vw, 4rem) 3rem;
-    text-align: center;
-    color: var(--text-muted);
-    border-top: 1px solid var(--card-border);
-    background: rgba(0, 0, 0, 0.35);
-}
-
-@media (max-width: 768px) {
-    body {
-        line-height: 1.5;
-    }
-
-    main {
-        padding: 1.5rem 1rem 3rem;
-    }
-
-    /* Nav stacks nicely */
-    nav {
-        flex-direction: column;
-        gap: 0.75rem;
-        align-items: flex-start;
-    }
-
-    .nav-links {
-        width: 100%;
-        justify-content: flex-start;
-        flex-wrap: wrap;
-        gap: 0.75rem;
-        font-size: 0.75rem;
-    }
-
-    /* Hero stacks into one column, centered text */
-    .hero {
-        grid-template-columns: 1fr;
-        padding: 1.75rem 1.25rem;
-        text-align: left;
-    }
-
-    .hero h1 {
-        font-size: 1.9rem;
-    }
-
-    .hero p {
-        max-width: 100%;
-    }
-
-    .stats {
-        margin: 1.5rem 0;
-    }
-
-    /* Make buttons easier to tap */
-    .hero .btn {
-        width: 100%;
-        justify-content: center;
-    }
-
-    /* Sections a bit closer together on mobile */
-    .section {
-        margin-top: 2.25rem;
-    }
-
-    .section-head {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5rem;
-    }
-
-    .workout-card,
-    .motivation-card,
-    .cta {
-        padding: 1.5rem 1.25rem;
-        border-radius: 1.25rem;
-        margin-top: 0.5rem;
-        margin-bottom: 0.5rem;
-    }
-
-    /* Quote: big but not overwhelming */
-    .quote {
-        font-size: 1.25rem;
-    }
-}
-.streak-banner {
-    margin-bottom: 1rem;
-    padding: 0.75rem 1rem;
-    border-radius: 999px;
-    background: linear-gradient(135deg, rgba(255, 81, 47, 0.18), rgba(246, 195, 67, 0.12));
-    border: 1px solid var(--card-border);
-    font-size: 0.9rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--text-primary);
-}
-
-.streak-banner span {
-    font-weight: 500;
-}
-
-.hidden {
-    display: none;
-}
-.finisher-card.locked {
-    opacity: 0.6;
-    border-style: dashed;
-}
-
-.finisher-card:not(.locked) {
-    opacity: 1;
-    border-style: solid;
-}
-
-.card-title {
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--accent-yellow);
-    font-size: 1rem;
-}
-
-.card-desc {
-    color: var(--text-muted);
-    font-size: 0.9rem;
-    margin-top: 0.75rem;
-    line-height: 1.45;
-}
-
-.intro-card {
-    min-height: 140px; /* optional */
-}
-.intro-card {
-    opacity: 0;
-    transform: translateY(12px);
-    animation: fadeUp 4s ease forwards;
-}
-
-@keyframes fadeUp {
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-
-
+    
+        body {
+            margin: 0;
+            font-family: "Space Grotesk", sans-serif;
+            color: var(--text-primary);
+            background: radial-gradient(circle at top, rgba(255, 81, 47, 0.1), transparent 45%),
+                radial-gradient(circle at 20% 20%, rgba(221, 36, 118, 0.25), transparent 35%),
+                var(--bg-dark);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+    
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+    
+        /* Screens – JS controls which is visible */
+        #screen-daily {
+            display: none;
+            /* first-time visitors see setup */
+        }
+    
+        /* =========================
+       2) LAYOUT: HEADER / NAV
+       ========================= */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: rgba(4, 4, 5, 0.85);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--card-border);
+        }
+    
+        nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem clamp(1rem, 4vw, 3rem);
+        }
+    
+        .logo {
+            font-weight: 700;
+            letter-spacing: 1px;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+    
+        .logo span {
+            color: var(--accent-yellow);
+            font-size: 1.4rem;
+        }
+    
+        .nav-links {
+            display: flex;
+            gap: 1.25rem;
+            font-size: 0.95rem;
+        }
+    
+        .nav-links a {
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.78rem;
+        }
+    
+        /* Right-side nav actions: Setup + Start Today */
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+    
+        .nav-actions .btn {
+            padding: 0.55rem 1.25rem;
+            font-size: 0.85rem;
+        }
+    
+        /* =========================
+       3) BUTTONS / CONTROLS
+       ========================= */
+        .btn {
+            border: none;
+            padding: 0.85rem 1.75rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            border-radius: 999px;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+    
+        .btn-primary {
+            background-image: linear-gradient(135deg, var(--accent), var(--accent-2));
+            color: #fff;
+            box-shadow: 0 20px 40px rgba(255, 81, 47, 0.3);
+        }
+    
+        .btn-outline {
+            border: 1px solid var(--card-border);
+            color: var(--text-muted);
+            background: transparent;
+        }
+    
+        .btn:hover {
+            transform: translateY(-3px);
+        }
+    
+        /* Weekly goal day pills (interactive – on daily screen) */
+        .day-pill {
+            border: 1px solid var(--card-border);
+            background: transparent;
+            color: var(--text-muted);
+            padding: 0.5rem 1rem;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: background 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+        }
+    
+        .day-pill:hover {
+            transform: translateY(-1px);
+            border-color: var(--accent);
+        }
+    
+        .day-pill.active {
+            background-image: linear-gradient(135deg, var(--accent), var(--accent-2));
+            color: #fff;
+            border-color: transparent;
+        }
+    
+        /* Weekly goal preview pills (visual-only – on setup screen) */
+        .day-pill-preview {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.35rem 0.75rem;
+            border-radius: 999px;
+            border: 1px solid var(--card-border);
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            opacity: 0.85;
+            pointer-events: none;
+            /* non-interactive */
+        }
+    
+        /* Bottom bar CTA (mobile only) */
+        .bottom-bar {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            padding: 0.5rem 1rem;
+            background: rgba(4, 4, 5, 0.96);
+            border-top: 1px solid var(--card-border);
+            display: flex;
+            justify-content: center;
+            z-index: 20;
+        }
+    
+        .bottom-bar-btn {
+            width: 100%;
+            max-width: 480px;
+            justify-content: center;
+        }
+    
+        /* Hide bottom bar on larger screens */
+        @media (min-width: 769px) {
+            .bottom-bar {
+                display: none;
+            }
+        }
+    
+        /* =========================
+       4) MAIN LAYOUT
+       ========================= */
+        main {
+            padding: clamp(2rem, 5vw, 4rem) clamp(1rem, 5vw, 4rem) 6rem;
+        }
+    
+        /* Hero container */
+        .hero {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 3rem;
+            align-items: center;
+            padding: clamp(2rem, 5vw, 4rem);
+            border-radius: 2rem;
+            background: linear-gradient(145deg, rgba(255, 81, 47, 0.1), rgba(4, 4, 5, 0.9));
+            border: 1px solid var(--card-border);
+        }
+    
+        .hero h1 {
+            font-size: clamp(2.3rem, 6vw, 3.8rem);
+            line-height: 1.1;
+            margin-bottom: 1rem;
+        }
+    
+        .hero p {
+            color: var(--text-muted);
+            max-width: 480px;
+        }
+    
+        /* Setup-specific hero spacing */
+        #screen-setup .hero {
+            margin-bottom: 2.5rem;
+        }
+    
+        #screen-setup .hero>div {
+            max-width: 720px;
+        }
+    
+        #screen-setup .hero p {
+            margin-bottom: 0.75rem;
+        }
+    
+        /* Stats row (if used) */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 1rem;
+            margin: 2.5rem 0;
+        }
+    
+        .stat-card {
+            padding: 1.25rem;
+            border-radius: 1rem;
+            background: var(--bg-panel);
+            border: 1px solid var(--card-border);
+            text-align: center;
+        }
+    
+        .stat-card strong {
+            display: block;
+            font-size: 2rem;
+            margin-bottom: 0.25rem;
+            color: var(--accent-yellow);
+        }
+    
+        /* Right hero panel (used on daily screen) */
+        .hero-panel {
+            background: var(--bg-panel);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            border: 1px solid var(--card-border);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.35);
+        }
+    
+        .hero-panel .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            border-radius: 999px;
+            padding: 0.35rem 1rem;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            background: rgba(255, 255, 255, 0.08);
+            margin-bottom: 1rem;
+        }
+    
+        /* Sections */
+        .section {
+            margin-top: clamp(3rem, 7vw, 5rem);
+        }
+    
+        /* Slightly tighter spacing for setup sections */
+        #screen-setup .section {
+            margin-top: 2.75rem;
+        }
+    
+        .section-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.25rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+    
+        .section-head h2 {
+            margin: 0;
+            font-size: clamp(1.6rem, 4vw, 2.45rem);
+        }
+    
+        /* Weekly goal + install spacing */
+        #weekly-goal .workout-card,
+        #install .workout-card {
+            margin-top: 1rem;
+        }
+    
+        /* Generic grid helper */
+        .grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+    
+        @media (min-width: 768px) {
+            .grid-3 {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
+    
+        /* =========================
+       5) CARDS / COMPONENTS
+       ========================= */
+        .workout-card {
+            background: var(--bg-panel);
+            border-radius: 1.5rem;
+            padding: 1.75rem;
+            border: 1px solid var(--card-border);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+    
+        .workout-card h3 {
+            margin: 0;
+        }
+    
+        .workout-card ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+    
+        /* Intro explainer cards on setup screen */
+        .intro-grid {
+            display: grid;
+            margin-top: 2rem;
+            gap: 1.25rem;
+        }
+    
+        @media (min-width: 768px) {
+            .intro-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+    
+        .intro-card {
+            min-height: 140px;
+            margin: 0;
+            opacity: 0;
+            transform: translateY(12px);
+            animation: fadeUp 4s ease forwards;
+        }
+    
+        /* Fade-up animation for intro cards */
+        @keyframes fadeUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    
+        /* Title + description inside cards */
+        .card-title {
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--accent-yellow);
+            font-size: 1rem;
+        }
+    
+        .card-desc {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-top: 0.75rem;
+            line-height: 1.45;
+        }
+    
+        /* Motivation board / quote card (daily screen) */
+        .motivation-board {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+            gap: 1.5rem;
+        }
+    
+        .motivation-card {
+            padding: 1.5rem;
+            border-radius: 1.25rem;
+            border: 1px solid var(--card-border);
+            background: var(--glass);
+            min-height: 220px;
+            display: flex;
+            flex-direction: column;
+        }
+    
+        .quote {
+            font-size: 1.1rem;
+            margin: 1rem 0 0.5rem;
+        }
+    
+        .range-wrapper {
+            margin-top: auto;
+        }
+    
+        /* Input range (intensity slider) */
+        input[type="range"] {
+            width: 100%;
+            accent-color: var(--accent);
+        }
+    
+        /* Streak banner + finisher card states */
+        .streak-banner {
+            margin-bottom: 1rem;
+            padding: 0.75rem 1rem;
+            border-radius: 999px;
+            background: linear-gradient(135deg, rgba(255, 81, 47, 0.18), rgba(246, 195, 67, 0.12));
+            border: 1px solid var(--card-border);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-primary);
+        }
+    
+        .streak-banner span {
+            font-weight: 500;
+        }
+    
+        .finisher-card.locked {
+            opacity: 0.6;
+            border-style: dashed;
+        }
+    
+        .finisher-card:not(.locked) {
+            opacity: 1;
+            border-style: solid;
+        }
+    
+        /* Stories (if you keep them later) */
+        .stories {
+            background: linear-gradient(120deg, rgba(255, 81, 47, 0.18), rgba(16, 18, 25, 0.95));
+            padding: clamp(2rem, 4vw, 3rem);
+            border-radius: 2rem;
+            border: 1px solid var(--card-border);
+        }
+    
+        .story {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+    
+        .story-card {
+            background: rgba(0, 0, 0, 0.35);
+            padding: 1.5rem;
+            border-radius: 1.25rem;
+            border: 1px solid var(--card-border);
+        }
+    
+        .story-card strong {
+            color: var(--accent-yellow);
+        }
+    
+        /* CTA card */
+        .cta {
+            margin-top: 4rem;
+            padding: clamp(2.5rem, 5vw, 3.5rem);
+            border-radius: 2rem;
+            text-align: center;
+            border: 1px solid var(--card-border);
+            background: linear-gradient(145deg, rgba(16, 18, 25, 0.9), rgba(255, 81, 47, 0.12));
+        }
+    
+        .cta h3 {
+            font-size: clamp(1.8rem, 4vw, 2.8rem);
+            margin-bottom: 0.5rem;
+        }
+    
+        /* =========================
+       6) FOOTER
+       ========================= */
+        footer {
+            padding: 2rem clamp(1rem, 5vw, 4rem) 3rem;
+            text-align: center;
+            color: var(--text-muted);
+            border-top: 1px solid var(--card-border);
+            background: rgba(0, 0, 0, 0.35);
+        }
+    
+        /* =========================
+       7) UTILITIES
+       ========================= */
+        .hidden {
+            display: none;
+        }
+    
+        /* Checked exercise styling in today's split */
+        #exercise-list label {
+            transition: transform 0.15s ease;
+        }
+    
+        #exercise-list input[type="checkbox"]:checked+span {
+            text-decoration: line-through;
+            opacity: 0.7;
+            transform: translateX(2px);
+        }
+    
+        /* =========================
+       8) RESPONSIVE (MOBILE)
+       ========================= */
+        @media (max-width: 768px) {
+            body {
+                line-height: 1.5;
+            }
+    
+            main {
+                padding: 1.5rem 1rem 3rem;
+            }
+    
+            /* Nav stacks nicely */
+            nav {
+                flex-direction: column;
+                gap: 0.75rem;
+                align-items: flex-start;
+            }
+    
+            .nav-links {
+                width: 100%;
+                justify-content: flex-start;
+                flex-wrap: wrap;
+                gap: 0.75rem;
+                font-size: 0.75rem;
+            }
+    
+            /* Hero stacks into one column */
+            .hero {
+                grid-template-columns: 1fr;
+                padding: 1.75rem 1.25rem;
+                text-align: left;
+            }
+    
+            .hero h1 {
+                font-size: 1.9rem;
+            }
+    
+            .hero p {
+                max-width: 100%;
+            }
+    
+            .stats {
+                margin: 1.5rem 0;
+            }
+    
+            /* Make buttons easier to tap */
+            .hero .btn {
+                width: 100%;
+                justify-content: center;
+            }
+    
+            /* Sections closer together on mobile */
+            .section {
+                margin-top: 2.25rem;
+            }
+    
+            .section-head {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+    
+            .workout-card,
+            .motivation-card,
+            .cta {
+                padding: 1.5rem 1.25rem;
+                border-radius: 1.25rem;
+                margin-top: 0.5rem;
+                margin-bottom: 0.5rem;
+            }
+    
+            .quote {
+                font-size: 1.25rem;
+            }
+        }
     </style>
+
 </head>
 
 <body>
@@ -572,9 +642,7 @@ footer {
     </header>
 
     <main>
-        <div id="streak-banner" class="streak-banner hidden">
-            <span id="streak-text"></span>
-        </div>
+        
     <div id="screen-setup">
         <!-- HERO / INTRO -->
         <section class="hero">
@@ -691,6 +759,9 @@ footer {
   
         
 <div id="screen-daily">
+    <div id="streak-banner" class="streak-banner hidden">
+        <span id="streak-text"></span>
+    </div>
         <section class="section" id="weekly-focus-live">
             <div class="section-head">
                 <h2>This Week’s Focus</h2>
@@ -796,18 +867,21 @@ footer {
 
 
 
-        <div class="weekly-goal-control">
-            <p style="color:var(--text-muted);margin:0 0 0.5rem;">
-                Choose your weekly training goal:
-            </p>
-            <div>
-                <button class="day-pill" data-days="3">3</button>
-                <button class="day-pill" data-days="4">4</button>
-                <button class="day-pill" data-days="5">5</button>
-                <button class="day-pill" data-days="6">6</button>
-                <button class="day-pill" data-days="7">7</button>
-            </div>
-        </div>
+        <section class="section" id="weekly-goal-control">
+            <article class="workout-card">
+                <p style="color:var(--text-muted);margin:0 0 0.5rem;">
+                    Choose your weekly training goal:
+                </p>
+                <div>
+                    <button class="day-pill" data-days="3">3</button>
+                    <button class="day-pill" data-days="4">4</button>
+                    <button class="day-pill" data-days="5">5</button>
+                    <button class="day-pill" data-days="6">6</button>
+                    <button class="day-pill" data-days="7">7</button>
+                </div>
+            </article>
+        </section>
+
 
 
 </div>
@@ -823,101 +897,15 @@ footer {
 </div>
 
 <script>
+    // =============================
+    // 1) CONSTANTS & DATA
+    // =============================
     const ONBOARDED_KEY = "ironPulseOnboarded";
     const LAST_SCREEN_KEY = "ironPulseLastScreen";
-    function showScreen(name) {
-            const setup = document.getElementById("screen-setup");
-            const daily = document.getElementById("screen-daily");
-            if (!setup || !daily) return;
+    const WEEKLY_GOAL_KEY = "ironPulseWeeklyGoalDays";
+    const DEFAULT_WEEKLY_GOAL = 4;
 
-            if (name === "setup") {
-                setup.style.display = "block";
-                daily.style.display = "none";
-            } else {
-                setup.style.display = "none";
-                daily.style.display = "block";
-            }
-
-            // remember last screen
-            localStorage.setItem(LAST_SCREEN_KEY, name);
-        }
-
-    function initScreens() {
-            const onboarded = localStorage.getItem(ONBOARDED_KEY) === "true";
-            const last = localStorage.getItem(LAST_SCREEN_KEY);
-
-            if (!onboarded) {
-                // first time using the app → show setup
-                showScreen("setup");
-            } else if (last) {
-                // return user → go where they were last
-                showScreen(last);
-            } else {
-                // default for onboarded users
-                showScreen("daily");
-            }
-
-            // Top hero button: "Start Today"
-            const heroCta = document.getElementById("hero-cta");
-            if (heroCta) {
-                heroCta.addEventListener("click", () => {
-                    localStorage.setItem(ONBOARDED_KEY, "true");
-                    showScreen("daily");
-                });
-            }
-
-            // Bottom CTA button: "Get Started"
-            const getStartedBtn = document.getElementById("get-started-btn");
-            if (getStartedBtn) {
-                getStartedBtn.addEventListener("click", () => {
-                    localStorage.setItem(ONBOARDED_KEY, "true");
-                    showScreen("daily");
-                });
-            }
-
-            // Optional: a way back to setup (e.g. a "Setup" / "Settings" link in the nav)
-            const settingsBtn = document.getElementById("open-settings-btn");
-            if (settingsBtn) {
-                settingsBtn.addEventListener("click", () => {
-                    showScreen("setup");
-                });
-            }
-        }
-
-        function getWeeklyGoalDays() {
-                const stored = localStorage.getItem(WEEKLY_GOAL_KEY);
-                const parsed = stored ? parseInt(stored, 10) : NaN;
-                if (!isNaN(parsed) && parsed >= 3 && parsed <= 7) {
-                    return parsed;
-                }
-                // default if nothing chosen yet
-                return 4;
-            }
-
-        function renderWeeklyFocusLive() {
-            const days = getWeeklyGoalDays();
-
-            const labelEl = document.getElementById("weekly-focus-days-label");
-            const summaryEl = document.getElementById("weekly-focus-summary");
-
-            if (!labelEl || !summaryEl) return;
-
-            labelEl.textContent = `${days} day${days === 1 ? "" : "s"} / week`;
-
-            let message = "";
-            if (days <= 3) {
-                message = `You chose a ${days}-day training week. Focus on high-quality sessions and strong recovery.`;
-            } else if (days === 4 || days === 5) {
-                message = `Aim to train ${days} days this week. Stay consistent and use rest days strategically.`;
-            } else {
-                message = `You picked a ${days}-day grind. Listen to your body and don’t be afraid to adjust if life happens.`;
-            }
-
-            summaryEl.textContent = message;
-        }
-
-
-    // ===== QUOTES =====
+    // Daily quotes
     const quotes = [
         { text: "You will not always be motivated, so you must learn to be disciplined.", author: "Unknown" },
         { text: "Sweat is just fat crying, so let it all out.", author: "Iron Pulse" },
@@ -925,120 +913,8 @@ footer {
         { text: "The body achieves what the mind believes.", author: "Anonymous" },
         { text: "Most give up at forty percent. Your next PR sits beyond that wall.", author: "Coach Nia" }
     ];
-    const WEEKLY_GOAL_KEY = "ironPulseWeeklyGoalDays";
-        const DEFAULT_WEEKLY_GOAL = 4;
 
-    function getWeeklyGoal() {
-            const stored = localStorage.getItem(WEEKLY_GOAL_KEY);
-            const parsed = stored ? parseInt(stored, 10) : NaN;
-            if (!parsed || parsed < 3 || parsed > 7) {
-                return DEFAULT_WEEKLY_GOAL;
-            }
-            return parsed;
-        }
-
-        function setWeeklyGoal(days) {
-            localStorage.setItem(WEEKLY_GOAL_KEY, String(days));
-        }
-    function updateWeeklyGoalUI() {
-            const goal = getWeeklyGoal();
-
-            // Highlight the selected pill
-            const pills = document.querySelectorAll(".day-pill");
-            pills.forEach(pill => {
-                const pillDays = parseInt(pill.getAttribute("data-days"), 10);
-                if (pillDays === goal) {
-                    pill.classList.add("active");
-                } else {
-                    pill.classList.remove("active");
-                }
-            });
-
-            // Update summary text
-            const summaryEl = document.getElementById("weekly-goal-summary");
-            if (summaryEl) {
-                // For now we hardcode progress as 0 / goal; you’ll wire real progress later
-                summaryEl.textContent = `Goal: ${goal} days this week • Progress: 0 / ${goal} sessions logged`;
-            }
-
-            // Update This Week's Focus title if present
-            const focusTitleEl = document.getElementById("weekly-focus-title");
-            if (focusTitleEl) {
-                focusTitleEl.textContent = `${goal}-Day Training Week`;
-            }
-        }
-
-    function initWeeklyGoalControls() {
-            const dailyScreen = document.getElementById("screen-daily");
-            if (!dailyScreen) return;
-
-            const pills = dailyScreen.querySelectorAll(".day-pill");
-            if (!pills.length) return;
-
-            const currentGoal = getWeeklyGoal();
-
-            pills.forEach(pill => {
-                const pillDays = parseInt(pill.getAttribute("data-days"), 10);
-                if (pillDays === currentGoal) {
-                    pill.classList.add("active");
-                }
-
-                pill.addEventListener("click", () => {
-                    const days = parseInt(pill.getAttribute("data-days"), 10);
-                    setWeeklyGoal(days);
-                    updateWeeklyGoalUI();
-                    renderWeeklyFocusLive();
-                });
-            });
-
-            updateWeeklyGoalUI();
-            renderWeeklyFocusLive();
-        }
-
-
-
-
-
-
-
-
-    const quoteEl = document.getElementById("quote");
-    const authorEl = document.getElementById("quote-author");
-    let quoteIndex = 0;
-
-    function rotateQuote() {
-        quoteIndex = (quoteIndex + 1) % quotes.length;
-        quoteEl.textContent = quotes[quoteIndex].text;
-        authorEl.textContent = "- " + quotes[quoteIndex].author;
-    }
-
-    // Rotate quote every 6 seconds
-    setInterval(rotateQuote, 6000);
-
-    // ===== HERO BUTTON SCROLL =====
-    const heroCta = document.getElementById("hero-cta");
-    if (heroCta) {
-        heroCta.addEventListener("click", () => {
-            localStorage.setItem(ONBOARDED_KEY, "true");
-            showScreen("daily");
-        });
-    }
-
-    const bottomSplitBtn = document.getElementById("bottom-split-btn");
-    if (bottomSplitBtn) {
-        bottomSplitBtn.addEventListener("click", () => {
-            document.getElementById("split")?.scrollIntoView({ behavior: "smooth" });
-        });
-    }
-    const addToHomeBtn = document.getElementById("add-to-home-btn");
-        if (addToHomeBtn) {
-            addToHomeBtn.addEventListener("click", () => {
-                document.getElementById("install")?.scrollIntoView({ behavior: "smooth" });
-            });
-        }
-
-
-    // ===== TODAY'S SPLIT DATA =====
+    // Splits by day (you already had this)
     const splits = [
         {
             name: "Push Day – Chest, Shoulders, Triceps",
@@ -1089,36 +965,123 @@ footer {
         }
     ];
 
-    const finishers = [
-            {
-                title: "Engine Burnout",
-                tag: "Conditioning",
-                description: "3 rounds: 30s assault bike or fast walk, 30s rest, then 10 burpees.",
-            },
-            {
-                title: "Pump Set",
-                tag: "Hypertrophy",
-                description: "2 sets: 20 slow pushups, 20 band pull-aparts, 30s plank.",
-            },
-            {
-                title: "Core Lock-In",
-                tag: "Core",
-                description: "3 rounds: 20s hollow hold, 20s side plank each side, 10 dead bugs.",
-            },
-            {
-                title: "Leg Burner",
-                tag: "Legs",
-                description: "2 sets: 15 walking lunges, 20 bodyweight squats, 30s wall sit.",
-            }
-        ];
+    // =============================
+    // 2) STORAGE HELPERS
+    // =============================
+    function getWeeklyGoal() {
+        const stored = localStorage.getItem(WEEKLY_GOAL_KEY);
+        const parsed = stored ? parseInt(stored, 10) : NaN;
+        if (!isNaN(parsed) && parsed >= 3 && parsed <= 7) {
+            return parsed;
+        }
+        return DEFAULT_WEEKLY_GOAL;
+    }
 
-        function getTodayFinisher() {
-            // Simple tie-in: re-use today's split index so finisher "matches" the day
-            const splitIndex = getTodaySplitIndex ? getTodaySplitIndex() : 0;
-            return finishers[splitIndex % finishers.length];
+    function setWeeklyGoal(days) {
+        localStorage.setItem(WEEKLY_GOAL_KEY, String(days));
+    }
+
+    // (You may also have streak storage later)
+
+    // =============================
+    // 3) QUOTES
+    // =============================
+    let quoteIndex = 0;
+    function initQuotes() {
+        const quoteEl = document.getElementById("quote");
+        const authorEl = document.getElementById("quote-author");
+        if (!quoteEl || !authorEl) return;
+
+        function rotateQuote() {
+            quoteIndex = (quoteIndex + 1) % quotes.length;
+            quoteEl.textContent = quotes[quoteIndex].text;
+            authorEl.textContent = "- " + quotes[quoteIndex].author;
         }
 
+        // start with first quote already in DOM, then rotate
+        setInterval(rotateQuote, 6000);
+    }
 
+    // =============================
+    // 4) INTENSITY SLIDER
+    // =============================
+    const intensityWords = [
+        "Warming Up", "Focused", "Primed", "Locked In",
+        "Beast Mode", "No Limits", "Unstoppable", "Savage"
+    ];
+
+    function initIntensitySlider() {
+        const intensitySlider = document.getElementById("intensity-slider");
+        const intensityValue = document.getElementById("intensity-value");
+        const intensityLabel = document.getElementById("intensity-label");
+
+        if (!intensitySlider || !intensityValue || !intensityLabel) return;
+
+        function updateIntensity() {
+            const value = parseInt(intensitySlider.value, 10);
+            intensityValue.textContent = value;
+            const index = Math.min(intensityWords.length - 1, Math.floor(value / 2));
+            intensityLabel.textContent = intensityWords[index];
+        }
+
+        intensitySlider.addEventListener("input", updateIntensity);
+        updateIntensity();
+    }
+
+    // =============================
+    // 5) WEEKLY FOCUS LIVE CARD
+    // =============================
+    function renderWeeklyFocusLive() {
+        const days = getWeeklyGoal();
+        const labelEl = document.getElementById("weekly-focus-days-label");
+        const summaryEl = document.getElementById("weekly-focus-summary");
+
+        if (!labelEl || !summaryEl) return;
+
+        labelEl.textContent = `${days} day${days === 1 ? "" : "s"} / week`;
+
+        let message = "";
+        if (days <= 3) {
+            message = `You chose a ${days}-day training week. Focus on high-quality sessions and strong recovery.`;
+        } else if (days === 4 || days === 5) {
+            message = `Aim to train ${days} days this week. Stay consistent and use rest days strategically.`;
+        } else {
+            message = `You picked a ${days}-day grind. Listen to your body and don’t be afraid to adjust if life happens.`;
+        }
+
+        summaryEl.textContent = message;
+    }
+
+    function initWeeklyGoalControls() {
+        const dailyScreen = document.getElementById("screen-daily");
+        if (!dailyScreen) return;
+
+        const pills = dailyScreen.querySelectorAll(".day-pill");
+        if (!pills.length) return;
+
+        const currentGoal = getWeeklyGoal();
+
+        pills.forEach(pill => {
+            const pillDays = parseInt(pill.getAttribute("data-days"), 10);
+            if (pillDays === currentGoal) {
+                pill.classList.add("active");
+            }
+
+            pill.addEventListener("click", () => {
+                const days = parseInt(pill.getAttribute("data-days"), 10);
+                setWeeklyGoal(days);
+                pills.forEach(p => p.classList.remove("active"));
+                pill.classList.add("active");
+                renderWeeklyFocusLive();
+            });
+        });
+
+        renderWeeklyFocusLive();
+    }
+
+    // =============================
+    // 6) TODAY'S SPLIT + FINISHER
+    // =============================
     function getTodaySplitIndex() {
         const today = new Date().getDay(); // 0 = Sun, 1 = Mon, ...
         const map = {
@@ -1134,189 +1097,140 @@ footer {
     }
 
     function renderTodaySplit() {
-            const splitNameEl = document.getElementById("split-name");
-            const splitDaysEl = document.getElementById("split-days");
-            const splitDescEl = document.getElementById("split-description");
-            const exerciseListEl = document.getElementById("exercise-list");
+        const splitNameEl = document.getElementById("split-name");
+        const splitDaysEl = document.getElementById("split-days");
+        const splitDescEl = document.getElementById("split-description");
+        const exerciseListEl = document.getElementById("exercise-list");
 
-            if (!splitNameEl || !exerciseListEl) return;
+        if (!splitNameEl || !exerciseListEl) return;
 
-            const split = splits[getTodaySplitIndex()];
+        const split = splits[getTodaySplitIndex()];
 
-            splitNameEl.textContent = split.name;
-            splitDaysEl.textContent = split.days;
-            splitDescEl.textContent = split.description;
+        splitNameEl.textContent = split.name;
+        splitDaysEl.textContent = split.days;
+        splitDescEl.textContent = split.description;
 
-            // Clear old list
-            exerciseListEl.innerHTML = "";
+        exerciseListEl.innerHTML = "";
 
-            split.exercises.forEach((exercise, index) => {
-                const li = document.createElement("li");
-                li.style.marginBottom = "0.5rem";
+        split.exercises.forEach((exercise, index) => {
+            const li = document.createElement("li");
+            li.style.marginBottom = "0.5rem";
 
-                const id = `exercise-${index}`;
+            const id = `exercise-${index}`;
 
-                li.innerHTML = `
+            li.innerHTML = `
             <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;">
                 <input type="checkbox" id="${id}" />
                 <span>${exercise}</span>
             </label>
         `;
 
-                exerciseListEl.appendChild(li);
+            exerciseListEl.appendChild(li);
 
-                const checkbox = li.querySelector('input[type="checkbox"]');
-                if (checkbox) {
-                    checkbox.addEventListener("change", () => {
-                        if ("vibrate" in navigator) {
-                            navigator.vibrate(20);
-                        }
-                        checkSplitCompletion();
-                    });
-                }
-            });
-
-            // Ensure finisher starts in locked state
-            checkSplitCompletion();
-        }
-
-    function checkSplitCompletion() {
-        const exerciseListEl = document.getElementById("exercise-list");
-        if (!exerciseListEl) {
-            // If for some reason we can't find the list, keep finisher locked
-            updateFinisherLockState(false);
-            return;
-        }
-
-        const checkboxes = exerciseListEl.querySelectorAll('input[type="checkbox"]');
-
-        if (!checkboxes.length) {
-            updateFinisherLockState(false);
-            return;
-        }
-
-        let allChecked = true;
-        checkboxes.forEach(cb => {
-            if (!cb.checked) {
-                allChecked = false;
+            const checkbox = li.querySelector('input[type="checkbox"]');
+            if (checkbox) {
+                checkbox.addEventListener("change", () => {
+                    // haptic feedback
+                    if (checkbox.checked && "vibrate" in navigator) {
+                        navigator.vibrate(20);
+                    }
+                    checkSplitCompletion();
+                });
             }
         });
 
-        // If ALL are checked → unlock, otherwise stay locked
-        updateFinisherLockState(allChecked);
+        checkSplitCompletion();
     }
 
-    // ===== STREAK TRACKER (localStorage) =====
-    function updateStreak() {
-        const key = "ip_streak";
-        const today = new Date();
-        const todayStr = today.toISOString().slice(0, 10); // YYYY-MM-DD
+    function checkSplitCompletion() {
+        const exerciseListEl = document.getElementById("exercise-list");
+        const finisherCard = document.querySelector(".finisher-card");
+        if (!exerciseListEl || !finisherCard) return;
 
-        let stored;
-        try {
-            stored = JSON.parse(localStorage.getItem(key) || "{}");
-        } catch {
-            stored = {};
-        }
+        const checkboxes = exerciseListEl.querySelectorAll('input[type="checkbox"]');
+        const allChecked = checkboxes.length > 0 && Array.from(checkboxes).every(cb => cb.checked);
 
-        let streak = stored.streak || 0;
-        let lastDate = stored.lastDate;
-
-        if (!lastDate) {
-            streak = 1;
-        } else if (lastDate === todayStr) {
-            // Same day: keep streak as is
+        if (allChecked) {
+            finisherCard.classList.remove("locked");
         } else {
-            const last = new Date(lastDate);
-            const diffMs = today - last;
-            const diffDays = Math.floor(diffMs / 86400000);
-
-            if (diffDays === 1) {
-                streak += 1; // consecutive day
-            } else {
-                streak = 1; // reset
-            }
+            finisherCard.classList.add("locked");
         }
-
-        localStorage.setItem(key, JSON.stringify({ streak, lastDate: todayStr }));
-
-        const banner = document.getElementById("streak-banner");
-        const textEl = document.getElementById("streak-text");
-
-        if (banner && textEl) {
-            banner.classList.remove("hidden");
-            if (streak === 1) {
-                textEl.textContent = "Day 1 – You started. Show up again tomorrow.";
-            } else {
-                textEl.textContent = `Streak: ${streak} days in a row. Keep it alive.`;
-            }
-        }
-        const streakValueEl = document.getElementById("streak-value");
-        if (streakValueEl) {
-            streakValueEl.textContent = streak;
-        }
-
     }
 
-
-
+    // If you have extra finisher-specific controls, they can live here:
     function initFinisherControls() {
-            const doBtn = document.getElementById("finisher-do-btn");
-            const skipBtn = document.getElementById("finisher-skip-btn");
-            const statusEl = document.getElementById("finisher-status");
-
-            if (doBtn) {
-                doBtn.addEventListener("click", () => {
-                    if (!statusEl) return;
-                    statusEl.textContent = "Finisher complete. You just built extra capacity for later in the week.";
-                    // Later: increment finishersCompletedThisWeek, maybe build toward rest tokens
-                });
-            }
-
-            if (skipBtn) {
-                skipBtn.addEventListener("click", () => {
-                    if (!statusEl) return;
-                    statusEl.textContent = "Skipped today’s finisher. Recovery is part of progress.";
-                    // No penalty, just a clear message.
-                });
-            }
-        }
-
-
-    function updateFinisherLockState(isUnlocked) {
-        const card = document.getElementById("finisher-card");
-        const titleEl = document.getElementById("finisher-title");
-        const tagEl = document.getElementById("finisher-tag");
-        const descEl = document.getElementById("finisher-description");
-        const statusEl = document.getElementById("finisher-status");
-        const doBtn = document.getElementById("finisher-do-btn");
-        const skipBtn = document.getElementById("finisher-skip-btn");
-
-        if (!card || !titleEl || !tagEl || !descEl || !statusEl || !doBtn || !skipBtn) return;
-
-        if (!isUnlocked) {
-            card.classList.add("locked");
-            titleEl.textContent = "Locked";
-            tagEl.textContent = "Complete your sets";
-            descEl.textContent = "Check off all exercises in Today’s Split to unlock this finisher.";
-            statusEl.textContent = "Main work first. Earn the extra.";
-            doBtn.disabled = true;
-            skipBtn.disabled = true;
-            return;
-        }
-
-        // Unlocked path
-        const finisher = getTodayFinisher();
-        card.classList.remove("locked");
-        titleEl.textContent = finisher.title;
-        tagEl.textContent = finisher.tag;
-        descEl.textContent = finisher.description;
-        statusEl.textContent = "Optional: if you have energy, hit this finisher. Or skip and recover.";
-        doBtn.disabled = false;
-        skipBtn.disabled = false;
+        // e.g., attach click handler to "Start Finisher" button, etc.
     }
 
-    // ===== SERVICE WORKER REGISTRATION =====
+    // =============================
+    // 7) SCREEN NAVIGATION (SETUP/DAILY)
+    // =============================
+    function showScreen(name) {
+        const setup = document.getElementById("screen-setup");
+        const daily = document.getElementById("screen-daily");
+        if (!setup || !daily) return;
+
+        if (name === "setup") {
+            setup.style.display = "block";
+            daily.style.display = "none";
+        } else {
+            setup.style.display = "none";
+            daily.style.display = "block";
+        }
+
+        localStorage.setItem(LAST_SCREEN_KEY, name);
+    }
+
+    function initScreens() {
+        const onboarded = localStorage.getItem(ONBOARDED_KEY) === "true";
+        const last = localStorage.getItem(LAST_SCREEN_KEY);
+
+        if (!onboarded) {
+            showScreen("setup");
+        } else if (last) {
+            showScreen(last);
+        } else {
+            showScreen("daily");
+        }
+
+        const heroCta = document.getElementById("hero-cta");
+        if (heroCta) {
+            heroCta.addEventListener("click", () => {
+                localStorage.setItem(ONBOARDED_KEY, "true");
+                showScreen("daily");
+            });
+        }
+
+        const getStartedBtn = document.getElementById("get-started-btn");
+        if (getStartedBtn) {
+            getStartedBtn.addEventListener("click", () => {
+                localStorage.setItem(ONBOARDED_KEY, "true");
+                showScreen("daily");
+            });
+        }
+
+        const bottomSplitBtn = document.getElementById("bottom-split-btn");
+        if (bottomSplitBtn) {
+            bottomSplitBtn.addEventListener("click", () => {
+                localStorage.setItem(ONBOARDED_KEY, "true");
+                showScreen("daily");
+            });
+        }
+
+        const settingsBtn = document.getElementById("open-settings-btn");
+        if (settingsBtn) {
+            settingsBtn.addEventListener("click", (e) => {
+                e.preventDefault();
+                showScreen("setup");
+            });
+        }
+    }
+
+
+    // =============================
+    // 8) PWA / SERVICE WORKER
+    // =============================
+    function initServiceWorker() {
         if ("serviceWorker" in navigator) {
             window.addEventListener("load", () => {
                 navigator.serviceWorker
@@ -1329,21 +1243,22 @@ footer {
                     });
             });
         }
+    }
 
-        // ===== APP INIT =====
-        window.addEventListener("DOMContentLoaded", () => {
-            renderTodaySplit();          // build today's split + checkboxes
-            initWeeklyGoalControls();    // set up 3–7 day goal buttons
-            initScreens();               // show setup vs daily, depending on localStorage
-            initFinisherControls();      // wire finisher buttons
-            renderWeeklyFocusLive();
-            // Optional, if you still use these:
-            updateStreak?.();            // only if this function exists
-            updateIntensity?.();         // only if intensity slider still exists
-            rotateQuote?.();             // only if you want quotes rotating on load
-        });
+    // If you’re using the "Add to Home Screen" prompt programmatically, that can live here too.
 
-
+    // =============================
+    // 9) INIT
+    // =============================
+    window.addEventListener("DOMContentLoaded", () => {
+        initScreens();
+        renderTodaySplit();
+        initWeeklyGoalControls();
+        initIntensitySlider();
+        initQuotes();
+        initFinisherControls();
+        initServiceWorker();
+    });
 </script>
 
 
