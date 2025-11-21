@@ -182,6 +182,13 @@
             pointer-events: none;
             /* non-interactive */
         }
+
+        .day-pill[disabled] {
+            opacity: 0.45;
+            cursor: not-allowed;
+            filter: grayscale(0.3);
+}
+
     
         /* Bottom bar CTA (mobile only) */
         .bottom-bar {
@@ -615,6 +622,26 @@
                 font-size: 1.25rem;
             }
         }
+        .weight-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: 1.8rem; /* lines it up nicely under the checkbox text */
+    margin-top: 0.25rem;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.weight-row input[type="number"] {
+    width: 5rem;
+    padding: 0.25rem 0.4rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--card-border);
+    background: var(--bg-panel);
+    color: var(--text-primary);
+    font-size: 0.85rem;
+}
+
     </style>
 
 </head>
@@ -764,7 +791,7 @@
     </div>
         <section class="section" id="weekly-focus-live">
             <div class="section-head">
-                <h2>This Week’s Focus</h2>
+                <h2>This Week's Focus</h2>
                 <p style="color:var(--text-muted);max-width:520px;">
                     Your current training target for the week. Hit your days, use rest when you need it.
                 </p>
@@ -786,7 +813,7 @@
         </section>
 
 
-
+    <div id="daily-main-content">
         <section class="section" id="split">
             <div class="section-head">
                 <h2>Today's Split</h2>
@@ -864,7 +891,7 @@
                 </div>
             </article>
         </section>
-
+    </div>
 
 
         <section class="section" id="weekly-goal-control">
@@ -873,17 +900,25 @@
                     Choose your weekly training goal:
                 </p>
                 <div>
-                    <button class="day-pill" data-days="3">3</button>
-                    <button class="day-pill" data-days="4">4</button>
-                    <button class="day-pill" data-days="5">5</button>
-                    <button class="day-pill" data-days="6">6</button>
-                    <button class="day-pill" data-days="7">7</button>
+                    <button class="day-pill" data-days="3">3 Days</button>
+                    <button class="day-pill" data-days="4">4 Days</button>
+                    <button class="day-pill" data-days="5">5 Days</button>
+                    <button class="day-pill" data-days="6">6 Days</button>
+                    <button class="day-pill" data-days="7">7 Days</button>
                 </div>
+        
+                <!-- 🔹 New: Commit button (hidden until a pill is chosen) -->
+                <button class="btn btn-primary" id="commit-weekly-goal-btn"
+                    style="margin-top:0.75rem;font-size:0.85rem;display:none;">
+                    Commit!!!
+                </button>
+        
+                <!-- 🔹 Existing: reset button (only shown after a goal exists) -->
+                <button class="btn btn-outline" id="reset-weekly-goal-btn" style="margin-top:0.75rem;font-size:0.85rem;">
+                    Reset Weekly Goal
+                </button>
             </article>
         </section>
-
-
-
 
 </div>
     </main>
@@ -905,6 +940,32 @@
     const LAST_SCREEN_KEY = "ironPulseLastScreen";
     const WEEKLY_GOAL_KEY = "ironPulseWeeklyGoalDays";
     const DEFAULT_WEEKLY_GOAL = 4;
+    const WEEKLY_GOAL_LOCKED_KEY = "ironPulseWeeklyGoalLocked";
+
+
+
+
+    const EXERCISE_WEIGHT_KEY = "ironPulseExerciseWeights";
+
+        function getExerciseWeights() {
+            try {
+                const raw = localStorage.getItem(EXERCISE_WEIGHT_KEY);
+                if (!raw) return {};
+                const parsed = JSON.parse(raw);
+                return parsed && typeof parsed === "object" ? parsed : {};
+            } catch {
+                return {};
+            }
+        }
+
+        function saveExerciseWeights(map) {
+            try {
+                localStorage.setItem(EXERCISE_WEIGHT_KEY, JSON.stringify(map));
+            } catch {
+                // fail silently if storage is full, etc.
+            }
+        }
+
 
     // Daily quotes
     const quotes = [
@@ -965,20 +1026,45 @@
             ]
         }
     ];
+    
+    function getTodaySplitDefinition() {
+            const weeklyGoal = getWeeklyGoal() || DEFAULT_WEEKLY_GOAL; // e.g. 4
+            const pattern = PROGRAM_PATTERNS[weeklyGoal] || PROGRAM_PATTERNS[DEFAULT_WEEKLY_GOAL];
+
+            const todayIndex = new Date().getDay(); // 0–6
+            const key = pattern[todayIndex] || "rest";
+
+            let template;
+            if (key === "rest") {
+                template = {
+                    name: "Rest / Light Movement",
+                    description: "No heavy lifting planned. Walk, stretch, or move just enough to feel good.",
+                    exercises: []
+                };
+            } else {
+                template = SPLIT_TEMPLATES[key] || SPLIT_TEMPLATES["full"];
+            }
+
+            return {
+                ...template,
+                daysLabel: `${weeklyGoal} day/week goal`
+            };
+        }
+
+
 
     // =============================
     // 2) STORAGE HELPERS
     // =============================
     function getWeeklyGoal() {
-        const stored = localStorage.getItem(WEEKLY_GOAL_KEY);
-        if (!stored) return null;
+            const stored = localStorage.getItem(WEEKLY_GOAL_KEY);
+            if (!stored) {
+                return null; // 🔹 explicit “no goal set”
+            }
+            const num = parseInt(stored, 10);
+            return isNaN(num) ? null : num;
+        }
 
-        const parsed = parseInt(stored, 10);
-        if (isNaN(parsed) || parsed < 3 || parsed > 7) return null;
-            return parsed;
-        
-        return DEFAULT_WEEKLY_GOAL;
-    }
 
     function setWeeklyGoal(days) {
         localStorage.setItem(WEEKLY_GOAL_KEY, String(days));
@@ -987,18 +1073,34 @@
             return localStorage.getItem(WEEKLY_GOAL_KEY) !== null;
         }
     function repositionWeeklyGoalSection() {
-            const daily = document.getElementById("screen-daily");
+            const days = getWeeklyGoal();  // null when no goal set
+            const dailyScreen = document.getElementById("screen-daily");
+            const weeklyFocus = document.getElementById("weekly-focus-live");
             const goalSection = document.getElementById("weekly-goal-control");
-            if (!daily || !goalSection) return;
+            const dailyMain = document.getElementById("daily-main-content");
 
-            if (!hasWeeklyGoal()) {
-                // No goal yet → keep it at the top (before everything)
-                daily.insertBefore(goalSection, daily.firstElementChild);
+            if (!dailyScreen || !weeklyFocus || !goalSection || !dailyMain) return;
+
+            if (!days) {
+                // 🔸 No weekly goal set:
+                // - hide split/motivation/finisher
+                // - move goal section right under the focus card
+                dailyMain.classList.add("hidden");
+
+                // weeklyFocus is before dailyMain, so insert goalSection before dailyMain
+                dailyScreen.insertBefore(goalSection, dailyMain);
             } else {
-                // Goal set → move it to the bottom of the daily screen
-                daily.appendChild(goalSection);
+                // 🔹 Goal is set:
+                // - show workouts
+                // - keep goal selector down at the bottom
+                dailyMain.classList.remove("hidden");
+
+                dailyScreen.appendChild(goalSection);
             }
         }
+
+
+
 
     // (You may also have streak storage later)
 
@@ -1051,33 +1153,32 @@
     // 5) WEEKLY FOCUS LIVE CARD
     // =============================
     function renderWeeklyFocusLive() {
-            const days = getWeeklyGoal();
-            const card = document.getElementById("weekly-focus-card");
-            const labelEl = document.getElementById("weekly-focus-days-label");
+            const daysLabelEl = document.getElementById("weekly-focus-days-label");
             const summaryEl = document.getElementById("weekly-focus-summary");
+            if (!daysLabelEl || !summaryEl) return;
 
-            if (!card || !labelEl || !summaryEl) return;
-
+            const days = getWeeklyGoal();
             if (!days) {
-                // No weekly goal set yet → hide the card
-                card.style.display = "none";
+                daysLabelEl.textContent = "No weekly goal set";
+                summaryEl.textContent = "Pick a weekly training goal below to lock in how many days you’re committing to this week.";
                 return;
             }
 
-            card.style.display = "block";
-            labelEl.textContent = `${days} day${days === 1 ? "" : "s"} / week`;
+            daysLabelEl.textContent = `${days} days / week`;
 
-            let message = "";
-            if (days <= 3) {
-                message = `You chose a ${days}-day training week. Focus on high-quality sessions and strong recovery.`;
-            } else if (days === 4 || days === 5) {
-                message = `Aim to train ${days} days this week. Stay consistent and use rest days strategically.`;
-            } else {
-                message = `You picked a ${days}-day grind. Listen to your body and don’t be afraid to adjust if life happens.`;
-            }
+            const descriptions = {
+                3: "You’re committing to 3 focused sessions this week. Expect heavier full-body or big compound days that earn your rest.",
+                4: "You’re training 4 days this week. A solid balance of work and recovery that fits most busy schedules.",
+                5: "You’re aiming for 5 days. Higher frequency, slightly smaller sessions so you can show up often without burning out.",
+                6: "6 days on. You’re chasing serious momentum. We’ll mix push/pull/legs with built-in lighter work to keep you moving.",
+                7: "Daily movement mode. Training every day with a blend of lifting, lighter days, and recovery work to keep the habit alive."
+            };
 
-            summaryEl.textContent = message;
+            summaryEl.textContent =
+                descriptions[days] ||
+                "You set your training goal for this week. Show up for it, one session at a time.";
         }
+
 
 
     function initWeeklyGoalControls() {
@@ -1087,95 +1188,359 @@
             const pills = dailyScreen.querySelectorAll(".day-pill");
             if (!pills.length) return;
 
-            const currentGoal = getWeeklyGoal();
+            const resetBtn = document.getElementById("reset-weekly-goal-btn");
+            const commitBtn = document.getElementById("commit-weekly-goal-btn");
 
-            // Initialize active state
+            const currentGoal = getWeeklyGoal();
+            const isLocked = localStorage.getItem(WEEKLY_GOAL_LOCKED_KEY) === "true";
+
+            let pendingDays = null; // what the user has selected but not committed yet
+
+            // 🔹 Reset button visibility: only show if a goal actually exists
+            if (resetBtn) {
+                if (!currentGoal) {
+                    resetBtn.style.display = "none";
+                } else {
+                    resetBtn.style.display = "inline-flex";
+                }
+            }
+
+            // 🔹 Commit button starts hidden (we show it when a pill is tapped)
+            if (commitBtn) {
+                commitBtn.style.display = "none";
+            }
+
+            // 🔹 Initialize pill states
             pills.forEach(pill => {
                 const pillDays = parseInt(pill.getAttribute("data-days"), 10);
+
+                // Mark active if it matches the current locked goal
                 if (currentGoal && pillDays === currentGoal) {
                     pill.classList.add("active");
                 }
 
+                // Disable pills if goal is already locked
+                if (isLocked) {
+                    pill.disabled = true;
+                }
+
                 pill.addEventListener("click", () => {
-                    const days = parseInt(pill.getAttribute("data-days"), 10);
-                    setWeeklyGoal(days);
+                    // If already locked, ignore taps
+                    if (localStorage.getItem(WEEKLY_GOAL_LOCKED_KEY) === "true") {
+                        return;
+                    }
+
+                    // Just update pending selection + highlight
+                    pendingDays = pillDays;
 
                     pills.forEach(p => p.classList.remove("active"));
                     pill.classList.add("active");
 
-                    renderWeeklyFocusLive();
-                    repositionWeeklyGoalSection();
+                    // Show commit button now that a choice is pending
+                    if (commitBtn) {
+                        commitBtn.style.display = "inline-flex";
+                    }
                 });
             });
 
-            // Initial render
+            // 🔹 Commit the weekly goal (lock it + unlock daily UI)
+            if (commitBtn) {
+                commitBtn.addEventListener("click", () => {
+                    // If already locked or nothing selected, do nothing
+                    if (localStorage.getItem(WEEKLY_GOAL_LOCKED_KEY) === "true") return;
+                    if (!pendingDays) return;
+
+                    const confirmCommit = window.confirm(
+                        `Commit to training ${pendingDays} days this week?`
+                    );
+                    if (!confirmCommit) return;
+
+                    setWeeklyGoal(pendingDays);
+                    localStorage.setItem(WEEKLY_GOAL_LOCKED_KEY, "true");
+
+                    // Lock pills so you can't “fat finger” a different one
+                    pills.forEach(p => {
+                        p.disabled = true;
+                    });
+
+                    // Hide commit, show reset
+                    if (commitBtn) {
+                        commitBtn.style.display = "none";
+                    }
+                    if (resetBtn) {
+                        resetBtn.style.display = "inline-flex";
+                    }
+
+                    // Update focus text + move selector + build today's split
+                    renderWeeklyFocusLive();
+                    repositionWeeklyGoalSection();
+                    renderTodaySplit();
+                });
+            }
+
+            // 🔹 Reset weekly goal
+            if (resetBtn) {
+                resetBtn.addEventListener("click", () => {
+                    const firstConfirm = window.confirm(
+                        "Are you sure you want to reset this week’s training goal?"
+                    );
+                    if (!firstConfirm) return;
+
+                    const secondConfirm = window.confirm(
+                        "Resetting will clear your current weekly goal and unlock the day selector.\n\n" +
+                        "Use this if your schedule changed, not because today feels hard.\n\nContinue?"
+                    );
+                    if (!secondConfirm) return;
+
+                    // Clear goal + lock
+                    localStorage.removeItem(WEEKLY_GOAL_KEY);
+                    localStorage.removeItem(WEEKLY_GOAL_LOCKED_KEY);
+
+                    // Unlock pills and remove active state
+                    pills.forEach(p => {
+                        p.classList.remove("active");
+                        p.disabled = false;
+                    });
+
+                    // Hide reset + commit until they choose again
+                    if (resetBtn) {
+                        resetBtn.style.display = "none";
+                    }
+                    if (commitBtn) {
+                        commitBtn.style.display = "none";
+                    }
+
+                    pendingDays = null;
+
+                    // Re-render UI
+                    renderWeeklyFocusLive();
+                    repositionWeeklyGoalSection();
+                    renderTodaySplit();
+                });
+            }
+
+            // Initial render for focus text + layout
             renderWeeklyFocusLive();
             repositionWeeklyGoalSection();
         }
 
 
-    // =============================
-    // 6) TODAY'S SPLIT + FINISHER
-    // =============================
-    function getTodaySplitIndex() {
-        const today = new Date().getDay(); // 0 = Sun, 1 = Mon, ...
-        const map = {
-            0: 3, // Sunday -> Full Body
-            1: 0, // Monday -> Push
-            2: 1, // Tuesday -> Pull
-            3: 2, // Wednesday -> Legs
-            4: 0, // Thursday -> Push
-            5: 1, // Friday -> Pull
-            6: 2  // Saturday -> Legs
+
+
+
+
+
+    // ===== SPLIT TEMPLATES =====
+        const SPLIT_TEMPLATES = {
+            push: {
+                name: "Push Day – Chest, Shoulders, Triceps",
+                description: "Press-focused session with classic upper body movements.",
+                exercises: [
+                    "Barbell or DB Bench Press – 4 x 6–8",
+                    "Incline DB Press – 3 x 8–10",
+                    "Overhead Shoulder Press (DB or machine) – 3 x 8–10",
+                    "Lateral Raises – 3 x 12–15",
+                    "Cable or Rope Triceps Pushdown – 3 x 10–12"
+                ]
+            },
+            pull: {
+                name: "Pull Day – Back, Biceps",
+                description: "Back and biceps work with simple pulling patterns.",
+                exercises: [
+                    "Lat Pulldown or Assisted Pull-Up – 4 x 8–10",
+                    "Seated Row (cable or machine) – 3 x 8–10",
+                    "Chest-Supported Row or DB Row – 3 x 10–12",
+                    "Face Pulls – 3 x 12–15",
+                    "EZ-Bar or DB Curls – 3 x 10–12"
+                ]
+            },
+            legs: {
+                name: "Leg Day – Quads, Hamstrings, Glutes",
+                description: "Lower-body focus with basic barbell or machine work.",
+                exercises: [
+                    "Back Squat or Hack Squat – 4 x 6–8",
+                    "Romanian Deadlift – 3 x 8–10",
+                    "Leg Press or Walking Lunges – 3 x 10–12",
+                    "Leg Curl (machine) – 3 x 10–12",
+                    "Standing or Seated Calf Raise – 3 x 12–15"
+                ]
+            },
+            upper: {
+                name: "Upper Body – Mixed",
+                description: "Balanced upper session for chest, back, and arms.",
+                exercises: [
+                    "Flat Bench Press – 3 x 6–8",
+                    "Lat Pulldown – 3 x 8–10",
+                    "DB Shoulder Press – 3 x 8–10",
+                    "Cable Row – 3 x 10–12",
+                    "Biceps Curls + Triceps Pushdowns superset – 2–3 x 10–12"
+                ]
+            },
+            lower: {
+                name: "Lower Body – Mixed",
+                description: "Lower day with a bit less volume for higher-frequency weeks.",
+                exercises: [
+                    "Front Squat or Leg Press – 3 x 6–8",
+                    "Romanian Deadlift – 3 x 8–10",
+                    "Leg Curl – 2–3 x 10–12",
+                    "Calf Raises – 3 x 12–15"
+                ]
+            },
+            full: {
+                name: "Full Body – Strength Focus",
+                description: "Hit the main lifts in one session with simple accessories.",
+                exercises: [
+                    "Squat (any variation) – 3 x 5–8",
+                    "Bench Press or DB Press – 3 x 5–8",
+                    "Row (barbell or cable) – 3 x 8–10",
+                    "Lat Pulldown – 3 x 8–10",
+                    "Plank or Cable Crunch – 3 sets"
+                ]
+            },
+            recovery: {
+                name: "Recovery / Light Movement",
+                description: "Rest day. Focus on moving just enough to feel good.",
+                exercises: [
+                    "10–20 min easy walk",
+                    "5–10 min light stretching or foam rolling"
+                ]
+            }
         };
-        return map[today] ?? 0;
-    }
+
+        // ===== WEEKLY PROGRAM PATTERNS (Sun → Sat) =====
+        const PROGRAM_PATTERNS = {
+            3: ["full", "rest", "full", "rest", "full", "rest", "rest"],
+            4: ["upper", "lower", "rest", "upper", "lower", "rest", "rest"],
+            5: ["push", "pull", "legs", "upper", "lower", "rest", "rest"],
+            6: ["push", "pull", "legs", "push", "pull", "legs", "recovery"],
+            7: ["push", "pull", "legs", "upper", "lower", "full", "recovery"]
+        };
+
+        function getTodaySplitDefinition() {
+            const weeklyGoal = getWeeklyGoal() || 4; // you already have getWeeklyGoal()
+            const pattern = PROGRAM_PATTERNS[weeklyGoal] || PROGRAM_PATTERNS[4];
+
+            const todayIndex = new Date().getDay(); // 0 = Sun ... 6 = Sat
+            const key = pattern[todayIndex] || "rest";
+
+            let template;
+            if (key === "rest") {
+                template = {
+                    name: "Rest / Light Movement",
+                    description: "No heavy lifting planned. Walk, stretch, or move just enough to feel good.",
+                    exercises: []
+                };
+            } else {
+                template = SPLIT_TEMPLATES[key] || SPLIT_TEMPLATES["full"];
+            }
+
+            return {
+                ...template,
+                daysLabel: `${weeklyGoal} day/week goal`
+            };
+        }
+
 
     function renderTodaySplit() {
-        const splitNameEl = document.getElementById("split-name");
-        const splitDaysEl = document.getElementById("split-days");
-        const splitDescEl = document.getElementById("split-description");
-        const exerciseListEl = document.getElementById("exercise-list");
+            const splitNameEl = document.getElementById("split-name");
+            const splitDaysEl = document.getElementById("split-days");
+            const splitDescEl = document.getElementById("split-description");
+            const exerciseListEl = document.getElementById("exercise-list");
 
-        if (!splitNameEl || !exerciseListEl) return;
+            if (!splitNameEl || !exerciseListEl) return;
 
-        const split = splits[getTodaySplitIndex()];
+            const split = getTodaySplitDefinition();
+            const weightMap = getExerciseWeights(); // from earlier helpers
 
-        splitNameEl.textContent = split.name;
-        splitDaysEl.textContent = split.days;
-        splitDescEl.textContent = split.description;
+            splitNameEl.textContent = split.name;
+            splitDaysEl.textContent = split.daysLabel || "";
+            splitDescEl.textContent = split.description || "";
 
-        exerciseListEl.innerHTML = "";
+            // Clear old list
+            exerciseListEl.innerHTML = "";
 
-        split.exercises.forEach((exercise, index) => {
-            const li = document.createElement("li");
-            li.style.marginBottom = "0.5rem";
+            // Rest / recovery day: no checkboxes, just a message
+            if (!split.exercises || split.exercises.length === 0) {
+                const li = document.createElement("li");
+                li.style.marginBottom = "0.5rem";
+                li.textContent =
+                    "Rest or keep it light today. Walk, stretch, or move just enough to feel good.";
+                exerciseListEl.appendChild(li);
 
-            const id = `exercise-${index}`;
+                if (typeof checkSplitCompletion === "function") {
+                    checkSplitCompletion();
+                }
+                return;
+            }
 
-            li.innerHTML = `
+            split.exercises.forEach((exercise, index) => {
+                const li = document.createElement("li");
+                li.style.marginBottom = "0.75rem";
+
+                const checkboxId = `exercise-${index}`;
+                const weightInputId = `weight-${index}`;
+                const savedWeight = weightMap[exercise] ?? "";
+
+                li.innerHTML = `
             <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;">
-                <input type="checkbox" id="${id}" />
+                <input type="checkbox" id="${checkboxId}" />
                 <span>${exercise}</span>
             </label>
+            <div class="weight-row">
+                <span>Avg weight used:</span>
+                <input
+                    type="number"
+                    id="${weightInputId}"
+                    inputmode="decimal"
+                    min="0"
+                    step="5"
+                    value="${savedWeight !== "" ? savedWeight : ""}"
+                    data-exercise="${exercise}"
+                />
+                <span>lbs</span>
+            </div>
         `;
 
-            exerciseListEl.appendChild(li);
+                exerciseListEl.appendChild(li);
 
-            const checkbox = li.querySelector('input[type="checkbox"]');
-            if (checkbox) {
-                checkbox.addEventListener("change", () => {
-                    // haptic feedback
-                    if (checkbox.checked && "vibrate" in navigator) {
-                        navigator.vibrate(20);
-                    }
-                    checkSplitCompletion();
-                });
+                // Checkbox behavior (haptic + finisher check)
+                const checkbox = li.querySelector('input[type="checkbox"]');
+                if (checkbox) {
+                    checkbox.addEventListener("change", () => {
+                        if (checkbox.checked && "vibrate" in navigator) {
+                            navigator.vibrate(20);
+                        }
+                        if (typeof checkSplitCompletion === "function") {
+                            checkSplitCompletion();
+                        }
+                    });
+                }
+
+                // Weight input behavior (save last used weight)
+                const weightInput = li.querySelector(`#${weightInputId}`);
+                if (weightInput) {
+                    weightInput.addEventListener("change", () => {
+                        const exerciseName = weightInput.getAttribute("data-exercise");
+                        const rawValue = weightInput.value.trim();
+                        const num = parseFloat(rawValue);
+
+                        const weights = getExerciseWeights();
+                        if (!isNaN(num) && num > 0) {
+                            weights[exerciseName] = num;
+                        } else {
+                            delete weights[exerciseName];
+                        }
+                        saveExerciseWeights(weights);
+                    });
+                }
+            });
+
+            if (typeof checkSplitCompletion === "function") {
+                checkSplitCompletion();
             }
-        });
+        }
 
-        checkSplitCompletion();
-    }
+
 
     function checkSplitCompletion() {
         const exerciseListEl = document.getElementById("exercise-list");
@@ -1266,6 +1631,23 @@
                 showScreen("setup");
             });
         }
+
+        const addToHomeBtn = document.getElementById("add-to-home-btn");
+        if (addToHomeBtn) {
+            addToHomeBtn.addEventListener("click", () => {
+                // make sure we're on the setup screen
+                showScreen("setup");
+
+                // scroll to the install section
+                const installSection = document.getElementById("install");
+                if (installSection) {
+                    installSection.scrollIntoView({
+                        behavior: "smooth",
+                        block: "start"
+                    });
+                }
+            });
+        }
     }
 
 
@@ -1286,8 +1668,6 @@
             });
         }
     }
-
-    // If you’re using the "Add to Home Screen" prompt programmatically, that can live here too.
 
     // =============================
     // 9) INIT
