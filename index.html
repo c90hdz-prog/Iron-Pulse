@@ -809,6 +809,10 @@
                     <!-- JS fills this -->
                     Aim to train 4 days this week. Rest is allowed—consistency over perfection.
                 </p>
+                    <p id="weekly-progress-text" style="color:var(--text-muted);margin:0.35rem 0 0;font-size:0.9rem;">
+                        <!-- JS will show: 0 of 4 sessions completed this week -->
+                    </p>
+
             </article>
         </section>
 
@@ -941,9 +945,14 @@
     const WEEKLY_GOAL_KEY = "ironPulseWeeklyGoalDays";
     const DEFAULT_WEEKLY_GOAL = 4;
     const WEEKLY_GOAL_LOCKED_KEY = "ironPulseWeeklyGoalLocked";
+    // === WEEKLY PROGRESS + ROTATION STATE ===
+    const WORKOUTS_THIS_WEEK_KEY = "ironPulseWorkoutsCompleted";
+    const ROTATION_INDEX_KEY = "ironPulseRotationIndex";
+    const WEEK_META_KEY = "ironPulseWeekId";
 
-
-
+    // We'll assume your "splits" array is in this order:
+    // 0 = Push, 1 = Pull, 2 = Legs, 3 = Full Body
+    const ROTATION_ORDER = [0, 1, 2, 3];
 
     const EXERCISE_WEIGHT_KEY = "ironPulseExerciseWeights";
 
@@ -1027,29 +1036,88 @@
         }
     ];
     
+    function getCurrentWeekId() {
+            const today = new Date();
+
+            // Treat week as starting Monday
+            const dayIndex = (today.getDay() + 6) % 7; // Sun=0 → 6, Mon=1 → 0, etc.
+            const monday = new Date(today);
+            monday.setDate(today.getDate() - dayIndex);
+
+            const y = monday.getFullYear();
+            const m = String(monday.getMonth() + 1).padStart(2, "0");
+            const d = String(monday.getDate()).padStart(2, "0");
+
+            return `${y}-${m}-${d}`; // e.g. "2025-11-17"
+        }
+
+        function ensureWeeklyStateFresh() {
+            const currentWeekId = getCurrentWeekId();
+            const storedWeekId = localStorage.getItem(WEEK_META_KEY);
+
+            // First time ever, or new week → reset counters
+            if (storedWeekId !== currentWeekId) {
+                setWorkoutsCompletedThisWeek(0);
+                setRotationIndex(0);
+                localStorage.setItem(WEEK_META_KEY, currentWeekId);
+            }
+        }
+
+
+    function getWorkoutsCompletedThisWeek() {
+            const raw = localStorage.getItem(WORKOUTS_THIS_WEEK_KEY);
+            const num = parseInt(raw ?? "0", 10);
+            return Number.isNaN(num) ? 0 : num;
+        }
+
+        function setWorkoutsCompletedThisWeek(value) {
+            localStorage.setItem(WORKOUTS_THIS_WEEK_KEY, String(Math.max(0, value)));
+        }
+
+        function getRotationIndex() {
+            const raw = localStorage.getItem(ROTATION_INDEX_KEY);
+            const num = parseInt(raw ?? "0", 10);
+            if (Number.isNaN(num)) return 0;
+            // Make sure it always stays within the rotation length
+            return num % ROTATION_ORDER.length;
+        }
+
+        function setRotationIndex(value) {
+            const normalized = value % ROTATION_ORDER.length;
+            localStorage.setItem(ROTATION_INDEX_KEY, String(normalized));
+        }
+
+
+    function getTodaySplitIndex() {
+            // Use the rotation index and map it into the splits array
+            const rotationIndex = getRotationIndex();      // 0..(ROTATION_ORDER.length-1)
+            return ROTATION_ORDER[rotationIndex];          // returns an index into `splits`
+        }
+
+
     function getTodaySplitDefinition() {
-            const weeklyGoal = getWeeklyGoal() || DEFAULT_WEEKLY_GOAL; // e.g. 4
-            const pattern = PROGRAM_PATTERNS[weeklyGoal] || PROGRAM_PATTERNS[DEFAULT_WEEKLY_GOAL];
+            const rotationIndex = getRotationIndex();        // 0..(ROTATION_ORDER.length - 1)
+            const splitIndex = ROTATION_ORDER[rotationIndex]; // maps into `splits` array
+            const weeklyGoal = getWeeklyGoal() || DEFAULT_WEEKLY_GOAL;
 
-            const todayIndex = new Date().getDay(); // 0–6
-            const key = pattern[todayIndex] || "rest";
+            const template = splits[splitIndex];
 
-            let template;
-            if (key === "rest") {
-                template = {
-                    name: "Rest / Light Movement",
-                    description: "No heavy lifting planned. Walk, stretch, or move just enough to feel good.",
-                    exercises: []
+            if (!template) {
+                // super defensive fallback so the app never breaks
+                return {
+                    name: "Training Day",
+                    description: "Simple training session. Get in, move some weight, and get out.",
+                    exercises: [],
+                    daysLabel: `${weeklyGoal} days / week`
                 };
-            } else {
-                template = SPLIT_TEMPLATES[key] || SPLIT_TEMPLATES["full"];
             }
 
             return {
                 ...template,
-                daysLabel: `${weeklyGoal} day/week goal`
+                daysLabel: `${weeklyGoal} days / week`
             };
         }
+
 
 
 
@@ -1152,6 +1220,32 @@
     // =============================
     // 5) WEEKLY FOCUS LIVE CARD
     // =============================
+
+    function renderWeeklyProgress() {
+            const progressEl = document.getElementById("weekly-progress-text");
+            if (!progressEl) return;
+
+            const goal = getWeeklyGoal();
+            const completed = getWorkoutsCompletedThisWeek();
+
+            if (!goal) {
+                // No goal set yet → nothing to show
+                progressEl.textContent = "";
+                return;
+            }
+
+            // Base text
+            let text = `${completed} of ${goal} sessions completed this week.`;
+
+            // Nice little bonus line when they hit or exceed the goal
+            if (completed >= goal) {
+                text += " Goal hit — anything extra is a bonus.";
+            }
+
+            progressEl.textContent = text;
+        }
+
+
     function renderWeeklyFocusLive() {
             const daysLabelEl = document.getElementById("weekly-focus-days-label");
             const summaryEl = document.getElementById("weekly-focus-summary");
@@ -1196,57 +1290,47 @@
 
             let pendingDays = null; // what the user has selected but not committed yet
 
-            // 🔹 Reset button visibility: only show if a goal actually exists
+            // Reset button visibility: only show if a goal actually exists
             if (resetBtn) {
-                if (!currentGoal) {
-                    resetBtn.style.display = "none";
-                } else {
-                    resetBtn.style.display = "inline-flex";
-                }
+                resetBtn.style.display = currentGoal ? "inline-flex" : "none";
             }
 
-            // 🔹 Commit button starts hidden (we show it when a pill is tapped)
+            // Commit button starts hidden
             if (commitBtn) {
                 commitBtn.style.display = "none";
             }
 
-            // 🔹 Initialize pill states
+            // Initialize pill states
             pills.forEach(pill => {
                 const pillDays = parseInt(pill.getAttribute("data-days"), 10);
 
-                // Mark active if it matches the current locked goal
                 if (currentGoal && pillDays === currentGoal) {
                     pill.classList.add("active");
                 }
 
-                // Disable pills if goal is already locked
                 if (isLocked) {
                     pill.disabled = true;
                 }
 
                 pill.addEventListener("click", () => {
-                    // If already locked, ignore taps
                     if (localStorage.getItem(WEEKLY_GOAL_LOCKED_KEY) === "true") {
                         return;
                     }
 
-                    // Just update pending selection + highlight
                     pendingDays = pillDays;
 
                     pills.forEach(p => p.classList.remove("active"));
                     pill.classList.add("active");
 
-                    // Show commit button now that a choice is pending
                     if (commitBtn) {
                         commitBtn.style.display = "inline-flex";
                     }
                 });
             });
 
-            // 🔹 Commit the weekly goal (lock it + unlock daily UI)
+            // ✅ Commit the weekly goal (lock it + reset progress + rotation)
             if (commitBtn) {
                 commitBtn.addEventListener("click", () => {
-                    // If already locked or nothing selected, do nothing
                     if (localStorage.getItem(WEEKLY_GOAL_LOCKED_KEY) === "true") return;
                     if (!pendingDays) return;
 
@@ -1258,12 +1342,14 @@
                     setWeeklyGoal(pendingDays);
                     localStorage.setItem(WEEKLY_GOAL_LOCKED_KEY, "true");
 
-                    // Lock pills so you can't “fat finger” a different one
+                    // 🔹 Reset progress + rotation for a fresh week
+                    setWorkoutsCompletedThisWeek(0);
+                    setRotationIndex(0);
+
                     pills.forEach(p => {
                         p.disabled = true;
                     });
 
-                    // Hide commit, show reset
                     if (commitBtn) {
                         commitBtn.style.display = "none";
                     }
@@ -1271,14 +1357,14 @@
                         resetBtn.style.display = "inline-flex";
                     }
 
-                    // Update focus text + move selector + build today's split
                     renderWeeklyFocusLive();
                     repositionWeeklyGoalSection();
                     renderTodaySplit();
+                    renderWeeklyProgress();
                 });
             }
 
-            // 🔹 Reset weekly goal
+            // ✅ Reset weekly goal (also reset progress + rotation)
             if (resetBtn) {
                 resetBtn.addEventListener("click", () => {
                     const firstConfirm = window.confirm(
@@ -1292,17 +1378,18 @@
                     );
                     if (!secondConfirm) return;
 
-                    // Clear goal + lock
                     localStorage.removeItem(WEEKLY_GOAL_KEY);
                     localStorage.removeItem(WEEKLY_GOAL_LOCKED_KEY);
 
-                    // Unlock pills and remove active state
+                    // 🔹 Reset progress + rotation when goal is reset
+                    setWorkoutsCompletedThisWeek(0);
+                    setRotationIndex(0);
+
                     pills.forEach(p => {
                         p.classList.remove("active");
                         p.disabled = false;
                     });
 
-                    // Hide reset + commit until they choose again
                     if (resetBtn) {
                         resetBtn.style.display = "none";
                     }
@@ -1312,21 +1399,15 @@
 
                     pendingDays = null;
 
-                    // Re-render UI
                     renderWeeklyFocusLive();
                     repositionWeeklyGoalSection();
                     renderTodaySplit();
+                    renderWeeklyProgress();
                 });
             }
-
-            // Initial render for focus text + layout
             renderWeeklyFocusLive();
             repositionWeeklyGoalSection();
         }
-
-
-
-
 
 
 
@@ -1407,38 +1488,7 @@
             }
         };
 
-        // ===== WEEKLY PROGRAM PATTERNS (Sun → Sat) =====
-        const PROGRAM_PATTERNS = {
-            3: ["full", "rest", "full", "rest", "full", "rest", "rest"],
-            4: ["upper", "lower", "rest", "upper", "lower", "rest", "rest"],
-            5: ["push", "pull", "legs", "upper", "lower", "rest", "rest"],
-            6: ["push", "pull", "legs", "push", "pull", "legs", "recovery"],
-            7: ["push", "pull", "legs", "upper", "lower", "full", "recovery"]
-        };
-
-        function getTodaySplitDefinition() {
-            const weeklyGoal = getWeeklyGoal() || 4; // you already have getWeeklyGoal()
-            const pattern = PROGRAM_PATTERNS[weeklyGoal] || PROGRAM_PATTERNS[4];
-
-            const todayIndex = new Date().getDay(); // 0 = Sun ... 6 = Sat
-            const key = pattern[todayIndex] || "rest";
-
-            let template;
-            if (key === "rest") {
-                template = {
-                    name: "Rest / Light Movement",
-                    description: "No heavy lifting planned. Walk, stretch, or move just enough to feel good.",
-                    exercises: []
-                };
-            } else {
-                template = SPLIT_TEMPLATES[key] || SPLIT_TEMPLATES["full"];
-            }
-
-            return {
-                ...template,
-                daysLabel: `${weeklyGoal} day/week goal`
-            };
-        }
+        
 
 
     function renderTodaySplit() {
@@ -1448,6 +1498,8 @@
             const exerciseListEl = document.getElementById("exercise-list");
 
             if (!splitNameEl || !exerciseListEl) return;
+
+            hasRecordedCompletionForCurrentSplit = false;
 
             const split = getTodaySplitDefinition();
             const weightMap = getExerciseWeights(); // from earlier helpers
@@ -1540,6 +1592,32 @@
             }
         }
 
+    let hasRecordedCompletionForCurrentSplit = false;
+
+        function onWorkoutCompleted() {
+            if (hasRecordedCompletionForCurrentSplit) return; // safety guard
+
+            hasRecordedCompletionForCurrentSplit = true;
+
+            // 1) Increment workouts done toward the weekly goal
+            const current = getWorkoutsCompletedThisWeek();
+            setWorkoutsCompletedThisWeek(current + 1);
+
+            // 2) Advance the rotation index for the *next* workout
+            const currentRotation = getRotationIndex();
+            setRotationIndex(currentRotation + 1);
+
+            // 3) Optional: update any UI tied to weekly progress / streaks
+            //    (you already have updateStreak(); in your code)
+            if (typeof updateStreak === "function") {
+                updateStreak();
+            }
+            renderWeeklyProgress(); // ⬅️ add this
+            // In the future we can also:
+            // - award rest tokens
+            // - log history
+            // - show a little "Workout complete!" toast, etc.
+        }
 
 
     function checkSplitCompletion() {
@@ -1552,6 +1630,7 @@
 
         if (allChecked) {
             finisherCard.classList.remove("locked");
+            onWorkoutCompleted();
         } else {
             finisherCard.classList.add("locked");
         }
@@ -1562,93 +1641,104 @@
         // e.g., attach click handler to "Start Finisher" button, etc.
     }
 
-    // =============================
-    // 7) SCREEN NAVIGATION (SETUP/DAILY)
-    // =============================
-    function showScreen(name) {
-        const setup = document.getElementById("screen-setup");
-        const daily = document.getElementById("screen-daily");
-        if (!setup || !daily) return;
 
-        if (name === "setup") {
-            setup.style.display = "block";
-            daily.style.display = "none";
-        } else {
-            setup.style.display = "none";
-            daily.style.display = "block";
+        // =============================
+        // 2) SHOW SCREEN
+        // =============================
+        function showScreen(name) {
+            const setup = document.getElementById("screen-setup");
+            const daily = document.getElementById("screen-daily");
+            if (!setup || !daily) {
+                console.warn("screen elements not found");
+                return;
+            }
+
+            if (name === "setup") {
+                setup.style.display = "block";
+                daily.style.display = "none";
+            } else {
+                setup.style.display = "none";
+                daily.style.display = "block";
+            }
+
+            localStorage.setItem(LAST_SCREEN_KEY, name);
+            window.scrollTo({ top: 0, behavior: "smooth" });
         }
 
-        localStorage.setItem(LAST_SCREEN_KEY, name);
+        // =============================
+        // 3) INIT SCREENS + BUTTONS
+        // =============================
+        function initScreens() {
+            console.log("initScreens running");
 
-        const main = document.querySelector("main");
-        if (main && typeof main.scrollTo === "function") {
-            main.scrollTo({ top: 0, behavior: "auto" });
-        } else {
-            window.scrollTo({ top: 0, behavior: "auto" });
-        }
-    }
+            const onboarded = localStorage.getItem(ONBOARDED_KEY) === "true";
+            const last = localStorage.getItem(LAST_SCREEN_KEY);
 
-    function initScreens() {
-        const onboarded = localStorage.getItem(ONBOARDED_KEY) === "true";
-        const last = localStorage.getItem(LAST_SCREEN_KEY);
-
-        if (!onboarded) {
-            showScreen("setup");
-        } else if (last) {
-            showScreen(last);
-        } else {
-            showScreen("daily");
-        }
-
-        const heroCta = document.getElementById("hero-cta");
-        if (heroCta) {
-            heroCta.addEventListener("click", () => {
-                localStorage.setItem(ONBOARDED_KEY, "true");
-                showScreen("daily");
-            });
-        }
-
-        const getStartedBtn = document.getElementById("get-started-btn");
-        if (getStartedBtn) {
-            getStartedBtn.addEventListener("click", () => {
-                localStorage.setItem(ONBOARDED_KEY, "true");
-                showScreen("daily");
-            });
-        }
-
-        const bottomSplitBtn = document.getElementById("bottom-split-btn");
-        if (bottomSplitBtn) {
-            bottomSplitBtn.addEventListener("click", () => {
-                localStorage.setItem(ONBOARDED_KEY, "true");
-                showScreen("daily");
-            });
-        }
-
-        const settingsBtn = document.getElementById("open-settings-btn");
-        if (settingsBtn) {
-            settingsBtn.addEventListener("click", (e) => {
-                e.preventDefault();
+            if (!onboarded) {
+                console.log("Not onboarded → show setup");
                 showScreen("setup");
-            });
+            } else if (last === "daily" || last === "setup") {
+                console.log("Onboarded, last:", last);
+                showScreen(last);
+            } else {
+                console.log("Onboarded, no last → daily");
+                showScreen("daily");
+            }
+
+            // --- Start Today (top nav) ---
+            const heroCta = document.getElementById("hero-cta");
+            if (heroCta) {
+                heroCta.addEventListener("click", () => {
+                    console.log("hero-cta clicked");
+                    localStorage.setItem(ONBOARDED_KEY, "true");
+                    showScreen("daily");
+                });
+            } else {
+                console.warn("hero-cta not found");
+            }
+
+            // --- Get Started (bottom bar) ---
+            const bottomSplitBtn = document.getElementById("bottom-split-btn");
+            if (bottomSplitBtn) {
+                bottomSplitBtn.addEventListener("click", () => {
+                    console.log("bottom-split-btn clicked");
+                    localStorage.setItem(ONBOARDED_KEY, "true");
+                    showScreen("daily");
+                });
+            } else {
+                console.warn("bottom-split-btn not found");
+            }
+
+            // --- Setup button in nav ---
+            const settingsBtn = document.getElementById("open-settings-btn");
+            if (settingsBtn) {
+                settingsBtn.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    console.log("open-settings-btn clicked");
+                    showScreen("setup");
+                });
+            } else {
+                console.warn("open-settings-btn not found");
+            }
+
+            // --- Add to Home Screen button ---
+            const addToHomeBtn = document.getElementById("add-to-home-btn");
+            if (addToHomeBtn) {
+                addToHomeBtn.addEventListener("click", () => {
+                    console.log("add-to-home-btn clicked");
+                    const installSection = document.getElementById("install");
+                    if (installSection) {
+                        installSection.scrollIntoView({ behavior: "smooth" });
+                    } else {
+                        console.warn("#install section not found");
+                    }
+                });
+            } else {
+                console.warn("add-to-home-btn not found");
+            }
         }
 
-        const addToHomeBtn = document.getElementById("add-to-home-btn");
-        if (addToHomeBtn) {
-            addToHomeBtn.addEventListener("click", () => {
-                // make sure we're on the setup screen
-                showScreen("setup");
 
-                // scroll to the install section
-                const installSection = document.getElementById("install");
-                if (installSection) {
-                    installSection.scrollIntoView({
-                        behavior: "smooth",
-                        block: "start"
-                    });
-                }
-            });
-        }
-    }
 
 
     // =============================
@@ -1673,6 +1763,7 @@
     // 9) INIT
     // =============================
     window.addEventListener("DOMContentLoaded", () => {
+        ensureWeeklyStateFresh();
         initScreens();
         renderTodaySplit();
         initWeeklyGoalControls();
@@ -1680,6 +1771,7 @@
         initQuotes();
         initFinisherControls();
         initServiceWorker();
+        renderWeeklyProgress();
     });
 </script>
 
