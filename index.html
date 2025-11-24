@@ -450,17 +450,51 @@
     
         /* Streak banner + finisher card states */
         .streak-banner {
-            margin-bottom: 1rem;
-            padding: 0.75rem 1rem;
-            border-radius: 999px;
-            background: linear-gradient(135deg, rgba(255, 81, 47, 0.18), rgba(246, 195, 67, 0.12));
-            border: 1px solid var(--card-border);
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-primary);
-        }
+    margin-bottom: 1rem;
+    padding: 0.75rem 1rem;
+    border-radius: 999px;
+    background: linear-gradient(135deg, rgba(255, 81, 47, 0.18), rgba(246, 195, 67, 0.12));
+    border: 1px solid var(--card-border);
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    color: var(--text-primary);
+}
+
+.streak-icon {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.streak-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.streak-subline {
+    opacity: 0.9;
+    font-size: 0.9em;
+}
+
+.streak-progress {
+    margin-top: 0.35rem;
+    width: 100%;
+    height: 4px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.14);
+    overflow: hidden;
+}
+
+.streak-progress-fill {
+    height: 100%;
+    width: 0;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    transition: width 0.25s ease;
+}
+
     
         .streak-banner span {
             font-weight: 500;
@@ -642,6 +676,146 @@
     font-size: 0.85rem;
 }
 
+/* --- Toast notifications --- */
+.toast-container {
+    position: fixed;
+    left: 50%;
+    bottom: 5rem;
+    transform: translateX(-50%);
+    z-index: 40;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.toast {
+    background: rgba(16, 18, 25, 0.95);
+    border-radius: 999px;
+    padding: 0.6rem 1.1rem;
+    border: 1px solid var(--card-border);
+    font-size: 0.85rem;
+    white-space: nowrap;
+    animation: toast-in 0.25s ease-out forwards;
+}
+
+.toast.out {
+    animation: toast-out 0.2s ease-in forwards;
+}
+
+@keyframes toast-in {
+    from {
+        opacity: 0;
+        transform: translate(-50%, 10px);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+}
+
+@keyframes toast-out {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+        transform: translate(-50%, 6px);
+    }
+}
+
+/* --- Daily completion halo on Today's Split card --- */
+.day-complete-boost {
+    animation: day-complete-pulse 0.6s ease-out;
+}
+
+@keyframes day-complete-pulse {
+    0% {
+        box-shadow: 0 0 0 rgba(246, 195, 67, 0);
+    }
+    40% {
+        box-shadow: 0 0 24px rgba(246, 195, 67, 0.45);
+    }
+    100% {
+        box-shadow: 0 0 0 rgba(246, 195, 67, 0);
+    }
+}
+
+/* --- Finisher card micro-pop --- */
+.finisher-celebrate {
+    animation: finisher-pop 0.5s ease-out;
+}
+
+@keyframes finisher-pop {
+    0% {
+        transform: scale(1);
+    }
+    35% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* --- Weekly goal celebration overlay --- */
+.weekly-overlay {
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(circle at top, rgba(255, 81, 47, 0.18), rgba(4, 4, 5, 0.96));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    animation: overlay-in 0.35s ease-out forwards;
+}
+
+.weekly-overlay-card {
+    padding: 1.75rem 2rem;
+    border-radius: 1.5rem;
+    background: rgba(4, 4, 5, 0.95);
+    border: 1px solid var(--card-border);
+    text-align: center;
+    max-width: 320px;
+}
+
+.weekly-overlay-card h2 {
+    margin: 0 0 0.5rem;
+    font-size: 1.5rem;
+}
+
+.weekly-overlay-card p {
+    margin: 0 0 1.25rem;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+@keyframes overlay-in {
+    from {
+        opacity: 0;
+        transform: scale(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.finisher-card.completed-pulse {
+    box-shadow: 0 0 0 0 rgba(246, 195, 67, 0.7);
+    animation: finisherPulse 0.6s ease-out;
+}
+
+@keyframes finisherPulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(246, 195, 67, 0.7);
+    }
+    100% {
+        box-shadow: 0 0 0 16px rgba(246, 195, 67, 0);
+    }
+}
+
+
     </style>
 
 </head>
@@ -787,8 +961,15 @@
         
 <div id="screen-daily">
     <div id="streak-banner" class="streak-banner hidden">
-        <span id="streak-text"></span>
+        <div class="streak-icon">🔥</div>
+        <div class="streak-body">
+            <span id="streak-text"></span>
+            <div class="streak-progress">
+                <div class="streak-progress-fill" id="streak-progress-fill"></div>
+            </div>
+        </div>
     </div>
+
         <section class="section" id="weekly-focus-live">
             <div class="section-head">
                 <h2>This Week's Focus</h2>
@@ -815,6 +996,18 @@
 
             </article>
         </section>
+
+        <section class="section" id="weekly-volume-section">
+            <article class="workout-card" id="weekly-volume-card">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <h3 style="margin:0;">This Week’s Volume</h3>
+                </div>
+                <p id="weekly-volume-summary" style="color:var(--text-muted);margin:0.75rem 0 0;">
+                    Once you complete your first session, we’ll show how much total weight you’ve moved this week.
+                </p>
+            </article>
+        </section>
+
 
 
     <div id="daily-main-content">
@@ -883,17 +1076,42 @@
                         Complete your sets
                     </span>
                 </div>
+            
                 <p id="finisher-description" style="color:var(--text-muted);margin:0 0 0.75rem 0;">
                     Check off all exercises in Today’s Split to unlock this finisher.
                 </p>
+            
+                <!-- Finisher selection UI -->
+                <div id="finisher-setup">
+                    <p style="color:var(--text-muted);margin:0 0 0.5rem;">
+                        After your main work, pick a finisher type and difficulty:
+                    </p>
+            
+                    <div id="finisher-categories" style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.5rem;">
+                        <button class="btn btn-outline finisher-cat-btn" data-category="conditioning">Conditioning</button>
+                        <button class="btn btn-outline finisher-cat-btn" data-category="bodyweight">Bodyweight</button>
+                        <button class="btn btn-outline finisher-cat-btn" data-category="pump">Pump</button>
+                        <button class="btn btn-outline finisher-cat-btn" data-category="recovery">Recovery</button>
+                    </div>
+            
+                    <div id="finisher-difficulties" class="hidden"
+                        style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.5rem;">
+                        <button class="btn btn-outline finisher-diff-btn" data-difficulty="easy">Easy</button>
+                        <button class="btn btn-outline finisher-diff-btn" data-difficulty="standard">Standard</button>
+                        <button class="btn btn-outline finisher-diff-btn" data-difficulty="hard">Hard</button>
+                    </div>
+                </div>
+            
                 <p id="finisher-status" style="color:var(--text-muted);font-size:0.9rem;margin:0 0 1rem 0;">
                     Main work first. Earn the extra.
                 </p>
+            
                 <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
                     <button class="btn btn-primary" id="finisher-do-btn" disabled>Do the Finisher</button>
                     <button class="btn btn-outline" id="finisher-skip-btn" disabled>Skip for Today</button>
                 </div>
             </article>
+
         </section>
     </div>
 
@@ -948,10 +1166,8 @@
     // === WEEKLY PROGRESS + ROTATION STATE ===
     const WORKOUTS_THIS_WEEK_KEY = "ironPulseWorkoutsCompleted";
     const ROTATION_INDEX_KEY = "ironPulseRotationIndex";
-    const WEEK_META_KEY = "ironPulseWeekId";
-
-    // We'll assume your "splits" array is in this order:
-    // 0 = Push, 1 = Pull, 2 = Legs, 3 = Full Body
+    const WEEK_ID_KEY = "ironPulseWeekId";            // which week the counters belong to
+    const WEEKLY_STREAK_KEY = "ironPulseWeeklyStreak"; // how many successful weeks in a row
     const ROTATION_ORDER = [0, 1, 2, 3];
 
     const EXERCISE_WEIGHT_KEY = "ironPulseExerciseWeights";
@@ -975,6 +1191,12 @@
             }
         }
 
+        // === Rest tokens ===
+    const REST_TOKENS_KEY = "ironPulseRestTokens";
+    const REST_TOKEN_PROGRESS_KEY = "ironPulseRestTokenProgress";
+
+    // === Weekly weight (by day, 0 = Sunday ... 6 = Saturday) ===
+    const WEEKLY_WEIGHT_BY_DAY_KEY = "ironPulseWeeklyWeightByDay";
 
     // Daily quotes
     const quotes = [
@@ -1035,7 +1257,95 @@
             ]
         }
     ];
-    
+    // ----- Rest token helpers -----
+        function getRestTokens() {
+            const raw = localStorage.getItem(REST_TOKENS_KEY);
+            const num = parseInt(raw ?? "0", 10);
+            return Number.isNaN(num) ? 0 : Math.max(0, num);
+        }
+
+        function setRestTokens(value) {
+            localStorage.setItem(REST_TOKENS_KEY, String(Math.max(0, value)));
+        }
+
+        function getRestTokenProgress() {
+            const raw = localStorage.getItem(REST_TOKEN_PROGRESS_KEY);
+            const num = parseFloat(raw ?? "0");
+            if (Number.isNaN(num)) return 0;
+            return Math.min(Math.max(num, 0), 1);
+        }
+
+        function setRestTokenProgress(value) {
+            const clamped = Math.min(Math.max(value, 0), 1);
+            localStorage.setItem(REST_TOKEN_PROGRESS_KEY, String(clamped));
+        }
+
+        function addRestTokenProgress(amount) {
+            let progress = getRestTokenProgress();
+            let tokens = getRestTokens();
+
+            progress += amount;
+
+            while (progress >= 1) {
+                tokens += 1;
+                progress -= 1;
+            }
+
+            setRestTokens(tokens);
+            setRestTokenProgress(progress);
+        }
+
+        // ----- Weekly weight helpers -----
+        function getWeeklyWeightByDay() {
+            try {
+                const raw = localStorage.getItem(WEEKLY_WEIGHT_BY_DAY_KEY);
+                if (!raw) return {};
+                const parsed = JSON.parse(raw);
+                return parsed && typeof parsed === "object" ? parsed : {};
+            } catch {
+                return {};
+            }
+        }
+
+        function setWeeklyWeightByDay(map) {
+            try {
+                localStorage.setItem(WEEKLY_WEIGHT_BY_DAY_KEY, JSON.stringify(map));
+            } catch {
+                // ignore
+            }
+        }
+
+        function resetWeeklyWeightByDay() {
+            localStorage.removeItem(WEEKLY_WEIGHT_BY_DAY_KEY);
+        }
+
+        function addTodayWeight(volumeLbs) {
+            const dayIndex = new Date().getDay(); // 0-6
+            const map = getWeeklyWeightByDay();
+            const prev = parseFloat(map[dayIndex] ?? "0") || 0;
+            map[dayIndex] = prev + Math.max(0, volumeLbs);
+            setWeeklyWeightByDay(map);
+        }
+
+        function getWeeklyTotalWeight() {
+            const map = getWeeklyWeightByDay();
+            return Object.values(map).reduce((sum, v) => sum + (parseFloat(v) || 0), 0);
+        }
+
+    function getWeeklyStreak() {
+            const raw = localStorage.getItem(WEEKLY_STREAK_KEY);
+            const num = parseInt(raw ?? "0", 10);
+            return Number.isNaN(num) ? 0 : num;
+        }
+
+        function setWeeklyStreak(value) {
+            const safe = Math.max(0, value);
+            localStorage.setItem(WEEKLY_STREAK_KEY, String(safe));
+        }
+
+
+
+
     function getCurrentWeekId() {
             const today = new Date();
 
@@ -1051,17 +1361,6 @@
             return `${y}-${m}-${d}`; // e.g. "2025-11-17"
         }
 
-        function ensureWeeklyStateFresh() {
-            const currentWeekId = getCurrentWeekId();
-            const storedWeekId = localStorage.getItem(WEEK_META_KEY);
-
-            // First time ever, or new week → reset counters
-            if (storedWeekId !== currentWeekId) {
-                setWorkoutsCompletedThisWeek(0);
-                setRotationIndex(0);
-                localStorage.setItem(WEEK_META_KEY, currentWeekId);
-            }
-        }
 
 
     function getWorkoutsCompletedThisWeek() {
@@ -1118,7 +1417,42 @@
             };
         }
 
+        function describeHeavyComparison(totalLbs) {
+                if (totalLbs <= 0) {
+                    return "No volume logged yet. Start lifting and we’ll keep score for you.";
+                }
 
+                // super loose, fun comparisons
+                const objects = [
+                    { threshold: 2000, label: "about the weight of a small car" },
+                    { threshold: 4000, label: "roughly a full-size pickup truck" },
+                    { threshold: 10000, label: "around a loaded delivery truck" },
+                    { threshold: 20000, label: "close to a city bus" },
+                    { threshold: 50000, label: "more than a fire truck" },
+                    { threshold: 100000, label: "roughly a small airplane" }
+                ];
+
+                let best = objects[0];
+                for (const obj of objects) {
+                    if (totalLbs >= obj.threshold) {
+                        best = obj;
+                    } else {
+                        break;
+                    }
+                }
+
+                const cars = (totalLbs / 4000).toFixed(1);
+
+                return `You’ve moved a total of ${Math.round(totalLbs).toLocaleString()} lbs this week — roughly ${cars} car(s) worth of weight, or ${best.label}.`;
+            }
+
+        function updateWeeklyVolumeSummary() {
+                const summaryEl = document.getElementById("weekly-volume-summary");
+                if (!summaryEl) return;
+
+                const total = getWeeklyTotalWeight();
+                summaryEl.textContent = describeHeavyComparison(total);
+            }
 
 
     // =============================
@@ -1220,30 +1554,6 @@
     // =============================
     // 5) WEEKLY FOCUS LIVE CARD
     // =============================
-
-    function renderWeeklyProgress() {
-            const progressEl = document.getElementById("weekly-progress-text");
-            if (!progressEl) return;
-
-            const goal = getWeeklyGoal();
-            const completed = getWorkoutsCompletedThisWeek();
-
-            if (!goal) {
-                // No goal set yet → nothing to show
-                progressEl.textContent = "";
-                return;
-            }
-
-            // Base text
-            let text = `${completed} of ${goal} sessions completed this week.`;
-
-            // Nice little bonus line when they hit or exceed the goal
-            if (completed >= goal) {
-                text += " Goal hit — anything extra is a bonus.";
-            }
-
-            progressEl.textContent = text;
-        }
 
 
     function renderWeeklyFocusLive() {
@@ -1360,7 +1670,7 @@
                     renderWeeklyFocusLive();
                     repositionWeeklyGoalSection();
                     renderTodaySplit();
-                    renderWeeklyProgress();
+                    updateStreak();
                 });
             }
 
@@ -1402,7 +1712,7 @@
                     renderWeeklyFocusLive();
                     repositionWeeklyGoalSection();
                     renderTodaySplit();
-                    renderWeeklyProgress();
+                    updateStreak();
                 });
             }
             renderWeeklyFocusLive();
@@ -1412,6 +1722,74 @@
 
 
     // ===== SPLIT TEMPLATES =====
+
+        const FINISHERS = {
+                conditioning: {
+                    easy: {
+                        title: "5-Min Incline Walk",
+                        description: "Walk on the treadmill or around the gym for 5 minutes at a steady pace.",
+                        tokenReward: 0
+                    },
+                    standard: {
+                        title: "10-Min Cardio Block",
+                        description: "Bike, rower, or stair master for 10 minutes at a moderate pace.",
+                        tokenReward: 0.25
+                    },
+                    hard: {
+                        title: "1-Mile Push",
+                        description: "Walk or jog 1 mile. Keep it honest but sustainable.",
+                        tokenReward: 1
+                    }
+                },
+                bodyweight: {
+                    easy: {
+                        title: "Core Check-In",
+                        description: "1 minute plank (can be broken into two 30s holds).",
+                        tokenReward: 0
+                    },
+                    standard: {
+                        title: "Simple Bodyweight Circuit",
+                        description: "3 rounds: 10 push-ups, 15 bodyweight squats, 20 jumping jacks.",
+                        tokenReward: 0.25
+                    },
+                    hard: {
+                        title: "Burpee Challenge",
+                        description: "50 burpees for time, or as many as you can in 4 minutes.",
+                        tokenReward: 1
+                    }
+                },
+                pump: {
+                    easy: {
+                        title: "30-Rep Pump",
+                        description: "Pick any machine or dumbbell movement and do 30 controlled reps.",
+                        tokenReward: 0
+                    },
+                    standard: {
+                        title: "50-Rep Combo",
+                        description: "Superset biceps and triceps for a total of 50 reps.",
+                        tokenReward: 0.25
+                    },
+                    hard: {
+                        title: "100-Rep Finisher",
+                        description: "Choose one movement (curls, pushdowns, lateral raises, etc.) and complete 100 total reps.",
+                        tokenReward: 1
+                    }
+                },
+                recovery: {
+                    easy: {
+                        title: "3-Min Stretch Reset",
+                        description: "Spend at least 3 minutes stretching hips, hamstrings, and chest.",
+                        tokenReward: 0
+                    },
+                    standard: {
+                        title: "Mobility Flow",
+                        description: "5–8 minutes of light mobility work: cat-cow, world’s greatest stretch, shoulder circles.",
+                        tokenReward: 0
+                    },
+                    hard: null // no hard tier for recovery; hard work earns tokens elsewhere
+                }
+            };
+
         const SPLIT_TEMPLATES = {
             push: {
                 name: "Push Day – Chest, Shoulders, Triceps",
@@ -1488,8 +1866,57 @@
             }
         };
 
-        
+     function evaluateLastWeekForStreak() {
+            const goal = getWeeklyGoal();
+            const done = getWorkoutsCompletedThisWeek();
 
+            // If there's no goal, we can't really say the week was a success.
+            if (!goal) {
+                setWeeklyStreak(0);
+                return;
+            }
+
+            const currentStreak = getWeeklyStreak();
+
+            if (done >= goal) {
+                // Hit or exceeded the weekly goal → streak continues
+                setWeeklyStreak(currentStreak + 1);
+            } else {
+                // Missed the goal → streak breaks
+                setWeeklyStreak(0);
+            }
+        }
+
+        function ensureWeeklyState() {
+            const currentWeekId = getCurrentWeekId();
+            const storedWeekId = localStorage.getItem(WEEK_ID_KEY);
+
+            // First time using the app: initialize week ID and bail
+            if (!storedWeekId) {
+                localStorage.setItem(WEEK_ID_KEY, currentWeekId);
+                return;
+            }
+
+            // Same week → nothing to do
+            if (storedWeekId === currentWeekId) {
+                return;
+            }
+
+            // 🚀 New week detected:
+            // 1) Evaluate last week for streak
+            evaluateLastWeekForStreak();
+
+            // 2) Reset weekly counters for the new week
+            setWorkoutsCompletedThisWeek(0);
+            setRotationIndex(0);
+            resetWeeklyWeightByDay();
+
+            // 3) Store the new week ID
+            localStorage.setItem(WEEK_ID_KEY, currentWeekId);
+        }
+   
+
+    let hasRecordedCompletionForCurrentSplit = false;    
 
     function renderTodaySplit() {
             const splitNameEl = document.getElementById("split-name");
@@ -1592,54 +2019,262 @@
             }
         }
 
-    let hasRecordedCompletionForCurrentSplit = false;
 
-        function onWorkoutCompleted() {
-            if (hasRecordedCompletionForCurrentSplit) return; // safety guard
+    function updateStreak() {
+            const banner = document.getElementById("streak-banner");
+            const textEl = document.getElementById("streak-text");
+            if (!banner || !textEl) return;
 
-            hasRecordedCompletionForCurrentSplit = true;
+            const goal = getWeeklyGoal();
+            const done = getWorkoutsCompletedThisWeek();
+            const streak = getWeeklyStreak?.() ?? 0; // if you already have this
 
-            // 1) Increment workouts done toward the weekly goal
-            const current = getWorkoutsCompletedThisWeek();
-            setWorkoutsCompletedThisWeek(current + 1);
-
-            // 2) Advance the rotation index for the *next* workout
-            const currentRotation = getRotationIndex();
-            setRotationIndex(currentRotation + 1);
-
-            // 3) Optional: update any UI tied to weekly progress / streaks
-            //    (you already have updateStreak(); in your code)
-            if (typeof updateStreak === "function") {
-                updateStreak();
+            // If there's no weekly goal yet, hide the banner
+            if (!goal) {
+                banner.classList.add("hidden");
+                return;
             }
-            renderWeeklyProgress(); // ⬅️ add this
-            // In the future we can also:
-            // - award rest tokens
-            // - log history
-            // - show a little "Workout complete!" toast, etc.
+
+            banner.classList.remove("hidden");
+
+            // ---- Progress line ----
+            let progressLine = `This week: ${done} / ${goal} sessions done. `;
+            if (done === 0) {
+                progressLine += "First session is still waiting for you. ";
+            } else if (done < goal) {
+                const left = goal - done;
+                progressLine += `${left} more to hit your weekly commitment. `;
+            } else {
+                progressLine += "Weekly goal hit — everything from here is bonus work. ";
+            }
+
+            // ---- Streak line ----
+            let streakLine = "";
+            if (streak <= 0) {
+                streakLine = "No active streak yet — hit your goal this week to start one.";
+            } else if (streak === 1) {
+                streakLine = "Weekly streak: 1 week in a row.";
+            } else {
+                streakLine = `Weekly streak: ${streak} weeks in a row.`;
+            }
+
+            // ---- Rest token line ----
+            const tokens = getRestTokens();
+            const progress = getRestTokenProgress();
+            const progressPct = Math.round(progress * 100);
+
+            let tokenLine = ` Rest tokens: ${tokens}`;
+            if (progress > 0 && progress < 1) {
+                tokenLine += ` ( ${progressPct}% toward your next token )`;
+            } else if (tokens === 0 && progress === 0) {
+                tokenLine += " — earn them by taking on harder finishers.";
+            }
+
+            textEl.textContent = progressLine + streakLine + tokenLine;
         }
+
+
+
+        
+
+    function onWorkoutCompleted() {
+        if (hasRecordedCompletionForCurrentSplit) return; // safety guard
+        hasRecordedCompletionForCurrentSplit = true;
+
+        // 1) Increment workouts done toward the weekly goal
+        const current = getWorkoutsCompletedThisWeek();
+        setWorkoutsCompletedThisWeek(current + 1);
+
+        // 2) Advance the rotation index for the *next* workout
+        const currentRotation = getRotationIndex();
+        setRotationIndex(currentRotation + 1);
+
+        // 3) Estimate today's total volume based on "Avg weight used" inputs
+        const exerciseListEl = document.getElementById("exercise-list");
+        if (exerciseListEl) {
+            const weightInputs = exerciseListEl.querySelectorAll('input[type="number"][data-exercise]');
+            let todayVolume = 0;
+
+            const EST_REPS_PER_EXERCISE = 30; // rough estimate (e.g. 3x10)
+
+            weightInputs.forEach(input => {
+                const w = parseFloat(input.value || "0");
+                if (!Number.isNaN(w) && w > 0) {
+                    todayVolume += w * EST_REPS_PER_EXERCISE;
+                }
+            });
+
+            if (todayVolume > 0) {
+                addTodayWeight(todayVolume);
+            }
+        }
+
+        // 4) Update streak banner and (later) any weight UI
+        updateStreak();
+        updateWeeklyVolumeSummary?.();
+        flashDayComplete();
+        celebrateWeeklyGoalHit();
+    }
+
+
 
 
     function checkSplitCompletion() {
-        const exerciseListEl = document.getElementById("exercise-list");
-        const finisherCard = document.querySelector(".finisher-card");
-        if (!exerciseListEl || !finisherCard) return;
+            const exerciseListEl = document.getElementById("exercise-list");
+            const finisherCard = document.querySelector(".finisher-card");
+            const doBtn = document.getElementById("finisher-do-btn");
+            const skipBtn = document.getElementById("finisher-skip-btn");
 
-        const checkboxes = exerciseListEl.querySelectorAll('input[type="checkbox"]');
-        const allChecked = checkboxes.length > 0 && Array.from(checkboxes).every(cb => cb.checked);
+            if (!exerciseListEl || !finisherCard || !doBtn || !skipBtn) return;
 
-        if (allChecked) {
-            finisherCard.classList.remove("locked");
-            onWorkoutCompleted();
-        } else {
-            finisherCard.classList.add("locked");
+            const checkboxes = exerciseListEl.querySelectorAll('input[type="checkbox"]');
+            const allChecked = checkboxes.length > 0 && Array.from(checkboxes).every(cb => cb.checked);
+
+            if (allChecked) {
+                finisherCard.classList.remove("locked");
+                doBtn.disabled = false;
+                skipBtn.disabled = false;
+                onWorkoutCompleted();
+            } else {
+                finisherCard.classList.add("locked");
+                doBtn.disabled = true;
+                skipBtn.disabled = true;
+                // if they uncheck something, we don't undo the logged workout,
+                // but we do keep the finisher locked until it's all done
+            }
         }
-    }
+
 
     // If you have extra finisher-specific controls, they can live here:
     function initFinisherControls() {
-        // e.g., attach click handler to "Start Finisher" button, etc.
-    }
+            const finisherCard = document.getElementById("finisher-card");
+            if (!finisherCard) return;
+
+            const titleEl = document.getElementById("finisher-title");
+            const tagEl = document.getElementById("finisher-tag");
+            const descEl = document.getElementById("finisher-description");
+            const statusEl = document.getElementById("finisher-status");
+            const catButtons = document.querySelectorAll(".finisher-cat-btn");
+            const diffButtons = document.querySelectorAll(".finisher-diff-btn");
+            const diffContainer = document.getElementById("finisher-difficulties");
+            const doBtn = document.getElementById("finisher-do-btn");
+            const skipBtn = document.getElementById("finisher-skip-btn");
+
+            if (!titleEl || !tagEl || !descEl || !statusEl || !diffContainer || !doBtn || !skipBtn) return;
+
+            let selectedCategory = null;
+            let selectedDifficulty = null;
+            let currentFinisher = null;
+
+            function clearDiffSelection() {
+                diffButtons.forEach(btn => btn.classList.remove("btn-primary"));
+            }
+
+            function clearCatSelection() {
+                catButtons.forEach(btn => btn.classList.remove("btn-primary"));
+            }
+
+            function selectFinisher(catKey, diffKey) {
+                const cat = FINISHERS[catKey];
+                if (!cat) return;
+
+                const data = cat[diffKey];
+                if (!data) return; // e.g. no "hard" for recovery
+
+                currentFinisher = data;
+                selectedCategory = catKey;
+                selectedDifficulty = diffKey;
+
+                titleEl.textContent = data.title;
+                descEl.textContent = data.description;
+                tagEl.textContent = `${catKey} • ${diffKey}`.toUpperCase();
+                statusEl.textContent =
+                    data.tokenReward > 0
+                        ? `Complete this finisher to earn ${data.tokenReward >= 1 ? "a Rest Token" : `${data.tokenReward * 100}% of a Rest Token`}.`
+                        : "Extra work for extra pride — no token reward on this one.";
+
+                doBtn.disabled = false;
+                skipBtn.disabled = false;
+            }
+
+            // Category buttons
+            catButtons.forEach(btn => {
+                btn.addEventListener("click", () => {
+                    if (finisherCard.classList.contains("locked")) return;
+
+                    const cat = btn.getAttribute("data-category");
+                    if (!cat) return;
+
+                    clearCatSelection();
+                    btn.classList.add("btn-primary");
+
+                    // Show difficulty row and reset selection
+                    diffContainer.classList.remove("hidden");
+                    clearDiffSelection();
+                    selectedDifficulty = null;
+                    currentFinisher = null;
+
+                    titleEl.textContent = "Pick your finisher difficulty";
+                    descEl.textContent = "Choose how hard you want to push today. Harder options can earn Rest Tokens.";
+                    tagEl.textContent = cat.toUpperCase();
+                    statusEl.textContent = "Select Easy, Standard, or Hard to lock in your finisher.";
+                });
+            });
+
+            // Difficulty buttons
+            diffButtons.forEach(btn => {
+                btn.addEventListener("click", () => {
+                    if (finisherCard.classList.contains("locked")) return;
+
+                    const diff = btn.getAttribute("data-difficulty");
+                    if (!diff) return;
+
+                    const activeCatBtn = Array.from(catButtons).find(b => b.classList.contains("btn-primary"));
+                    if (!activeCatBtn) return;
+
+                    const cat = activeCatBtn.getAttribute("data-category");
+
+                    clearDiffSelection();
+                    btn.classList.add("btn-primary");
+
+                    selectFinisher(cat, diff);
+                });
+            });
+
+            // Do Finisher
+        // Do Finisher
+        doBtn.addEventListener("click", () => {
+            if (finisherCard.classList.contains("locked")) return;
+
+            if (!currentFinisher) {
+                showToast("Pick a finisher category and difficulty first.");
+                return;
+            }
+
+            const ok = window.confirm("Mark this finisher as completed?");
+            if (!ok) return;
+
+            const reward = currentFinisher.tokenReward || 0;
+            if (reward > 0) {
+                addRestTokenProgress(reward);
+                updateStreak();
+            }
+
+            statusEl.textContent = "Finisher completed. Nice work.";
+            celebrateFinisher();
+        });
+
+
+
+            // Skip Finisher
+            skipBtn.addEventListener("click", () => {
+                if (finisherCard.classList.contains("locked")) return;
+
+                statusEl.textContent = "You skipped the finisher today. Main work still counts — come back stronger tomorrow.";
+            });
+        }
+
+
 
 
         // =============================
@@ -1739,6 +2374,89 @@
         }
 
 
+    
+        // --- Small toast at bottom of screen ---
+            function showToast(message, timeout = 2200) {
+                let container = document.getElementById("toast-container");
+                if (!container) {
+                    container = document.createElement("div");
+                    container.id = "toast-container";
+                    container.className = "toast-container";
+                    document.body.appendChild(container);
+                }
+
+                const toast = document.createElement("div");
+                toast.className = "toast";
+                toast.textContent = message;
+                container.appendChild(toast);
+
+                setTimeout(() => {
+                    toast.classList.add("out");
+                    setTimeout(() => {
+                        toast.remove();
+                        if (!container.hasChildNodes()) {
+                            container.remove();
+                        }
+                    }, 220);
+                }, timeout);
+            }
+
+            // --- Daily completion pulse on Today's Split card ---
+            function flashDayComplete() {
+                const splitCard = document.querySelector("#split .workout-card");
+                if (!splitCard) return;
+
+                // reset animation if it was already applied
+                splitCard.classList.remove("day-complete-boost");
+                void splitCard.offsetWidth; // force reflow
+                splitCard.classList.add("day-complete-boost");
+            }
+
+            // --- Finisher micro celebration ---
+            function celebrateFinisher() {
+                const finisherCard = document.getElementById("finisher-card");
+                if (!finisherCard) return;
+
+                finisherCard.classList.remove("finisher-celebrate");
+                void finisherCard.offsetWidth;
+                finisherCard.classList.add("finisher-celebrate");
+
+                showToast("Finisher complete. That’s extra work in the bank. 💪");
+            }
+
+            // --- Weekly goal hit celebration (one-time at the moment you hit it) ---
+            function celebrateWeeklyGoalHit() {
+                const goal = getWeeklyGoal();
+                const done = getWorkoutsCompletedThisWeek();
+                if (!goal || done !== goal) return; // fire only when you *hit* the goal, not on every extra session
+
+                const overlay = document.createElement("div");
+                overlay.className = "weekly-overlay";
+                overlay.innerHTML = `
+        <div class="weekly-overlay-card">
+            <h2>Weekly goal hit 🎉</h2>
+            <p>You showed up for all ${goal} planned sessions. That’s how streaks are built.</p>
+            <button class="btn btn-primary" id="weekly-overlay-close">Keep going</button>
+        </div>
+    `;
+                document.body.appendChild(overlay);
+
+                const closeBtn = document.getElementById("weekly-overlay-close");
+                if (closeBtn) {
+                    closeBtn.addEventListener("click", () => {
+                        overlay.remove();
+                    });
+                }
+
+                // Close if they tap outside the card
+                overlay.addEventListener("click", (e) => {
+                    if (e.target === overlay) {
+                        overlay.remove();
+                    }
+                });
+            }
+
+
 
 
     // =============================
@@ -1763,7 +2481,7 @@
     // 9) INIT
     // =============================
     window.addEventListener("DOMContentLoaded", () => {
-        ensureWeeklyStateFresh();
+        ensureWeeklyState();
         initScreens();
         renderTodaySplit();
         initWeeklyGoalControls();
@@ -1771,7 +2489,8 @@
         initQuotes();
         initFinisherControls();
         initServiceWorker();
-        renderWeeklyProgress();
+        updateStreak();
+        updateWeeklyVolumeSummary();
     });
 </script>
 
