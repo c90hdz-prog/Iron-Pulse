@@ -448,50 +448,317 @@
             accent-color: var(--accent);
         }
     
-        /* Streak banner + finisher card states */
-.streak-banner {
-    margin-bottom: 1rem;
-    padding: 1rem 1.25rem;
-    border-radius: 18px;
-    background: linear-gradient(135deg, rgba(255, 81, 47, 0.18), rgba(246, 195, 67, 0.12));
-    border: 1px solid var(--card-border);
-    font-size: 0.95rem;
-    display: flex;
-    align-items: flex-start;
-    gap: 0.75rem;
-    flex-wrap: nowrap;
-    color: var(--text-primary);
+
+/* Week 1 */
+.emblem-weekly-1::before {
+    background: radial-gradient(circle, rgba(255,120,80,0.18), rgba(255,80,60,0.05));
+    opacity: 0.6;
+    filter: blur(10px);
 }
 
-.streak-icon {
-    font-size: 1.4rem;
-    flex-shrink: 0;
+/* Week 2 */
+.emblem-weekly-2::before {
+    background: radial-gradient(circle, rgba(255,150,100,0.22), rgba(255,80,50,0.07));
+    opacity: 0.75;
+    filter: blur(16px);
 }
 
-.streak-body {
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
-    flex: 1;
-    min-width: 0;
+/* Week 3 */
+.emblem-weekly-3::before {
+    background: radial-gradient(circle, rgba(255,180,120,0.26), rgba(255,80,40,0.09));
+    opacity: 0.9;
+    filter: blur(22px);
 }
 
-.streak-progress {
-    margin-top: 0.35rem;
-    width: 100%;
-    height: 0.4rem;
+@keyframes emblem-shimmer {
+    0% { filter: blur(12px) brightness(1); }
+    50% { filter: blur(18px) brightness(1.4); }
+    100% { filter: blur(12px) brightness(1); }
+}
+
+/* Month 1 */
+.emblem-monthly-1::before {
+    background: radial-gradient(circle, rgba(255,200,80,0.32), rgba(255,120,40,0.12));
+    opacity: 1;
+    animation: emblem-shimmer 4s ease-in-out infinite;
+}
+
+/* Month 2 */
+.emblem-monthly-2::before {
+    background: radial-gradient(circle, rgba(255,210,90,0.36), rgba(255,120,30,0.14));
+    opacity: 1;
+    animation: emblem-shimmer 3.4s ease-in-out infinite;
+}
+
+/* Month 3 */
+.emblem-monthly-3::before {
+    background: radial-gradient(circle, rgba(255,220,90,0.40), rgba(255,110,20,0.16));
+    opacity: 1;
+    animation: emblem-shimmer 3s ease-in-out infinite;
+}
+@keyframes emblem-quarter-pulse {
+    0%   { filter: blur(20px) brightness(1.1); }
+    50%  { filter: blur(26px) brightness(1.55); }
+    100% { filter: blur(20px) brightness(1.1); }
+}
+
+/* Quarter 1 */
+.emblem-quarterly-1::before {
+    background: radial-gradient(circle, rgba(255,160,50,0.40), rgba(255,80,20,0.12));
+    opacity: 1;
+    animation: emblem-quarter-pulse 2.4s ease-in-out infinite;
+}
+
+/* Quarter 2 */
+.emblem-quarterly-2::before {
+    background: radial-gradient(circle, rgba(255,180,70,0.46), rgba(255,80,10,0.16));
+    opacity: 1;
+    animation: emblem-quarter-pulse 2s ease-in-out infinite;
+}
+
+/* Quarter 3 */
+.emblem-quarterly-3::before {
+    background: radial-gradient(circle, rgba(255,200,80,0.52), rgba(255,70,0,0.18));
+    opacity: 1;
+    animation: emblem-quarter-pulse 1.7s ease-in-out infinite;
+}
+@keyframes emblem-annual-burn {
+    0%   { filter: blur(24px) brightness(1); transform: scale(1); }
+    50%  { filter: blur(32px) brightness(1.7); transform: scale(1.03); }
+    100% { filter: blur(24px) brightness(1); transform: scale(1); }
+}
+
+.emblem-annual-1::before {
+    background: radial-gradient(circle, rgba(255,220,90,0.65), rgba(255,100,0,0.22));
+    opacity: 1;
+    animation: emblem-annual-burn 1.8s ease-in-out infinite;
+}
+
+.emblem-annual-2::before {
+    background: radial-gradient(circle, rgba(255,240,110,0.75), rgba(255,80,0,0.28));
+    opacity: 1;
+    animation: emblem-annual-burn 1.5s ease-in-out infinite;
+}
+@keyframes emblem-legendary-flare {
+    0%   { filter: blur(28px) brightness(1) hue-rotate(0deg); }
+    50%  { filter: blur(40px) brightness(2) hue-rotate(25deg); }
+    100% { filter: blur(28px) brightness(1) hue-rotate(0deg); }
+}
+
+.emblem-legendary-1::before {
+    background:
+        radial-gradient(circle, rgba(255,255,255,0.85), rgba(255,120,0,0.35)),
+        radial-gradient(circle, rgba(255,80,0,0.45), rgba(120,0,0,0.20));
+    opacity: 1;
+    animation: emblem-legendary-flare 1.2s ease-in-out infinite;
+}
+
+/* Power-up shell (scale + glow) */
+@keyframes streakPowerShell {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(255, 120, 80, 0.0);
+    }
+    40% {
+        transform: scale(1.03);
+        box-shadow: 0 0 42px 0 rgba(255, 120, 80, 0.9);
+    }
+    80% {
+        transform: scale(1.01);
+        box-shadow: 0 0 26px 0 rgba(255, 120, 80, 0.6);
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 16px 0 rgba(255, 120, 80, 0.3);
+    }
+}
+
+/* Radiating energy arcs */
+@keyframes streakPowerRays {
+    0% {
+        transform: scale(0.9) rotate(0deg);
+        opacity: 0;
+    }
+    30% {
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1.18) rotate(40deg);
+        opacity: 0;
+    }
+}
+
+.streak-banner.streak-powerup {
+    animation: streakPowerShell 0.8s ease-out;
+    position: relative;
+}
+
+.streak-banner.streak-powerup::after {
+    content: "";
+    position: absolute;
+    inset: -12px;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.08);
+    background:
+        conic-gradient(
+            from 0deg,
+            rgba(255, 255, 255, 0.22),
+            rgba(255, 140, 80, 0.6),
+            rgba(255, 80, 40, 0.0),
+            rgba(255, 255, 255, 0.22)
+        );
+    mix-blend-mode: screen;
+    pointer-events: none;
+    animation: streakPowerRays 0.9s ease-out forwards;
+    z-index: -1;
+}
+@keyframes rankOverlayFadeIn {
+    0% {
+        opacity: 0;
+        transform: translateY(20px) scale(0.96);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes rankOverlayGlowSweep {
+    0% {
+        transform: translateX(-120%);
+        opacity: 0;
+    }
+    30% {
+        opacity: 0.45;
+    }
+    100% {
+        transform: translateX(120%);
+        opacity: 0;
+    }
+}
+
+.rankup-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    background:
+        radial-gradient(circle at top, rgba(255, 120, 60, 0.2), transparent),
+        rgba(0, 0, 0, 0.88);
+    backdrop-filter: blur(4px);
+    animation: rankOverlayFadeIn 0.25s ease-out;
+}
+
+.rankup-inner {
+    position: relative;
+    max-width: 380px;
+    width: 100%;
+    padding: 1.75rem 1.5rem 1.5rem;
+    border-radius: 18px;
+    background: linear-gradient(
+        145deg,
+        rgba(15, 15, 20, 0.96),
+        rgba(24, 19, 18, 0.98)
+    );
+    border: 1px solid rgba(255, 180, 120, 0.2);
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.85),
+        0 0 40px rgba(255, 120, 80, 0.4);
+    text-align: center;
     overflow: hidden;
 }
 
-.streak-progress-fill {
-    height: 100%;
-    width: 0;
-    border-radius: 999px;
-    background: linear-gradient(90deg, #ff512f, #f6c343);
-    transition: width 0.35s ease-out;
+/* moving light sweep inside the card */
+.rankup-inner::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        120deg,
+        transparent,
+        rgba(255, 255, 255, 0.16),
+        transparent
+    );
+    opacity: 0;
+    pointer-events: none;
+    animation: rankOverlayGlowSweep 1.6s ease-out forwards;
 }
+
+.rankup-emblem-preview {
+    width: 88px;
+    height: 88px;
+    margin: 0 auto 1rem;
+    border-radius: 26px;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.9));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    box-shadow: 0 0 32px rgba(255, 120, 80, 0.7);
+}
+
+/* we reuse the emblem aura classes here too */
+.rankup-emblem-preview.emblem-weekly-1::before,
+.rankup-emblem-preview.emblem-weekly-2::before,
+.rankup-emblem-preview.emblem-weekly-3::before,
+.rankup-emblem-preview.emblem-monthly-1::before,
+.rankup-emblem-preview.emblem-monthly-2::before,
+.rankup-emblem-preview.emblem-monthly-3::before,
+.rankup-emblem-preview.emblem-quarterly-1::before,
+.rankup-emblem-preview.emblem-quarterly-2::before,
+.rankup-emblem-preview.emblem-quarterly-3::before,
+.rankup-emblem-preview.emblem-annual-1::before,
+.rankup-emblem-preview.emblem-annual-2::before,
+.rankup-emblem-preview.emblem-legendary-1::before {
+    content: "";
+    position: absolute;
+    inset: -6px;
+    border-radius: inherit;
+    z-index: -1;
+}
+
+/* reuse your existing emblem gradients by classnames:
+   .emblem-weekly-1::before, etc. will also apply here */
+
+.rankup-icon {
+    font-size: 2.2rem;
+    position: relative;
+    z-index: 1;
+}
+
+.rankup-inner h2 {
+    font-size: 1.35rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary, #fff);
+}
+
+.rankup-inner p {
+    font-size: 0.98rem;
+    margin-bottom: 1.25rem;
+    color: var(--text-muted, #cfcfd6);
+}
+
+.streak-banner {
+    margin-bottom: 1rem;
+    padding: 0.75rem 1rem;
+    border-radius: 18px;
+    background: linear-gradient(135deg, rgba(255, 81, 47, 0.18), rgba(246, 195, 67, 0.12));
+    border: 1px solid var(--card-border);
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    color: var(--text-primary);
+    position: relative;
+    overflow: hidden;
+
+    /* 🔥 this will be controlled by JS 0..1 */
+    --emblem-strength: 0;
+}
+
 
 /* keep these helpers from before */
 .streak-banner-header {
@@ -515,13 +782,11 @@
 }
 
 
-/* icon stays small */
 .streak-icon {
     font-size: 1.4rem;
     flex-shrink: 0;
 }
 
-/* text + bar stack nicely */
 .streak-body {
     display: flex;
     flex-direction: column;
@@ -530,8 +795,8 @@
     min-width: 0;
 }
 
-/* progress bar full width under text */
 .streak-progress {
+    margin-top: 0.35rem;
     width: 100%;
     height: 0.4rem;
     border-radius: 999px;
@@ -825,6 +1090,64 @@
         filter: brightness(1);
     }
 }
+.day-complete-boost::before,
+.day-complete-boost::after {
+    content: "";
+    position: absolute;
+    inset: -8px;
+    border-radius: inherit;
+    pointer-events: none;
+}
+
+/* Big expanding ring */
+.day-complete-boost::before {
+    border: 2px solid rgba(255, 180, 120, 0.9);
+    box-shadow:
+        0 0 16px rgba(255, 140, 90, 0.9),
+        0 0 40px rgba(255, 210, 150, 0.7);
+    opacity: 0;
+    transform: scale(0.85);
+    animation: animeRing 1.2s ease-out forwards;
+}
+
+/* Bright inner flash */
+.day-complete-boost::after {
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.45), transparent 60%);
+    opacity: 0;
+    transform: scale(0.7);
+    animation: animeFlash 0.45s ease-out forwards;
+}
+
+@keyframes animeRing {
+    0% {
+        opacity: 0.9;
+        transform: scale(0.75);
+    }
+    60% {
+        opacity: 0.45;
+        transform: scale(1.15);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(1.4);
+    }
+}
+
+@keyframes animeFlash {
+    0% {
+        opacity: 0.95;
+        transform: scale(0.7);
+    }
+    40% {
+        opacity: 0.8;
+        transform: scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(1.05);
+    }
+}
+
 
 
 
@@ -905,6 +1228,144 @@
     }
 }
 
+.streak-body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.18rem;
+}
+
+#streak-text {
+    white-space: normal;
+    line-height: 1.3;
+}
+
+.finisher-card {
+  padding: 1.25rem 1.4rem;
+  border-radius: 1.5rem;
+  background: var(--card-bg-strong, #050509);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.finisher-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.finisher-title-block h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.finisher-title-block p {
+  margin: 0.25rem 0 0;
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.finisher-tag-pill {
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid rgba(246, 195, 67, 0.5);
+  color: #f6c343;
+  align-self: flex-start;
+  white-space: nowrap;
+}
+
+.finisher-step {
+  margin-top: 0.75rem;
+}
+
+.finisher-step-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 0.35rem;
+}
+
+.finisher-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.finisher-chip {
+  border-radius: 999px;
+  padding: 0.4rem 1.1rem;
+  font-size: 0.9rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text-primary, #fff);
+}
+
+.finisher-chip.btn-primary {
+  border-color: transparent;
+  background: linear-gradient(135deg, #ff4b4b, #f6c343);
+  box-shadow: 0 0 18px rgba(255, 75, 75, 0.35);
+}
+
+.finisher-status-helper {
+  margin-top: 0.9rem;
+  font-size: 0.85rem;
+  opacity: 0.9;
+}
+
+.finisher-actions {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.streak-banner.streak-active::before {
+    content: "";
+    position: absolute;
+    inset: -3px;
+    border-radius: inherit;
+    background:
+        radial-gradient(circle at 0% 50%, rgba(255, 81, 47, 0.35), transparent 55%),
+        radial-gradient(circle at 100% 50%, rgba(221, 36, 118, 0.35), transparent 55%);
+    opacity: calc(0.12 + 0.55 * var(--emblem-strength));
+    filter: blur(calc(4px + 12px * var(--emblem-strength)));
+    pointer-events: none;
+    z-index: -1;
+}
+/* Aura when streak is active */
+.streak-banner.streak-active {
+    box-shadow:
+        0 0 calc(6px + 10px * var(--emblem-strength)) rgba(255, 81, 47, 0.5),
+        0 0 calc(14px + 18px * var(--emblem-strength)) rgba(221, 36, 118, 0.45);
+    animation: streakAura 2.4s infinite ease-in-out;
+}
+
+/* Smooth pulsing effect */
+@keyframes streakAura {
+    0% {
+        box-shadow:
+            0 0 8px rgba(255, 81, 47, 0.35),
+            0 0 18px rgba(221, 36, 118, 0.25);
+        transform: translateY(0);
+    }
+    45% {
+        box-shadow:
+            0 0 14px rgba(255, 81, 47, 0.75),
+            0 0 30px rgba(221, 36, 118, 0.55);
+        transform: translateY(-1px);
+    }
+    100% {
+        box-shadow:
+            0 0 8px rgba(255, 81, 47, 0.35),
+            0 0 18px rgba(221, 36, 118, 0.25);
+        transform: translateY(0);
+    }
+}
 
     </style>
 
@@ -1159,48 +1620,69 @@
                 </p>
             </div>
         
-            <article class="workout-card finisher-card locked" id="finisher-card">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
-                    <h3 id="finisher-title" style="margin:0;"></h3>
-                    <span id="finisher-tag" style="color:var(--accent-yellow);font-size:0.85rem;text-transform:uppercase;">
-                        Complete your sets
-                    </span>
+            <div id="finisher-card" class="finisher-card locked">
+                <div class="finisher-header">
+                    <div class="finisher-title-block">
+                        <h3 id="finisher-title">Choose Your Finisher</h3>
+                        <p id="finisher-description">
+                            After your main work, pick a finisher type and difficulty.
+                        </p>
+                    </div>
+                    <span class="finisher-tag-pill" id="finisher-tag">LOCKED</span>
                 </div>
             
-                <p id="finisher-description" style="color:var(--text-muted);margin:0 0 0.75rem 0;">
-                    Check off all exercises in Today’s Split to unlock this finisher.
-                </p>
-            
-                <!-- Finisher selection UI -->
-                <div id="finisher-setup">
-                    <p style="color:var(--text-muted);margin:0 0 0.5rem;">
-                        After your main work, pick a finisher type and difficulty:
-                    </p>
-            
-                    <div id="finisher-categories" style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.5rem;">
-                        <button class="btn btn-outline finisher-cat-btn" data-category="conditioning">Conditioning</button>
-                        <button class="btn btn-outline finisher-cat-btn" data-category="bodyweight">Bodyweight</button>
-                        <button class="btn btn-outline finisher-cat-btn" data-category="pump">Pump</button>
-                        <button class="btn btn-outline finisher-cat-btn" data-category="recovery">Recovery</button>
-                    </div>
-            
-                    <div id="finisher-difficulties" class="hidden"
-                        style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.5rem;">
-                        <button class="btn btn-outline finisher-diff-btn" data-difficulty="easy">Easy</button>
-                        <button class="btn btn-outline finisher-diff-btn" data-difficulty="standard">Standard</button>
-                        <button class="btn btn-outline finisher-diff-btn" data-difficulty="hard">Hard</button>
+                <!-- STEP 1: CATEGORY -->
+                <div class="finisher-step">
+                    <p class="finisher-step-label">1 · Pick a category</p>
+                    <div class="finisher-chip-row">
+                        <button type="button" class="btn finisher-chip finisher-cat-btn" data-category="conditioning">
+                            Conditioning
+                        </button>
+                        <button type="button" class="btn finisher-chip finisher-cat-btn" data-category="bodyweight">
+                            Bodyweight
+                        </button>
+                        <button type="button" class="btn finisher-chip finisher-cat-btn" data-category="pump">
+                            Pump
+                        </button>
+                        <button type="button" class="btn finisher-chip finisher-cat-btn" data-category="recovery">
+                            Recovery
+                        </button>
                     </div>
                 </div>
             
-                <p id="finisher-status" style="color:var(--text-muted);font-size:0.9rem;margin:0 0 1rem 0;">
-                    Main work first. Earn the extra.
+                <!-- STEP 2: DIFFICULTY -->
+                <div class="finisher-step" id="finisher-difficulties">
+                    <p class="finisher-step-label">2 · Pick difficulty</p>
+                    <div class="finisher-chip-row">
+                        <button type="button" class="btn finisher-chip finisher-diff-btn" data-difficulty="easy">
+                            Easy
+                        </button>
+                        <button type="button" class="btn finisher-chip finisher-diff-btn" data-difficulty="standard">
+                            Standard
+                        </button>
+                        <button type="button" class="btn finisher-chip finisher-diff-btn" data-difficulty="hard">
+                            Hard
+                        </button>
+                    </div>
+                </div>
+            
+                <!-- STATUS / EXPLANATION -->
+                <p id="finisher-status" class="finisher-status-helper">
+                    Select a category first, then choose difficulty to see your finisher and any
+                    Rest Token reward.
                 </p>
             
-                <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
-                    <button class="btn btn-primary" id="finisher-do-btn" disabled>Do the Finisher</button>
-                    <button class="btn btn-outline" id="finisher-skip-btn" disabled>Skip for Today</button>
+                <!-- ACTIONS -->
+                <div class="finisher-actions">
+                    <button id="finisher-do-btn" class="btn btn-primary btn-lg" disabled>
+                        Do the Finisher
+                    </button>
+                    <button id="finisher-skip-btn" class="btn btn-outline-light btn-lg" disabled>
+                        Skip for Today
+                    </button>
                 </div>
-            </article>
+            </div>
+
 
         </section>
     </div>
@@ -1253,33 +1735,36 @@
     const WEEKLY_GOAL_KEY = "ironPulseWeeklyGoalDays";
     const DEFAULT_WEEKLY_GOAL = 4;
     const WEEKLY_GOAL_LOCKED_KEY = "ironPulseWeeklyGoalLocked";
-    // === WEEKLY PROGRESS + ROTATION STATE ===
     const WORKOUTS_THIS_WEEK_KEY = "ironPulseWorkoutsCompleted";
     const ROTATION_INDEX_KEY = "ironPulseRotationIndex";
-    const WEEK_ID_KEY = "ironPulseWeekId";            // which week the counters belong to
-    const WEEKLY_STREAK_KEY = "ironPulseWeeklyStreak"; // how many successful weeks in a row
+    const WEEK_ID_KEY = "ironPulseWeekId";
+    const WEEKLY_STREAK_KEY = "ironPulseWeeklyStreak";
     const ROTATION_ORDER = [0, 1, 2, 3];
-
+    const LAST_FINISHER_DATE_KEY = "ironPulseLastFinisherDate";
     const EXERCISE_WEIGHT_KEY = "ironPulseExerciseWeights";
+    const LAST_EMBLEM_KEY = "ironPulseLastEmblem";
+    const EMBLEM_TIER_KEY = "ironPulseEmblemTier";
 
-        function getExerciseWeights() {
-            try {
-                const raw = localStorage.getItem(EXERCISE_WEIGHT_KEY);
-                if (!raw) return {};
-                const parsed = JSON.parse(raw);
-                return parsed && typeof parsed === "object" ? parsed : {};
-            } catch {
-                return {};
-            }
-        }
 
-        function saveExerciseWeights(map) {
-            try {
-                localStorage.setItem(EXERCISE_WEIGHT_KEY, JSON.stringify(map));
-            } catch {
-                // fail silently if storage is full, etc.
-            }
+
+    function getExerciseWeights() {
+        try {
+            const raw = localStorage.getItem(EXERCISE_WEIGHT_KEY);
+            if (!raw) return {};
+            const parsed = JSON.parse(raw);
+            return parsed && typeof parsed === "object" ? parsed : {};
+        } catch {
+            return {};
         }
+    }
+
+    function saveExerciseWeights(map) {
+        try {
+            localStorage.setItem(EXERCISE_WEIGHT_KEY, JSON.stringify(map));
+        } catch {
+            // fail silently if storage is full, etc.
+        }
+    }
 
         // === Rest tokens ===
     const REST_TOKENS_KEY = "ironPulseRestTokens";
@@ -1347,80 +1832,90 @@
             ]
         }
     ];
-    // ----- Rest token helpers -----
-        function getRestTokens() {
-            const raw = localStorage.getItem(REST_TOKENS_KEY);
-            const num = parseInt(raw ?? "0", 10);
-            return Number.isNaN(num) ? 0 : Math.max(0, num);
+
+    function getTodayDateKey() {
+            const d = new Date();
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, "0");
+            const day = String(d.getDate()).padStart(2, "0");
+            return `${y}-${m}-${day}`; // e.g. "2025-11-24"
         }
 
-        function setRestTokens(value) {
-            localStorage.setItem(REST_TOKENS_KEY, String(Math.max(0, value)));
+
+// ----- Rest token helpers -----
+    function getRestTokens() {
+        const raw = localStorage.getItem(REST_TOKENS_KEY);
+        const num = parseInt(raw ?? "0", 10);
+        return Number.isNaN(num) ? 0 : Math.max(0, num);
+    }
+
+    function setRestTokens(value) {
+        localStorage.setItem(REST_TOKENS_KEY, String(Math.max(0, value)));
+    }
+
+    function getRestTokenProgress() {
+        const raw = localStorage.getItem(REST_TOKEN_PROGRESS_KEY);
+        const num = parseFloat(raw ?? "0");
+        if (Number.isNaN(num)) return 0;
+        return Math.min(Math.max(num, 0), 1);
+    }
+
+    function setRestTokenProgress(value) {
+        const clamped = Math.min(Math.max(value, 0), 1);
+        localStorage.setItem(REST_TOKEN_PROGRESS_KEY, String(clamped));
+    }
+
+    function addRestTokenProgress(amount) {
+        let progress = getRestTokenProgress();
+        let tokens = getRestTokens();
+
+        progress += amount;
+
+        while (progress >= 1) {
+            tokens += 1;
+            progress -= 1;
         }
 
-        function getRestTokenProgress() {
-            const raw = localStorage.getItem(REST_TOKEN_PROGRESS_KEY);
-            const num = parseFloat(raw ?? "0");
-            if (Number.isNaN(num)) return 0;
-            return Math.min(Math.max(num, 0), 1);
+        setRestTokens(tokens);
+        setRestTokenProgress(progress);
         }
 
-        function setRestTokenProgress(value) {
-            const clamped = Math.min(Math.max(value, 0), 1);
-            localStorage.setItem(REST_TOKEN_PROGRESS_KEY, String(clamped));
+    // ----- Weekly weight helpers -----
+    function getWeeklyWeightByDay() {
+        try {
+            const raw = localStorage.getItem(WEEKLY_WEIGHT_BY_DAY_KEY);
+            if (!raw) return {};
+            const parsed = JSON.parse(raw);
+            return parsed && typeof parsed === "object" ? parsed : {};
+        } catch {
+            return {};
         }
+    }
 
-        function addRestTokenProgress(amount) {
-            let progress = getRestTokenProgress();
-            let tokens = getRestTokens();
-
-            progress += amount;
-
-            while (progress >= 1) {
-                tokens += 1;
-                progress -= 1;
-            }
-
-            setRestTokens(tokens);
-            setRestTokenProgress(progress);
+    function setWeeklyWeightByDay(map) {
+        try {
+            localStorage.setItem(WEEKLY_WEIGHT_BY_DAY_KEY, JSON.stringify(map));
+        } catch {
+            // ignore
         }
+    }
 
-        // ----- Weekly weight helpers -----
-        function getWeeklyWeightByDay() {
-            try {
-                const raw = localStorage.getItem(WEEKLY_WEIGHT_BY_DAY_KEY);
-                if (!raw) return {};
-                const parsed = JSON.parse(raw);
-                return parsed && typeof parsed === "object" ? parsed : {};
-            } catch {
-                return {};
-            }
-        }
+    function resetWeeklyWeightByDay() {
+        localStorage.removeItem(WEEKLY_WEIGHT_BY_DAY_KEY);
+    }
 
-        function setWeeklyWeightByDay(map) {
-            try {
-                localStorage.setItem(WEEKLY_WEIGHT_BY_DAY_KEY, JSON.stringify(map));
-            } catch {
-                // ignore
-            }
-        }
+    function addTodayWeight(volumeLbs) {
+        const dayIndex = new Date().getDay(); // 0-6
+        const map = getWeeklyWeightByDay();
+        const prev = parseFloat(map[dayIndex] ?? "0") || 0;
+        map[dayIndex] = prev + Math.max(0, volumeLbs);
+        setWeeklyWeightByDay(map);
+    }
 
-        function resetWeeklyWeightByDay() {
-            localStorage.removeItem(WEEKLY_WEIGHT_BY_DAY_KEY);
-        }
-
-        function addTodayWeight(volumeLbs) {
-            const dayIndex = new Date().getDay(); // 0-6
-            const map = getWeeklyWeightByDay();
-            const prev = parseFloat(map[dayIndex] ?? "0") || 0;
-            map[dayIndex] = prev + Math.max(0, volumeLbs);
-            setWeeklyWeightByDay(map);
-        }
-
-        function getWeeklyTotalWeight() {
-            const map = getWeeklyWeightByDay();
-            return Object.values(map).reduce((sum, v) => sum + (parseFloat(v) || 0), 0);
-        }
+    function getWeeklyTotalWeight() {
+        const map = getWeeklyWeightByDay();
+        return Object.values(map).reduce((sum, v) => sum + (parseFloat(v) || 0), 0);
+    }
 
     function getWeeklyStreak() {
             const raw = localStorage.getItem(WEEKLY_STREAK_KEY);
@@ -1428,11 +1923,18 @@
             return Number.isNaN(num) ? 0 : num;
         }
 
-        function setWeeklyStreak(value) {
-            const safe = Math.max(0, value);
-            localStorage.setItem(WEEKLY_STREAK_KEY, String(safe));
+    function setWeeklyStreak(value) {
+        const safe = Math.max(0, value);
+        localStorage.setItem(WEEKLY_STREAK_KEY, String(safe));
         }
 
+    function getLastEmblemClass() {
+            return localStorage.getItem(LAST_EMBLEM_KEY) || "";
+        }
+
+    function setLastEmblemClass(cls) {
+        localStorage.setItem(LAST_EMBLEM_KEY, cls);
+    }
 
 
 
@@ -2000,6 +2502,9 @@
             setWorkoutsCompletedThisWeek(0);
             setRotationIndex(0);
             resetWeeklyWeightByDay();
+            // After resetting + evaluating streak
+            updateStreak();
+
 
             // 3) Store the new week ID
             localStorage.setItem(WEEK_ID_KEY, currentWeekId);
@@ -2109,19 +2614,235 @@
             }
         }
 
+    function getStreakTier(weeks) {
+            if (weeks <= 0) return { tier: "none", level: 0 };
+
+            if (weeks <= 3) return { tier: "weekly", level: weeks };          // 1–3
+            if (weeks <= 7) return { tier: "monthly", level: 1 };              // 4–7
+            if (weeks <= 11) return { tier: "monthly", level: 2 };              // 8–11
+            if (weeks <= 15) return { tier: "monthly", level: 3 };              // 12–15
+
+            if (weeks <= 23) return { tier: "quarterly", level: 1 };             // 16–23
+            if (weeks <= 35) return { tier: "quarterly", level: 2 };             // 24–35
+            if (weeks <= 51) return { tier: "quarterly", level: 3 };             // 36–51
+
+            if (weeks <= 103) return { tier: "annual", level: 1 };             //  1 year+
+            if (weeks <= 155) return { tier: "annual", level: 2 };             //  2 years+
+
+            return { tier: "legendary", level: 1 };                                   // 3+ years
+        }
+
+    function triggerMilestoneAnimation(tier, level) {
+            // temporary placeholder
+            showToast(`New streak milestone unlocked: ${tier} ${level}!`);
+        }
+
+
+    function triggerMilestoneAnimation(tier, level) {
+            console.log(`🎉 New milestone reached: ${tier} tier level ${level}`);
+
+            // Example (replace later with real animations):
+            showToast(`New streak milestone unlocked: ${tier} ${level}!`);
+
+            // Here we can add:
+            // - overlay achievement popup
+            // - emblem spin/glow
+            // - rune burst particles
+            // - electricity arc animation
+        }
+    // --- Emblem tier helpers ---
+        function getEmblemTierForStreak(streak) {
+            if (!streak || streak <= 0) return null;
+
+            // Approx mapping by weeks
+            if (streak === 1) return "emblem-weekly-1";
+            if (streak === 2) return "emblem-weekly-2";
+            if (streak === 3) return "emblem-weekly-3";
+
+            if (streak >= 4 && streak <= 7) return "emblem-monthly-1";   // ~1–2 months
+            if (streak >= 8 && streak <= 11) return "emblem-monthly-2";   // ~2–3 months
+            if (streak >= 12 && streak <= 15) return "emblem-monthly-3";  // ~3–4 months
+
+            if (streak >= 16 && streak <= 23) return "emblem-quarterly-1"; // ~4–6 months
+            if (streak >= 24 && streak <= 35) return "emblem-quarterly-2"; // ~6–9 months
+            if (streak >= 36 && streak <= 51) return "emblem-quarterly-3"; // ~9–12 months
+
+            if (streak >= 52 && streak <= 77) return "emblem-annual-1";   // 1–1.5 years
+            if (streak >= 78 && streak <= 103) return "emblem-annual-2";   // 1.5–2 years
+
+            // Absolutely cracked
+            if (streak >= 104) return "emblem-legendary-1";
+
+            return null;
+        }
+
+        function getStoredEmblemTier() {
+            return localStorage.getItem(EMBLEM_TIER_KEY) || "";
+        }
+
+        function setStoredEmblemTier(tier) {
+            if (!tier) {
+                localStorage.removeItem(EMBLEM_TIER_KEY);
+            } else {
+                localStorage.setItem(EMBLEM_TIER_KEY, tier);
+            }
+        }
+
+        // Remove any old emblem-* classes, apply the new one
+        function applyEmblemTierClass(banner, tier) {
+            const toRemove = [];
+            banner.classList.forEach(cls => {
+                if (cls.startsWith("emblem-")) {
+                    toRemove.push(cls);
+                }
+            });
+            toRemove.forEach(cls => banner.classList.remove(cls));
+
+            if (tier) {
+                banner.classList.add(tier);
+            }
+        }
+
+        // Friendly name for overlay text
+        function getEmblemLabelForTier(tier) {
+            const map = {
+                "emblem-weekly-1": "Week 1 – Ember Spark",
+                "emblem-weekly-2": "Week 2 – Warming Forge",
+                "emblem-weekly-3": "Week 3 – Steady Flame",
+
+                "emblem-monthly-1": "Monthly Rank I – Kindled Core",
+                "emblem-monthly-2": "Monthly Rank II – Flow State",
+                "emblem-monthly-3": "Monthly Rank III – Iron Rhythm",
+
+                "emblem-quarterly-1": "Quarter Rank I – Forged Focus",
+                "emblem-quarterly-2": "Quarter Rank II – Relentless Drive",
+                "emblem-quarterly-3": "Quarter Rank III – Unbroken Arc",
+
+                "emblem-annual-1": "Annual Rank I – Iron Pulse Year One",
+                "emblem-annual-2": "Annual Rank II – Iron Pulse Veteran",
+
+                "emblem-legendary-1": "Legendary – Eternal Grind"
+            };
+            return map[tier] || "New Emblem Unlocked";
+        }
+
+        // Full-screen rank-up overlay
+        function showRankUpOverlay(tier) {
+            const label = getEmblemLabelForTier(tier);
+
+            const overlay = document.createElement("div");
+            overlay.className = "rankup-overlay";
+
+            overlay.innerHTML = `
+        <div class="rankup-inner">
+            <div class="rankup-emblem-preview ${tier}">
+                <span class="rankup-icon">🔥</span>
+            </div>
+            <h2>New Emblem Unlocked</h2>
+            <p>${label}</p>
+            <button type="button" class="btn btn-primary rankup-close">Continue</button>
+        </div>
+    `;
+
+            document.body.appendChild(overlay);
+
+            const close = () => overlay.remove();
+
+            overlay.addEventListener("click", (e) => {
+                if (e.target === overlay) close();
+            });
+
+            const btn = overlay.querySelector(".rankup-close");
+            if (btn) {
+                btn.addEventListener("click", close);
+            }
+        }
+
+        // Banner power-up animation + overlay trigger
+        function triggerEmblemRankUp(banner, newTier) {
+            // Add the anime-style power-up class
+            banner.classList.add("streak-powerup");
+            setTimeout(() => {
+                banner.classList.remove("streak-powerup");
+            }, 1600); // matches CSS animation length
+
+            // Show rank-up screen
+            showRankUpOverlay(newTier);
+        }
+
+        // Called from updateStreak()
+        function handleEmblemTier(streak) {
+            const banner = document.getElementById("streak-banner");
+            if (!banner) return;
+
+            const newTier = getEmblemTierForStreak(streak);
+            const prevTier = getStoredEmblemTier();
+
+            // No streak → clear emblem
+            if (!newTier) {
+                applyEmblemTierClass(banner, null);
+                setStoredEmblemTier("");
+                return;
+            }
+
+            // Always apply the new tier class
+            applyEmblemTierClass(banner, newTier);
+
+            // First time ever getting an emblem: set but don't pop an overlay
+            if (!prevTier) {
+                setStoredEmblemTier(newTier);
+                return;
+            }
+
+            // If tier changed → rank up!
+            if (prevTier !== newTier) {
+                setStoredEmblemTier(newTier);
+                triggerEmblemRankUp(banner, newTier);
+            }
+        }
+    // Map weekly streak → tier window (start/end week inside that tier)
+    function getStreakTierBounds(streak) {
+        if (streak <= 0) return null;
+
+        // 🔹 You can tweak these ranges anytime
+        if (streak <= 3) {
+            // 1–3 weeks → Weekly emblem tier
+            return { name: "weekly", start: 1, end: 3 };
+        } else if (streak <= 7) {
+            // 4–7 weeks → Monthly tier 1
+            return { name: "monthly-1", start: 4, end: 7 };
+        } else if (streak <= 11) {
+            // 8–11 weeks → Monthly tier 2
+            return { name: "monthly-2", start: 8, end: 11 };
+        } else if (streak <= 17) {
+            // 12–17 weeks → Quarterly tier 1
+            return { name: "quarterly-1", start: 12, end: 17 };
+        } else if (streak <= 25) {
+            // 18–25 weeks → Quarterly tier 2
+            return { name: "quarterly-2", start: 18, end: 25 };
+        } else {
+            // 26+ weeks → Long-term / yearly tier
+            return { name: "year-1", start: 26, end: 52 };
+        }
+    }
+
 
     function updateStreak() {
             const banner = document.getElementById("streak-banner");
             const textEl = document.getElementById("streak-text");
+            const progressFill = document.getElementById("streak-progress-fill");
             if (!banner || !textEl) return;
 
             const goal = getWeeklyGoal();
             const done = getWorkoutsCompletedThisWeek();
-            const streak = getWeeklyStreak?.() ?? 0; // if you already have this
+            const streak = getWeeklyStreak?.() ?? 0;
 
-            // If there's no weekly goal yet, hide the banner
+            // No weekly goal → hide banner + reset aura
             if (!goal) {
                 banner.classList.add("hidden");
+                banner.classList.remove("streak-active");
+                banner.style.setProperty("--emblem-strength", "0");
+                if (progressFill) progressFill.style.width = "0%";
                 return;
             }
 
@@ -2155,13 +2876,47 @@
 
             let tokenLine = ` Rest tokens: ${tokens}`;
             if (progress > 0 && progress < 1) {
-                tokenLine += ` ( ${progressPct}% toward your next token )`;
+                tokenLine += ` (${progressPct}% toward your next token)`;
             } else if (tokens === 0 && progress === 0) {
                 tokenLine += " — earn them by taking on harder finishers.";
             }
 
             textEl.textContent = progressLine + streakLine + tokenLine;
+
+            // ---- Progress bar fill (this week vs goal) ----
+            if (progressFill) {
+                const ratio = goal > 0 ? Math.min(1, done / goal) : 0;
+                progressFill.style.width = `${ratio * 100}%`;
+            }
+
+            // ---- Aura activation + intensification ----
+            if (streak > 0) {
+                banner.classList.add("streak-active");
+
+                const tier = getStreakTierBounds(streak);
+                if (tier) {
+                    const span = tier.end - tier.start + 1;
+                    const pos = Math.min(tier.end, Math.max(tier.start, streak)) - tier.start + 1; // 1..span
+                    const linear = span > 1 ? pos / span : 1; // 0..1 inside this tier
+
+                    // Exponential curve → slow at first, dramatic near the end of tier
+                    const eased = Math.pow(linear, 1.7);
+
+                    const strength = Math.min(1, Math.max(0, eased));
+                    banner.style.setProperty("--emblem-strength", strength.toString());
+                } else {
+                    // fallback if something weird happens
+                    banner.style.setProperty("--emblem-strength", "1");
+                }
+            } else {
+                banner.classList.remove("streak-active");
+                banner.style.setProperty("--emblem-strength", "0");
+            }
         }
+
+
+
+
 
 
 
@@ -2204,6 +2959,8 @@
             // 4) Update streak + volume UI
             updateStreak();
             updateWeeklyVolumeSummary?.();
+            flashDayComplete?.();
+            celebrateWeeklyGoalHit?.();
 
             // 5) 🔥 VISUAL REWARD – glow + weekly overlay (if goal just hit)
             if (typeof flashDayComplete === "function") {
@@ -2299,10 +3056,14 @@
                 titleEl.textContent = data.title;
                 descEl.textContent = data.description;
                 tagEl.textContent = `${catKey} • ${diffKey}`.toUpperCase();
-                statusEl.textContent =
-                    data.tokenReward > 0
-                        ? `Complete this finisher to earn ${data.tokenReward >= 1 ? "a Rest Token" : `${data.tokenReward * 100}% of a Rest Token`}.`
-                        : "Extra work for extra pride — no token reward on this one.";
+                if (data.tokenReward >= 1) {
+                    statusEl.textContent = "Complete this to earn a full Rest Token.";
+                } else if (data.tokenReward > 0) {
+                    statusEl.textContent = `Earn ${data.tokenReward * 100}% of a Rest Token.`;
+                } else {
+                    statusEl.textContent = "No token reward — just extra credit work.";
+                }
+
 
                 doBtn.disabled = false;
                 skipBtn.disabled = false;
@@ -2328,7 +3089,8 @@
                     titleEl.textContent = "Pick your finisher difficulty";
                     descEl.textContent = "Choose how hard you want to push today. Harder options can earn Rest Tokens.";
                     tagEl.textContent = cat.toUpperCase();
-                    statusEl.textContent = "Select Easy, Standard, or Hard to lock in your finisher.";
+                    statusEl.textContent = "Pick a difficulty to lock in today's finisher.";
+
                 });
             });
 
@@ -2354,11 +3116,17 @@
 
             // Do Finisher
         // Do Finisher
+        // Do Finisher
         doBtn.addEventListener("click", () => {
+            if (!currentFinisher) return;
             if (finisherCard.classList.contains("locked")) return;
 
-            if (!currentFinisher) {
-                showToast("Pick a finisher category and difficulty first.");
+            const todayKey = getTodayDateKey();
+            const lastFinisherDay = localStorage.getItem(LAST_FINISHER_DATE_KEY);
+
+            // 🚫 Already cashed in a finisher today
+            if (lastFinisherDay === todayKey) {
+                showToast("You already earned today’s finisher rewards. Extra work is pure bonus. 💪");
                 return;
             }
 
@@ -2371,9 +3139,18 @@
                 updateStreak();
             }
 
+            // 🔒 Lock in that today’s finisher is done (for rewards)
+            localStorage.setItem(LAST_FINISHER_DATE_KEY, todayKey);
+
             statusEl.textContent = "Finisher completed. Nice work.";
-            celebrateFinisher();
+            finisherCard.classList.add("completed-pulse");
+            setTimeout(() => {
+                finisherCard.classList.remove("completed-pulse");
+            }, 800);
+
+            celebrateFinisher?.(); // optional if you want to trigger the micro-celebration here
         });
+
 
 
 
@@ -2537,35 +3314,40 @@
 
             // --- Weekly goal hit celebration (one-time at the moment you hit it) ---
             function celebrateWeeklyGoalHit() {
-                const goal = getWeeklyGoal();
-                const done = getWorkoutsCompletedThisWeek();
-                if (!goal || done !== goal) return; // fire only when you *hit* the goal, not on every extra session
+                    const goal = getWeeklyGoal();
+                    const done = getWorkoutsCompletedThisWeek();
+                    if (!goal || done !== goal) return; // only fire exactly when you hit the goal
 
-                const overlay = document.createElement("div");
-                overlay.className = "weekly-overlay";
-                overlay.innerHTML = `
-        <div class="weekly-overlay-card">
-            <h2>Weekly goal hit 🎉</h2>
-            <p>You showed up for all ${goal} planned sessions. That’s how streaks are built.</p>
-            <button class="btn btn-primary" id="weekly-overlay-close">Keep going</button>
-        </div>
-    `;
-                document.body.appendChild(overlay);
+                    // ⏱ Wait so the daily glow can play first
+                    const GLOW_DELAY_MS = 1600; // tweak this: 1200, 1600, 2000, etc.
 
-                const closeBtn = document.getElementById("weekly-overlay-close");
-                if (closeBtn) {
-                    closeBtn.addEventListener("click", () => {
-                        overlay.remove();
-                    });
+                    setTimeout(() => {
+                        const overlay = document.createElement("div");
+                        overlay.className = "weekly-overlay";
+                        overlay.innerHTML = `
+            <div class="weekly-overlay-card">
+                <h2>Weekly goal hit 🎉</h2>
+                <p>You showed up for all ${goal} planned sessions. That’s how streaks are built.</p>
+                <button class="btn btn-primary" id="weekly-overlay-close">Keep going</button>
+            </div>
+        `;
+                        document.body.appendChild(overlay);
+
+                        const closeBtn = document.getElementById("weekly-overlay-close");
+                        if (closeBtn) {
+                            closeBtn.addEventListener("click", () => {
+                                overlay.remove();
+                            });
+                        }
+
+                        overlay.addEventListener("click", (e) => {
+                            if (e.target === overlay) {
+                                overlay.remove();
+                            }
+                        });
+                    }, GLOW_DELAY_MS);
                 }
 
-                // Close if they tap outside the card
-                overlay.addEventListener("click", (e) => {
-                    if (e.target === overlay) {
-                        overlay.remove();
-                    }
-                });
-            }
 
 
 
