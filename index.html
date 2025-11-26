@@ -16,6 +16,10 @@
         /* =========================
        1) ROOT + GLOBAL RESET
        ========================= */
+       html, body {
+            overflow-x: hidden;
+}
+
         :root {
             --bg-dark: #040405;
             --bg-panel: #101219;
@@ -1005,38 +1009,49 @@
 
 .toast {
     background: rgba(16, 18, 25, 0.95);
-    border-radius: 999px;
+    border-radius: 18px;
     padding: 0.6rem 1.1rem;
     border: 1px solid var(--card-border);
     font-size: 0.85rem;
-    white-space: nowrap;
-    animation: toast-in 0.25s ease-out forwards;
+
+    /* ✅ Allow wrapping + cap the width */
+    white-space: normal;
+    max-width: min(90vw, 320px);
+    overflow-wrap: anywhere;
+
+    /* Center text inside the pill */
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    animation: toast-in .8s ease-out forwards;
 }
 
-.toast.out {
-    animation: toast-out 0.2s ease-in forwards;
-}
+
 
 @keyframes toast-in {
     from {
         opacity: 0;
-        transform: translate(-50%, 10px);
+        transform: translateY(10px);
     }
     to {
         opacity: 1;
-        transform: translate(-50%, 0);
+        transform: translateY(0);
     }
 }
 
 @keyframes toast-out {
     from {
         opacity: 1;
+        transform: translateY(0);
     }
     to {
         opacity: 0;
-        transform: translate(-50%, 6px);
+        transform: translateY(6px);
     }
 }
+
 
 /* --- Daily completion halo on Today's Split card --- */
 .day-complete-boost {
@@ -1094,10 +1109,11 @@
 .day-complete-boost::after {
     content: "";
     position: absolute;
-    inset: -8px;
+    inset: 0;              /* ⬅ stay inside the card */
     border-radius: inherit;
     pointer-events: none;
 }
+
 
 /* Big expanding ring */
 .day-complete-boost::before {
@@ -1319,11 +1335,27 @@
 }
 
 .finisher-actions {
-  margin-top: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;   /* ⬅ centers the content */
+    text-align: center;    /* ⬅ centers text inside */
+    gap: 0.5rem;
 }
+
+.finisher-complete-message {
+    font-size: 0.95rem;
+    color: var(--accent-yellow);
+    opacity: 0;
+    animation: finisherMessageFade 0.4s ease-out forwards;
+}
+
+@keyframes finisherMessageFade {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+
 .streak-banner.streak-active::before {
     content: "";
     position: absolute;
@@ -3148,7 +3180,19 @@
                 finisherCard.classList.remove("completed-pulse");
             }, 800);
 
-            celebrateFinisher?.(); // optional if you want to trigger the micro-celebration here
+            // ⭐ Replace the action buttons with a centered message
+            const finisherActions = finisherCard.querySelector(".finisher-actions");
+            if (finisherActions) {
+                finisherActions.innerHTML = `
+        <p class="finisher-complete-message">
+            Finisher completed! 🔥 Token progress increased.
+        </p>
+    `;
+            }
+
+            // optional micro celebration animation
+            celebrateFinisher?.();
+
         });
 
 
