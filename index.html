@@ -332,7 +332,29 @@
             margin: 0;
             font-size: clamp(1.6rem, 4vw, 2.45rem);
         }
-    
+    .finisher-head {
+    align-items: baseline;
+    gap: 0.5rem;
+}
+
+.finisher-subcopy {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    max-width: 420px;
+}
+
+/* On mobile, stack nicely */
+@media (max-width: 768px) {
+    .finisher-head {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .finisher-subcopy {
+        max-width: 100%;
+    }
+}
+
         /* Weekly goal + install spacing */
         #weekly-goal .workout-card,
         #install .workout-card {
@@ -785,6 +807,42 @@
     font-weight: 500;
 }
 
+/* Layout rows inside the banner */
+.streak-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+/* Top row: keep chips on one line on larger screens, allow wrap on small */
+.streak-row-top {
+    flex-wrap: wrap;
+}
+
+/* Little stat chips for week + tokens */
+.streak-pill {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 0.2rem 0.7rem;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(0, 0, 0, 0.35);
+    color: rgba(255, 255, 255, 0.9);
+    white-space: nowrap;
+}
+
+.streak-pill-secondary {
+    border-color: rgba(246, 195, 67, 0.6);
+    color: #f6c343;
+}
+
+/* Short progress text */
+.streak-progress-label {
+    font-size: 0.8rem;
+    color: var(--text-muted, rgba(245, 247, 255, 0.7));
+}
 
 .streak-icon {
     font-size: 1.4rem;
@@ -1369,6 +1427,78 @@
     pointer-events: none;
     z-index: -1;
 }
+
+/* Post-workout motivational overlay */
+.postworkout-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    background:
+        radial-gradient(circle at top, rgba(255, 81, 47, 0.2), transparent 55%),
+        rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(4px);
+}
+
+.postworkout-card {
+    max-width: 360px;
+    width: 100%;
+    padding: 1.5rem 1.75rem 1.3rem;
+    border-radius: 1.25rem;
+    background: rgba(4, 4, 5, 0.96);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow:
+        0 18px 40px rgba(0, 0, 0, 0.85),
+        0 0 18px rgba(255, 81, 47, 0.4);
+    text-align: center;
+}
+
+.postworkout-card h2 {
+    margin: 0 0 0.6rem;
+    font-size: 1.3rem;
+}
+
+.postworkout-quote {
+    margin: 0 0 0.4rem;
+    font-size: 0.98rem;
+}
+
+.postworkout-hint {
+    margin: 0 0 1rem;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.postworkout-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+@media (min-width: 480px) {
+    .postworkout-actions {
+        flex-direction: row;
+        justify-content: center;
+    }
+
+    .postworkout-actions .btn {
+        min-width: 0;
+        flex: 1;
+    }
+}
+
+/* Brief glow when we scroll to the finisher card */
+.finisher-focus {
+    box-shadow:
+        0 0 18px rgba(246, 195, 67, 0.6),
+        0 0 34px rgba(255, 81, 47, 0.5);
+    transition: box-shadow 0.3s ease;
+}
+
+
 /* Aura when streak is active */
 .streak-banner.streak-active {
     box-shadow:
@@ -1397,6 +1527,113 @@
             0 0 18px rgba(221, 36, 118, 0.25);
         transform: translateY(0);
     }
+}
+/* === Weekly Volume Card === */
+.weekly-volume-card {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* Layout: object on left, bar on right on desktop */
+.volume-main {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+/* Stack nicely on mobile */
+@media (max-width: 768px) {
+    .volume-main {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+/* Object side */
+.volume-object {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+    min-width: 110px;
+}
+
+.volume-object-emoji {
+    font-size: 2.3rem;
+    line-height: 1;
+    filter: drop-shadow(0 0 10px rgba(255, 140, 90, 0.4));
+    transition: transform 0.25s ease, filter 0.25s ease;
+}
+
+.volume-object-label {
+    font-size: 0.85rem;
+    text-align: center;
+    color: var(--text-muted, rgba(245, 247, 255, 0.7));
+}
+
+/* Bar side */
+.volume-bar-block {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    width: 100%;
+}
+
+.volume-bar {
+    position: relative;
+    width: 100%;
+    height: 0.55rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+}
+
+.volume-bar-fill {
+    height: 100%;
+    width: 0;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #ff512f, #f6c343);
+    box-shadow: 0 0 14px rgba(255, 150, 80, 0.7);
+    transition: width 0.45s ease-out;
+}
+
+.volume-bar-caption {
+    font-size: 0.85rem;
+    color: var(--text-muted, rgba(245, 247, 255, 0.7));
+}
+
+/* === Level-up explosion effect === */
+@keyframes volumeBarExplode {
+    0% {
+        transform: scaleX(1);
+        box-shadow: 0 0 10px rgba(255, 160, 90, 0.7);
+    }
+    40% {
+        transform: scaleX(1.04);
+        box-shadow:
+            0 0 20px rgba(255, 200, 120, 0.9),
+            0 0 40px rgba(255, 120, 60, 0.7);
+    }
+    100% {
+        transform: scaleX(1);
+        box-shadow: 0 0 12px rgba(255, 160, 90, 0.6);
+    }
+}
+
+@keyframes volumeEmojiPop {
+    0%   { transform: scale(1) translateY(0); filter: drop-shadow(0 0 8px rgba(255, 140, 90, 0.5)); }
+    30%  { transform: scale(1.18) translateY(-2px); filter: drop-shadow(0 0 20px rgba(255, 220, 150, 0.9)); }
+    100% { transform: scale(1) translateY(0); filter: drop-shadow(0 0 10px rgba(255, 140, 90, 0.6)); }
+}
+
+.volume-levelup .volume-bar-fill {
+    animation: volumeBarExplode 0.7s ease-out;
+}
+
+.volume-object-emoji.levelup-pop {
+    animation: volumeEmojiPop 0.6s ease-out;
 }
 
     </style>
@@ -1460,7 +1697,7 @@
                     </article>
     
                     <article class="workout-card intro-card">
-                        <strong class="card-title">Today’s Split</strong>
+                        <strong class="card-title">Today's Split</strong>
                         <p class="card-desc">
                             Open the app each day to see a clear workout. Simple, structured, and easy to follow.
                         </p>
@@ -1545,21 +1782,28 @@
 <div id="screen-daily">
     <div id="streak-banner" class="streak-banner hidden">
         <div class="streak-icon">🔥</div>
+    
         <div class="streak-body">
-            <span id="streak-text"></span>
+            <!-- Top row: week + tokens -->
+            <div class="streak-row streak-row-top">
+                <span id="streak-week-label" class="streak-pill"></span>
+                <span id="streak-token-label" class="streak-pill streak-pill-secondary"></span>
+            </div>
+    
+            <!-- Middle row: short progress text -->
+            <div class="streak-row">
+                <span id="streak-text" class="streak-progress-label"></span>
+            </div>
+    
+            <!-- Progress bar -->
             <div class="streak-progress">
                 <div class="streak-progress-fill" id="streak-progress-fill"></div>
             </div>
         </div>
     </div>
 
+
         <section class="section" id="weekly-focus-live">
-            <div class="section-head">
-                <h2>This Week's Focus</h2>
-                <p style="color:var(--text-muted);max-width:520px;">
-                    Your current training target for the week. Hit your days, use rest when you need it.
-                </p>
-            </div>
         
             <article class="workout-card" id="weekly-focus-card">
                 <div style="display:flex;justify-content:space-between;align-items:center;">
@@ -1580,16 +1824,34 @@
             </article>
         </section>
 
-        <section class="section" id="weekly-volume-section">
-            <article class="workout-card" id="weekly-volume-card">
-                <div style="display:flex;justify-content:space-between;align-items:center;">
-                    <h3 style="margin:0;">This Week’s Volume</h3>
+        <section id="weekly-volume" class="section">
+            <div class="section-head">
+                <h2>This Week’s Volume</h2>
+            </div>
+        
+            <div class="workout-card weekly-volume-card">
+                <div class="volume-main">
+                    <!-- Left side: object icon + label -->
+                    <div class="volume-object">
+                        <div id="volume-object-emoji" class="volume-object-emoji">🚗</div>
+                        <div id="volume-object-label" class="volume-object-label">
+                            Small car
+                        </div>
+                    </div>
+        
+                    <!-- Right side: bar + caption -->
+                    <div class="volume-bar-block">
+                        <div class="volume-bar">
+                            <div id="volume-bar-fill" class="volume-bar-fill"></div>
+                        </div>
+                        <div id="volume-bar-caption" class="volume-bar-caption">
+                            You’ve moved 0 lbs so far — let’s get that bar moving.
+                        </div>
+                    </div>
                 </div>
-                <p id="weekly-volume-summary" style="color:var(--text-muted);margin:0.75rem 0 0;">
-                    Once you complete your first session, we’ll show how much total weight you’ve moved this week.
-                </p>
-            </article>
+            </div>
         </section>
+
 
 
 
@@ -1597,10 +1859,6 @@
         <section class="section" id="split">
             <div class="section-head">
                 <h2>Today's Split</h2>
-                <p style="color:var(--text-muted);max-width:480px;">
-                    Open this before you train. Get a clear plan for the day, check off each exercise as you go, and keep your sessions
-                    focused instead of guessing.
-                </p>
             </div>
             
 
@@ -1622,44 +1880,24 @@
             </div>
         </section>
 
-
-        <section class="section" id="motivation">
-            <div class="section-head">
-                <h2>Mental reps matter.</h2>
-                <p style="color:var(--text-muted);max-width:520px;">Stay consistent with a motivation board that responds
-                    to your intensity, highlights your streak, and throws a new quote when you need it.</p>
-            </div>
-            <div class="motivation-board">
-                <div class="motivation-card" style="min-height:260px;">
-                    <strong style="text-transform:uppercase;letter-spacing:1px;color:var(--accent-yellow);">
-                        Daily Quote
-                    </strong>
-                    <p id="quote" class="quote" style="font-size:1.5rem;">
-                        Motivation fades. Discipline doesn’t.
-                    </p>
-                    <p id="quote-author" style="color:var(--text-muted);font-size:0.9rem;">
-                        - Iron Pulse
-                    </p>
-                </div>
-            </div>
-        </section>
-
         <section class="section" id="finisher">
-            <div class="section-head">
-                <h2>Today’s Finisher</h2>
-                <p style="color:var(--text-muted);max-width:520px;">
-                    Finish your main work first. If you’ve got something left in the tank, unlock today’s optional finisher.
-                </p>
+            <div class="section-head finisher-head">
+                <h2>Today's Finisher</h2>
+                <span class="finisher-subcopy">
+                    Optional extra work once today's main sets are done.
+                </span>
             </div>
+
         
             <div id="finisher-card" class="finisher-card locked">
                 <div class="finisher-header">
                     <div class="finisher-title-block">
                         <h3 id="finisher-title">Choose Your Finisher</h3>
                         <p id="finisher-description">
-                            After your main work, pick a finisher type and difficulty.
+                            Pick a category and difficulty, then hit <strong>Complete</strong> to lock in today's finisher.
                         </p>
                     </div>
+
                     <span class="finisher-tag-pill" id="finisher-tag">LOCKED</span>
                 </div>
             
@@ -1707,7 +1945,7 @@
                 <!-- ACTIONS -->
                 <div class="finisher-actions">
                     <button id="finisher-do-btn" class="btn btn-primary btn-lg" disabled>
-                        Do the Finisher
+                        Mark Completed
                     </button>
                     <button id="finisher-skip-btn" class="btn btn-outline-light btn-lg" disabled>
                         Skip for Today
@@ -1776,6 +2014,136 @@
     const EXERCISE_WEIGHT_KEY = "ironPulseExerciseWeights";
     const LAST_EMBLEM_KEY = "ironPulseLastEmblem";
     const EMBLEM_TIER_KEY = "ironPulseEmblemTier";
+    const VOLUME_TIER_KEY = "ironPulseVolumeTier";
+
+    const VOLUME_OBJECTS = [
+        { id: "start", threshold: 0, label: "Getting started", emoji: "⚪" },
+        { id: "pack", threshold: 500, label: "Loaded backpack", emoji: "🎒" },
+        { id: "barbell", threshold: 2000, label: "Heavy barbell", emoji: "🏋️" },
+        { id: "car", threshold: 4000, label: "Small car", emoji: "🚗" },
+        { id: "truck", threshold: 8000, label: "Pickup truck", emoji: "🚚" },
+        { id: "bus", threshold: 20000, label: "City bus", emoji: "🚌" },
+        { id: "plane", threshold: 50000, label: "Small plane", emoji: "✈️" }
+    ];
+
+    // Short, neutral post-workout quotes (no attribution, no religion)
+        const POST_WORKOUT_QUOTES = [
+            "Small steps stack faster than you think.",
+            "Every rep leaves a mark. Today’s is a good one.",
+            "Progress doesn’t shout. It whispers — until it doesn’t.",
+            "You’re closer than yesterday. That’s the whole point.",
+            "Momentum earned, not given.",
+            "Consistency beats intensity over time.",
+            "You showed up today. That’s the hardest rep.",
+            "You didn’t wait to feel ready. You started.",
+            "Strong days are built on days like this.",
+            "Today’s work will quietly show up later.",
+            "You’re building someone you can rely on.",
+            "Discipline is a skill. You’re sharpening it.",
+            "You kept a promise to yourself today.",
+            "This session is one more vote for the person you want to be.",
+            "Tired but done is still done.",
+            "You didn’t need perfect. You just needed effort.",
+            "Progress is built on days just like this one.",
+            "You finished. Most people never started.",
+            "You turned intention into action.",
+            "Your future self notices days like today.",
+            "You moved your body. Your mind will thank you.",
+            "Strong body, clearer head, better day.",
+            "You traded comfort for progress. That adds up.",
+            "Slow progress is still real progress.",
+            "You proved you can show up when it’s easier not to.",
+            "Not every workout is loud. This one still counts.",
+            "You didn’t quit when it got boring. That matters.",
+            "You handled the hard part. The rest of the day is lighter.",
+            "You trained the muscle and the habit.",
+            "You just raised your baseline a tiny bit.",
+            "You stacked another brick on the wall.",
+            "You’re quietly getting harder to stop.",
+            "You pushed when no one was watching.",
+            "Today’s effort is tomorrow’s normal.",
+            "Your body will remember this work.",
+            "You moved more than your mood.",
+            "You finished what you started. That’s rare.",
+            "You turned a plan into a result.",
+            "You’ve got one more data point that says: I can do hard things.",
+            "You just made the next workout easier to start.",
+            "You didn’t need perfect energy — just enough.",
+            "You kept the streak of effort alive.",
+            "You showed yourself you can follow through.",
+            "You’re teaching your brain that you’re serious.",
+            "Your comfort zone shifted a little today.",
+            "You chose long-term over short-term. Again.",
+            "You did something for yourself that no one can take away.",
+            "You turned pressure into progress.",
+            "You used your time instead of losing it.",
+            "You converted fatigue into confidence.",
+            "You did the work. The results will catch up.",
+            "You chose effort instead of excuses.",
+            "You invested in strength you haven’t even needed yet.",
+            "You showed up for your goals, not your feelings.",
+            "You pushed through the part where most people stop.",
+            "You did something future you can be proud of.",
+            "You traded 1 hour for a better week.",
+            "You turned a regular day into a win.",
+            "You didn’t wait for motivation. You built it.",
+            "You treated your health like a priority, not a slogan.",
+            "You proved that low energy doesn’t mean zero effort.",
+            "You made progress that only you needed to understand.",
+            "You added one more rep to your story.",
+            "You fought the urge to skip. That’s real strength.",
+            "You showed up for yourself. Again.",
+            "You picked effort over comfort. That’s how things change.",
+            "You finished the session. The hardest part is over.",
+            "You chose growth when nobody asked you to.",
+            "You practiced doing what you said you would do.",
+            "You gave your future self a better starting point.",
+            "You built proof that you’re capable, not just hopeful.",
+            "You didn’t let the day decide for you.",
+            "You chose discipline, not default.",
+            "You created momentum that only you can feel.",
+            "You made it through the reps your mind wanted to skip.",
+            "You pushed a little past your comfort zone.",
+            "You trained even if today wasn’t perfect. That’s power.",
+            "You gave yourself one less reason to doubt tomorrow.",
+            "You turned resistance into resilience.",
+            "You added another quiet win to your week.",
+            "You didn’t coast. You contributed.",
+            "You moved the needle, even if just a notch.",
+            "You showed your limits they don’t get the final say.",
+            "You made the hard thing look normal.",
+            "You turned “I should” into “I did.”",
+            "You invested in strength you’ll use outside the gym.",
+            "You ended the session stronger than you started.",
+            "You made today count in a way most people won’t.",
+            "You took control of at least one part of your day.",
+            "You proved that effort is always available.",
+            "You made your next choice easier by finishing this one.",
+            "You added weight to your confidence, not just the bar.",
+            "You didn’t wait for the right mood. You created it.",
+            "You practiced being the type of person you respect.",
+            "You kept your word when no one was checking.",
+            "You made progress in private that will show in public.",
+            "You turned doubt into data: you can do more than you think.",
+            "You finished tired, not empty. That’s a good line to live on.",
+            "You repped out discipline one set at a time.",
+            "You went from “maybe” to “done.”",
+            "You added a chapter to your streak, not a footnote.",
+            "You treated your goals like a job, not a wish.",
+            "You gave yourself a win that can’t be scrolled away.",
+            "You walked out stronger than you walked in.",
+            "You pushed through the voice that said “skip it.”",
+            "You made effort a habit, not an event.",
+            "You did enough today to be proud. That’s enough."
+        ];
+
+
+    function getRandomPostWorkoutQuote() {
+            if (!POST_WORKOUT_QUOTES || POST_WORKOUT_QUOTES.length === 0) return "";
+            const idx = Math.floor(Math.random() * POST_WORKOUT_QUOTES.length);
+            return POST_WORKOUT_QUOTES[idx];
+        }
+
 
 
 
@@ -1864,6 +2232,14 @@
             ]
         }
     ];
+
+    function scrollToFinisherSection() {
+        const section = document.getElementById("finisher");
+        if (!section) return;
+        section.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+
 
     function getTodayDateKey() {
             const d = new Date();
@@ -2070,13 +2446,96 @@
                 return `You’ve moved a total of ${Math.round(totalLbs).toLocaleString()} lbs this week — roughly ${cars} car(s) worth of weight, or ${best.label}.`;
             }
 
+            function getVolumeTierInfo(totalLbs) {
+                    // Make sure total is non-negative
+                    const total = Math.max(0, totalLbs || 0);
+
+                    let current = VOLUME_OBJECTS[0];
+                    let next = null;
+
+                    for (let i = 0; i < VOLUME_OBJECTS.length; i++) {
+                        const tier = VOLUME_OBJECTS[i];
+                        if (total >= tier.threshold) {
+                            current = tier;
+                            next = VOLUME_OBJECTS[i + 1] || null;
+                        } else {
+                            // first tier whose threshold we haven't reached yet
+                            next = tier;
+                            break;
+                        }
+                    }
+
+                    let progress = 1;
+                    if (next) {
+                        const span = Math.max(next.threshold - current.threshold, 1);
+                        const base = total - current.threshold;
+                        progress = Math.min(Math.max(base / span, 0), 1);
+                    } else {
+                        progress = 1; // at or beyond the last object
+                    }
+
+                    return { current, next, progress };
+                }
+
+
         function updateWeeklyVolumeSummary() {
-                const summaryEl = document.getElementById("weekly-volume-summary");
-                if (!summaryEl) return;
+                const emojiEl = document.getElementById("volume-object-emoji");
+                const labelEl = document.getElementById("volume-object-label");
+                const barFillEl = document.getElementById("volume-bar-fill");
+                const captionEl = document.getElementById("volume-bar-caption");
+
+                if (!emojiEl || !labelEl || !barFillEl || !captionEl) return;
 
                 const total = getWeeklyTotalWeight();
-                summaryEl.textContent = describeHeavyComparison(total);
+                const { current, next, progress } = getVolumeTierInfo(total);
+
+                // --- Basic display ---
+                emojiEl.textContent = current.emoji;
+                labelEl.textContent = current.label;
+
+                const pct = Math.round(progress * 100);
+                barFillEl.style.width = `${Math.min(Math.max(pct, 0), 100)}%`;
+
+                const totalPretty = Math.round(total).toLocaleString();
+
+                if (!next) {
+                    // Maxed out ladder for now
+                    captionEl.textContent =
+                        `You’ve moved ${totalPretty} lbs this week — you’ve out-lifted our heaviest tier. Monster status.`;
+                } else if (current.id === "start" && total === 0) {
+                    captionEl.textContent =
+                        "You haven’t logged any weight yet this week — every set you do moves this bar.";
+                } else {
+                    const toNext = Math.max(next.threshold - total, 0);
+                    const toNextPretty = Math.round(toNext).toLocaleString();
+                    captionEl.textContent =
+                        `You’ve moved ${totalPretty} lbs — ${pct}% of the way to a ${next.label} (${toNextPretty} lbs to go).`;
+                }
+
+                // --- Level-up detection & explosion animation ---
+                const lastTierId = localStorage.getItem(VOLUME_TIER_KEY);
+                const leveledUp = lastTierId && lastTierId !== current.id && total > 0;
+
+                // Remember current tier for next time
+                localStorage.setItem(VOLUME_TIER_KEY, current.id);
+
+                if (leveledUp) {
+                    const barBlock = document.querySelector(".volume-bar-block");
+                    if (barBlock) {
+                        barBlock.classList.add("volume-levelup");
+                        // reset after animation
+                        setTimeout(() => {
+                            barBlock.classList.remove("volume-levelup");
+                        }, 800);
+                    }
+
+                    emojiEl.classList.add("levelup-pop");
+                    setTimeout(() => {
+                        emojiEl.classList.remove("levelup-pop");
+                    }, 650);
+                }
             }
+
 
 
     // =============================
@@ -2133,6 +2592,32 @@
     // =============================
     // 3) QUOTES
     // =============================
+
+    function showDailyQuoteModal(quoteText) {
+        const modal = document.getElementById("daily-quote-modal");
+        const quoteEl = document.getElementById("modal-quote-text");
+        const doFinisherBtn = document.getElementById("modal-do-finisher-btn");
+        const closeBtn = document.getElementById("modal-close-btn");
+
+        if (!modal) return;
+
+        quoteEl.textContent = quoteText;
+        modal.classList.remove("hidden");
+
+        // CLOSE BUTTON
+        closeBtn.onclick = () => {
+            modal.classList.add("hidden");
+        };
+
+        // 🟦 DO FINISHER BUTTON — SCROLLS TO FINISHER
+        doFinisherBtn.onclick = () => {
+            modal.classList.add("hidden");
+            scrollToFinisherSection();        // ⭐ THIS IS WHERE IT GOES ⭐
+        };
+    }
+
+
+
     let quoteIndex = 0;
     function initQuotes() {
         const quoteEl = document.getElementById("quote");
@@ -2861,90 +3346,76 @@
 
     function updateStreak() {
             const banner = document.getElementById("streak-banner");
-            const textEl = document.getElementById("streak-text");
-            const progressFill = document.getElementById("streak-progress-fill");
-            if (!banner || !textEl) return;
+            const weekLabelEl = document.getElementById("streak-week-label");
+            const tokenLabelEl = document.getElementById("streak-token-label");
+            const progressTextEl = document.getElementById("streak-text"); // reuse existing id
+            const progressFillEl = document.getElementById("streak-progress-fill");
+
+            if (!banner || !weekLabelEl || !tokenLabelEl || !progressTextEl || !progressFillEl) return;
 
             const goal = getWeeklyGoal();
             const done = getWorkoutsCompletedThisWeek();
             const streak = getWeeklyStreak?.() ?? 0;
+            const tokens = getRestTokens();
+            const tokenProgress = getRestTokenProgress();
 
-            // No weekly goal → hide banner + reset aura
+            // No goal set → hide banner
             if (!goal) {
                 banner.classList.add("hidden");
                 banner.classList.remove("streak-active");
                 banner.style.setProperty("--emblem-strength", "0");
-                if (progressFill) progressFill.style.width = "0%";
                 return;
             }
 
             banner.classList.remove("hidden");
 
-            // ---- Progress line ----
-            let progressLine = `This week: ${done} / ${goal} sessions done. `;
-            if (done === 0) {
-                progressLine += "First session is still waiting for you. ";
-            } else if (done < goal) {
-                const left = goal - done;
-                progressLine += `${left} more to hit your weekly commitment. `;
+            // 1) Week streak label (left chip)
+            if (streak > 0) {
+                weekLabelEl.textContent = `Week ${streak} streak`;
             } else {
-                progressLine += "Weekly goal hit — everything from here is bonus work. ";
+                weekLabelEl.textContent = "No active streak yet";
             }
 
-            // ---- Streak line ----
-            let streakLine = "";
-            if (streak <= 0) {
-                streakLine = "No active streak yet — hit your goal this week to start one.";
-            } else if (streak === 1) {
-                streakLine = "Weekly streak: 1 week in a row.";
+            // 2) Progress text (middle line)
+            const clampedDone = Math.min(done, goal);
+            const progressPct = Math.round((clampedDone / goal) * 100);
+
+            progressTextEl.textContent = `${done} / ${goal} sessions • ${progressPct}% of weekly goal`;
+
+            // 3) Token label (right chip)
+            if (tokens > 0 || tokenProgress > 0) {
+                const tokenPct = Math.round(tokenProgress * 100);
+                const extra =
+                    tokenProgress > 0 && tokenProgress < 1
+                        ? ` • Next: ${tokenPct}%`
+                        : "";
+                tokenLabelEl.textContent = `Rest tokens: ${tokens}${extra}`;
             } else {
-                streakLine = `Weekly streak: ${streak} weeks in a row.`;
+                tokenLabelEl.textContent = "Earn rest tokens with finishers";
             }
 
-            // ---- Rest token line ----
-            const tokens = getRestTokens();
-            const progress = getRestTokenProgress();
-            const progressPct = Math.round(progress * 100);
+            // 4) Progress bar fill
+            progressFillEl.style.width = `${Math.min(progressPct, 100)}%`;
 
-            let tokenLine = ` Rest tokens: ${tokens}`;
-            if (progress > 0 && progress < 1) {
-                tokenLine += ` (${progressPct}% toward your next token)`;
-            } else if (tokens === 0 && progress === 0) {
-                tokenLine += " — earn them by taking on harder finishers.";
-            }
-
-            textEl.textContent = progressLine + streakLine + tokenLine;
-
-            // ---- Progress bar fill (this week vs goal) ----
-            if (progressFill) {
-                const ratio = goal > 0 ? Math.min(1, done / goal) : 0;
-                progressFill.style.width = `${ratio * 100}%`;
-            }
-
-            // ---- Aura activation + intensification ----
+            // 5) Aura + strength (simple intensification by streak length)
             if (streak > 0) {
                 banner.classList.add("streak-active");
 
-                const tier = getStreakTierBounds(streak);
-                if (tier) {
-                    const span = tier.end - tier.start + 1;
-                    const pos = Math.min(tier.end, Math.max(tier.start, streak)) - tier.start + 1; // 1..span
-                    const linear = span > 1 ? pos / span : 1; // 0..1 inside this tier
-
-                    // Exponential curve → slow at first, dramatic near the end of tier
-                    const eased = Math.pow(linear, 1.7);
-
-                    const strength = Math.min(1, Math.max(0, eased));
-                    banner.style.setProperty("--emblem-strength", strength.toString());
-                } else {
-                    // fallback if something weird happens
-                    banner.style.setProperty("--emblem-strength", "1");
+                let strength = 0.25; // base for 1 week
+                if (streak >= 2 && streak <= 3) {
+                    strength = 0.5;
+                } else if (streak >= 4 && streak <= 7) {
+                    strength = 0.75;
+                } else if (streak > 7) {
+                    strength = 1;
                 }
+                banner.style.setProperty("--emblem-strength", String(strength));
             } else {
                 banner.classList.remove("streak-active");
                 banner.style.setProperty("--emblem-strength", "0");
             }
         }
+
 
 
 
@@ -2992,7 +3463,10 @@
             updateStreak();
             updateWeeklyVolumeSummary?.();
             flashDayComplete?.();
-            celebrateWeeklyGoalHit?.();
+            setTimeout(() => {
+                celebrateWeeklyGoalHit?.();
+            }, 700);
+            
 
             // 5) 🔥 VISUAL REWARD – glow + weekly overlay (if goal just hit)
             if (typeof flashDayComplete === "function") {
@@ -3001,7 +3475,23 @@
             if (typeof celebrateWeeklyGoalHit === "function") {
                 celebrateWeeklyGoalHit();
             }
+                // 5) Optional: show a post-workout quote overlay
+        const goal = getWeeklyGoal();
+        const done = getWorkoutsCompletedThisWeek();
+
+        const justHitWeeklyGoal = goal && done === goal;
+
+        // If this session was NOT the exact one that hits the weekly goal,
+        // show the quote overlay shortly after the anime blast.
+        if (!justHitWeeklyGoal) {
+            setTimeout(() => {
+                showPostWorkoutQuoteOverlay();
+            }, 900); // tweak timing to sync with your animeBlast duration
         }
+    }
+
+            
+        
 
 
 
@@ -3079,7 +3569,7 @@
                 if (!cat) return;
 
                 const data = cat[diffKey];
-                if (!data) return; // e.g. no "hard" for recovery
+                if (!data) return; // e.g. no hard tier for recovery
 
                 currentFinisher = data;
                 selectedCategory = catKey;
@@ -3088,14 +3578,14 @@
                 titleEl.textContent = data.title;
                 descEl.textContent = data.description;
                 tagEl.textContent = `${catKey} • ${diffKey}`.toUpperCase();
-                if (data.tokenReward >= 1) {
-                    statusEl.textContent = "Complete this to earn a full Rest Token.";
-                } else if (data.tokenReward > 0) {
-                    statusEl.textContent = `Earn ${data.tokenReward * 100}% of a Rest Token.`;
-                } else {
-                    statusEl.textContent = "No token reward — just extra credit work.";
-                }
 
+                statusEl.textContent =
+                    data.tokenReward > 0
+                        ? `Complete this finisher to earn ${data.tokenReward >= 1
+                            ? "a Rest Token."
+                            : `${Math.round(data.tokenReward * 100)}% of a Rest Token.`
+                        }`
+                        : "Extra work for extra pride — this one doesn’t award Rest Tokens.";
 
                 doBtn.disabled = false;
                 skipBtn.disabled = false;
@@ -3112,17 +3602,15 @@
                     clearCatSelection();
                     btn.classList.add("btn-primary");
 
-                    // Show difficulty row and reset selection
                     diffContainer.classList.remove("hidden");
                     clearDiffSelection();
                     selectedDifficulty = null;
                     currentFinisher = null;
 
-                    titleEl.textContent = "Pick your finisher difficulty";
-                    descEl.textContent = "Choose how hard you want to push today. Harder options can earn Rest Tokens.";
+                    titleEl.textContent = "Choose difficulty";
+                    descEl.textContent = "Easy keeps it light, Standard pushes you, Hard cashes in bigger Rest Token progress.";
                     tagEl.textContent = cat.toUpperCase();
-                    statusEl.textContent = "Pick a difficulty to lock in today's finisher.";
-
+                    statusEl.textContent = "Now pick a difficulty to lock in today’s finisher.";
                 });
             });
 
@@ -3146,65 +3634,63 @@
                 });
             });
 
-            // Do Finisher
-        // Do Finisher
-        // Do Finisher
-        doBtn.addEventListener("click", () => {
-            if (!currentFinisher) return;
-            if (finisherCard.classList.contains("locked")) return;
+            // ✅ Mark Completed (once per day)
+            doBtn.addEventListener("click", () => {
+                if (!currentFinisher) return;
+                if (finisherCard.classList.contains("locked")) return;
 
-            const todayKey = getTodayDateKey();
-            const lastFinisherDay = localStorage.getItem(LAST_FINISHER_DATE_KEY);
+                const todayKey = getTodayDateKey();
+                const lastFinisherDay = localStorage.getItem(LAST_FINISHER_DATE_KEY);
 
-            // 🚫 Already cashed in a finisher today
-            if (lastFinisherDay === todayKey) {
-                showToast("You already earned today’s finisher rewards. Extra work is pure bonus. 💪");
-                return;
-            }
+                // Already got rewards from a finisher today
+                if (lastFinisherDay === todayKey) {
+                    showToast("You already earned today’s finisher rewards. Extra work is pure bonus. 💪");
+                    return;
+                }
 
-            const ok = window.confirm("Mark this finisher as completed?");
-            if (!ok) return;
+                const ok = window.confirm("Mark this finisher as completed?");
+                if (!ok) return;
 
-            const reward = currentFinisher.tokenReward || 0;
-            if (reward > 0) {
-                addRestTokenProgress(reward);
-                updateStreak();
-            }
+                const reward = currentFinisher.tokenReward || 0;
+                if (reward > 0) {
+                    addRestTokenProgress(reward);
+                    updateStreak();
+                }
 
-            // 🔒 Lock in that today’s finisher is done (for rewards)
-            localStorage.setItem(LAST_FINISHER_DATE_KEY, todayKey);
+                localStorage.setItem(LAST_FINISHER_DATE_KEY, todayKey);
 
-            statusEl.textContent = "Finisher completed. Nice work.";
-            finisherCard.classList.add("completed-pulse");
-            setTimeout(() => {
-                finisherCard.classList.remove("completed-pulse");
-            }, 800);
+                statusEl.textContent = "Finisher complete. Nice work.";
+                finisherCard.classList.add("completed-pulse");
+                setTimeout(() => {
+                    finisherCard.classList.remove("completed-pulse");
+                }, 800);
 
-            // ⭐ Replace the action buttons with a centered message
-            const finisherActions = finisherCard.querySelector(".finisher-actions");
-            if (finisherActions) {
-                finisherActions.innerHTML = `
-        <p class="finisher-complete-message">
-            Finisher completed! 🔥 Token progress increased.
-        </p>
-    `;
-            }
+                // Lock controls for the rest of the day (visually + functionally)
+                doBtn.disabled = true;
+                skipBtn.disabled = true;
+                catButtons.forEach(b => b.disabled = true);
+                diffButtons.forEach(b => b.disabled = true);
 
-            // optional micro celebration animation
-            celebrateFinisher?.();
+                celebrateFinisher?.();
+            });
 
-        });
-
-
-
-
-            // Skip Finisher
+            // ✅ Skip for Today
             skipBtn.addEventListener("click", () => {
                 if (finisherCard.classList.contains("locked")) return;
 
+                const ok = window.confirm("Skip today’s finisher? Your main work still counts.");
+                if (!ok) return;
+
                 statusEl.textContent = "You skipped the finisher today. Main work still counts — come back stronger tomorrow.";
+
+                // Also lock controls, but without giving tokens
+                doBtn.disabled = true;
+                skipBtn.disabled = true;
+                catButtons.forEach(b => b.disabled = true);
+                diffButtons.forEach(b => b.disabled = true);
             });
         }
+
 
 
 
@@ -3355,42 +3841,111 @@
 
                 showToast("Finisher complete. That’s extra work in the bank. 💪");
             }
+            function showPostWorkoutQuoteOverlay() {
+                    const overlay = document.createElement("div");
+                    overlay.className = "postworkout-overlay";
 
-            // --- Weekly goal hit celebration (one-time at the moment you hit it) ---
-            function celebrateWeeklyGoalHit() {
-                    const goal = getWeeklyGoal();
-                    const done = getWorkoutsCompletedThisWeek();
-                    if (!goal || done !== goal) return; // only fire exactly when you hit the goal
+                    const quote = getRandomPostWorkoutQuote();
 
-                    // ⏱ Wait so the daily glow can play first
-                    const GLOW_DELAY_MS = 1600; // tweak this: 1200, 1600, 2000, etc.
-
-                    setTimeout(() => {
-                        const overlay = document.createElement("div");
-                        overlay.className = "weekly-overlay";
-                        overlay.innerHTML = `
-            <div class="weekly-overlay-card">
-                <h2>Weekly goal hit 🎉</h2>
-                <p>You showed up for all ${goal} planned sessions. That’s how streaks are built.</p>
-                <button class="btn btn-primary" id="weekly-overlay-close">Keep going</button>
+                    overlay.innerHTML = `
+        <div class="postworkout-card">
+            <h2>Workout complete 🔥</h2>
+            <p class="postworkout-quote">${quote}</p>
+            <p class="postworkout-hint">
+                Feeling good? You can cash in a finisher for extra progress.
+            </p>
+            <div class="postworkout-actions">
+                <button class="btn btn-primary" id="postworkout-do-finisher">
+                    Do finisher
+                </button>
+                <button class="btn btn-outline" id="postworkout-close">
+                    Close
+                </button>
             </div>
-        `;
-                        document.body.appendChild(overlay);
+        </div>
+    `;
 
-                        const closeBtn = document.getElementById("weekly-overlay-close");
-                        if (closeBtn) {
-                            closeBtn.addEventListener("click", () => {
-                                overlay.remove();
-                            });
-                        }
+                    document.body.appendChild(overlay);
 
-                        overlay.addEventListener("click", (e) => {
-                            if (e.target === overlay) {
-                                overlay.remove();
+                    const closeBtn = document.getElementById("postworkout-close");
+                    const finisherBtn = document.getElementById("postworkout-do-finisher");
+
+                    if (closeBtn) {
+                        closeBtn.addEventListener("click", () => {
+                            overlay.remove(); // no scroll, no locking — they can change their mind later
+                        });
+                    }
+
+                    if (finisherBtn) {
+                        finisherBtn.addEventListener("click", () => {
+                            overlay.remove();
+
+                            const finisherSection =
+                                document.getElementById("finisher-card") ||
+                                document.getElementById("finisher-section");
+
+                            if (finisherSection) {
+                                finisherSection.scrollIntoView({
+                                    behavior: "smooth",
+                                    block: "center"
+                                });
+
+                                // brief highlight so they know where to look
+                                finisherSection.classList.add("finisher-focus");
+                                setTimeout(() => {
+                                    finisherSection.classList.remove("finisher-focus");
+                                }, 1000);
                             }
                         });
-                    }, GLOW_DELAY_MS);
+                    }
+
+                    // Close by tapping outside the card
+                    overlay.addEventListener("click", (e) => {
+                        if (e.target === overlay) {
+                            overlay.remove();
+                        }
+                    });
                 }
+
+    function celebrateWeeklyGoalHit() {
+        const goal = getWeeklyGoal();
+        const done = getWorkoutsCompletedThisWeek();
+
+        // Only fire the moment you *hit* the goal, not on extra sessions
+        if (!goal || done !== goal) return;
+
+        // If one is already open, don’t stack them
+        if (document.querySelector(".weekly-overlay")) return;
+
+        const overlay = document.createElement("div");
+        overlay.className = "weekly-overlay";
+        overlay.innerHTML = `
+        <div class="weekly-overlay-card">
+            <h2>Weekly goal hit 🎉</h2>
+            <p>You showed up for all ${goal} planned sessions. That’s how streaks are built.</p>
+            <button class="btn btn-primary" id="weekly-overlay-continue">Continue</button>
+        </div>
+    `;
+
+        document.body.appendChild(overlay);
+
+        // 🔹 Button closes the overlay
+        const continueBtn = overlay.querySelector("#weekly-overlay-continue");
+        if (continueBtn) {
+            continueBtn.addEventListener("click", (e) => {
+                e.stopPropagation(); // don’t trigger the background click
+                overlay.remove();
+            });
+        }
+
+        // 🔹 Click outside the card also closes it
+        overlay.addEventListener("click", (e) => {
+            if (e.target === overlay) {
+                overlay.remove();
+            }
+        });
+    }
+
 
 
 
