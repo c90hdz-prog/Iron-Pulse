@@ -578,6 +578,22 @@
     opacity: 1;
     animation: emblem-legendary-flare 1.2s ease-in-out infinite;
 }
+/* DEBUG: make Legendary impossible to miss */
+.emblem-legendary-1 .streak-bg-layer {
+    background-image:
+        repeating-linear-gradient(
+            45deg,
+            rgba(255, 255, 255, 0.3),
+            rgba(255, 255, 255, 0.3) 4px,
+            rgba(255, 120, 0, 0.9) 4px,
+            rgba(255, 120, 0, 0.9) 8px
+        ),
+        radial-gradient(circle at center,
+            rgba(0, 0, 0, 0.75) 0%,
+            rgba(0, 0, 0, 0.5) 40%,
+            transparent 70%);
+    background-size: 40px 40px, auto;
+}
 
 /* Power-up shell (scale + glow) */
 @keyframes streakPowerShell {
@@ -612,6 +628,29 @@
         transform: scale(1.18) rotate(40deg);
         opacity: 0;
     }
+}
+
+
+.streak-emblem-wrapper {
+    flex-shrink: 0;
+}
+
+.streak-emblem.rankup-emblem-preview {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.9));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    box-shadow: 0 0 18px rgba(255, 120, 80, 0.7);
+}
+
+.streak-emblem-icon {
+    font-size: 1.4rem;
+    position: relative;
+    z-index: 1;
 }
 
 .streak-banner.streak-powerup {
@@ -766,23 +805,47 @@
     color: var(--text-muted, #cfcfd6);
 }
 
+/* Base streak banner */
+/* Base streak banner */
 .streak-banner {
+    position: relative;
     margin-bottom: 1rem;
     padding: 0.75rem 1rem;
     border-radius: 18px;
     background: linear-gradient(135deg, rgba(255, 81, 47, 0.18), rgba(246, 195, 67, 0.12));
     border: 1px solid var(--card-border);
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     display: flex;
     align-items: center;
     gap: 0.75rem;
     flex-wrap: wrap;
     color: var(--text-primary);
-    position: relative;
-    overflow: hidden;
-
-    /* 🔥 this will be controlled by JS 0..1 */
+    overflow: hidden;          /* ✅ keep FX inside card */
     --emblem-strength: 0;
+}
+
+/* 🔥 Make sure all “real” content sits above the FX */
+.streak-banner > *:not(.streak-bg-layer) {
+    position: relative;
+    z-index: 1;
+}
+
+/* One background layer that we re-skin per tier */
+.streak-bg-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 0;                /* ✅ above banner background, below content */
+    pointer-events: none;
+
+    /* Darker in the center so text stays readable */
+    background:
+        radial-gradient(
+            circle at center,
+            rgba(0, 0, 0, 0.65) 0%,
+            rgba(0, 0, 0, 0.35) 40%,
+            transparent 70%
+        );
+    mix-blend-mode: screen;
 }
 
 
@@ -819,8 +882,14 @@
 .streak-row-top {
     flex-wrap: wrap;
 }
+.streak-pill-emblem {
+    border-color: rgba(255, 255, 255, 0.35);
+    color: #ffe8b0;
+    background: rgba(0, 0, 0, 0.55);
+}
 
 /* Little stat chips for week + tokens */
+
 .streak-pill {
     font-size: 0.75rem;
     text-transform: uppercase;
@@ -1413,20 +1482,245 @@
     to   { opacity: 1; transform: translateY(0); }
 }
 
-
+/* Continuous heartbeat aura (always on when streak is active) */
 .streak-banner.streak-active::before {
     content: "";
     position: absolute;
-    inset: -3px;
+    inset: -4px;
     border-radius: inherit;
     background:
-        radial-gradient(circle at 0% 50%, rgba(255, 81, 47, 0.35), transparent 55%),
-        radial-gradient(circle at 100% 50%, rgba(221, 36, 118, 0.35), transparent 55%);
-    opacity: calc(0.12 + 0.55 * var(--emblem-strength));
-    filter: blur(calc(4px + 12px * var(--emblem-strength)));
+        radial-gradient(circle at 0% 50%, rgba(255, 81, 47, 0.35), transparent 60%),
+        radial-gradient(circle at 100% 50%, rgba(221, 36, 118, 0.35), transparent 60%);
+    opacity: calc(0.25 + 0.6 * var(--emblem-strength));
+    filter: blur(calc(6px + 10px * var(--emblem-strength)));
     pointer-events: none;
     z-index: -1;
+    animation: streakAura 3.2s ease-in-out infinite;
 }
+
+/* Heartbeat-style pulsing */
+@keyframes streakAura {
+    0% {
+        transform: translateY(0) scale(1);
+        filter: blur(6px) brightness(1);
+    }
+    40% {
+        transform: translateY(-1px) scale(1.01);
+        filter: blur(10px) brightness(1.4);
+    }
+    100% {
+        transform: translateY(0) scale(1);
+        filter: blur(6px) brightness(1);
+    }
+}
+@keyframes streakGlowSoft {
+    0%   { filter: brightness(1) blur(6px); }
+    50%  { filter: brightness(1.25) blur(9px); }
+    100% { filter: brightness(1) blur(6px); }
+}
+
+.emblem-weekly-1 .streak-bg-layer,
+.emblem-weekly-2 .streak-bg-layer,
+.emblem-weekly-3 .streak-bg-layer {
+    background-image:
+        radial-gradient(circle at center,
+            rgba(0, 0, 0, 0.65) 0%,
+            rgba(0, 0, 0, 0.35) 40%,
+            transparent 70%),
+        radial-gradient(circle at 0% 50%, rgba(255, 120, 80, 0.30), transparent 60%),
+        radial-gradient(circle at 100% 50%, rgba(246, 195, 67, 0.25), transparent 60%);
+    animation: streakGlowSoft 6s ease-in-out infinite;
+}
+@keyframes streakGlitterDrift {
+    0% {
+        background-position:
+            0 0,          /* center dimmer layer stays fixed */
+            0 0,
+            40px 30px,
+            -60px 80px;
+    }
+    100% {
+        background-position:
+            0 0,
+            80px 40px,
+            -40px 110px,
+            120px -40px;
+    }
+}
+
+.emblem-monthly-1 .streak-bg-layer,
+.emblem-monthly-2 .streak-bg-layer,
+.emblem-monthly-3 .streak-bg-layer {
+    background-image:
+        radial-gradient(circle at center,
+            rgba(0, 0, 0, 0.7) 0%,
+            rgba(0, 0, 0, 0.4) 40%,
+            transparent 70%),
+        radial-gradient(circle at 20% 15%, rgba(255, 255, 255, 0.20), transparent 60%),
+        radial-gradient(circle at 80% 70%, rgba(255, 200, 120, 0.22), transparent 60%),
+        radial-gradient(circle at 40% 95%, rgba(255, 150, 90, 0.18), transparent 60%);
+    background-size:
+        auto,
+        90px 90px,
+        130px 130px,
+        100px 100px;
+    animation: streakGlitterDrift 14s linear infinite;
+}
+@keyframes streakSparksSweep {
+    0% {
+        background-position:
+            0 0,
+            -120px 0,
+            0 0,
+            40px 80px;
+    }
+    100% {
+        background-position:
+            0 0,
+            120px 0,   /* blue-ish electric band sweeps across */
+            0 0,
+            -40px -60px;
+    }
+}
+
+.emblem-quarterly-1 .streak-bg-layer,
+.emblem-quarterly-2 .streak-bg-layer,
+.emblem-quarterly-3 .streak-bg-layer {
+    background-image:
+        radial-gradient(circle at center,
+            rgba(0, 0, 0, 0.7) 0%,
+            rgba(0, 0, 0, 0.45) 40%,
+            transparent 70%),
+        linear-gradient(120deg,
+            transparent 0%,
+            rgba(120, 200, 255, 0.35) 40%,
+            rgba(0, 180, 255, 0.6) 50%,
+            transparent 60%),
+        radial-gradient(circle at 15% 80%, rgba(255, 180, 100, 0.25), transparent 65%),
+        radial-gradient(circle at 90% 10%, rgba(255, 255, 255, 0.15), transparent 60%);
+    background-size:
+        auto,
+        260px 260px,    /* big electric band */
+        140px 140px,
+        110px 110px;
+    animation: streakSparksSweep 10s linear infinite;
+}
+@keyframes streakLavaFlow {
+    0% {
+        background-position:
+            0 0,
+            0 0,
+            80px 0,
+            -40px 40px;
+    }
+    100% {
+        background-position:
+            0 0,
+            -200px 60px,
+            -40px -20px,
+            80px -40px;
+    }
+}
+
+.emblem-annual-1 .streak-bg-layer,
+.emblem-annual-2 .streak-bg-layer,
+.emblem-legendary-1 .streak-bg-layer {
+    background-image:
+        radial-gradient(circle at center,
+            rgba(0, 0, 0, 0.75) 0%,
+            rgba(0, 0, 0, 0.5) 40%,
+            transparent 70%),
+        linear-gradient(130deg,
+            rgba(120, 0, 0, 0.75),
+            rgba(220, 80, 0, 0.9),
+            rgba(255, 200, 80, 0.85)),
+        radial-gradient(circle at 10% 90%, rgba(255, 230, 150, 0.35), transparent 65%),
+        radial-gradient(circle at 95% 5%, rgba(255, 255, 255, 0.18), transparent 60%);
+    background-size:
+        auto,
+        320px 320px,   /* lava band */
+        160px 160px,
+        140px 140px;
+    animation: streakLavaFlow 9s linear infinite;
+}
+
+/* Base: no reactive pattern unless emblem tier is high */
+.streak-banner::after {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    z-index: -1;
+}
+
+/* Monthly tier – slow, subtle energy flow */
+.streak-banner.emblem-monthly-1::after,
+.streak-banner.emblem-monthly-2::after,
+.streak-banner.emblem-monthly-3::after {
+    opacity: 0.4;
+    background:
+        conic-gradient(
+            from 0deg,
+            rgba(255, 255, 255, 0.08),
+            rgba(255, 160, 90, 0.18),
+            rgba(255, 90, 60, 0.0),
+            rgba(255, 255, 255, 0.08)
+        );
+    mix-blend-mode: screen;
+    animation: reactiveCamoSlow 14s linear infinite;
+}
+
+/* Quarterly tier – faster, more intense sweep */
+.streak-banner.emblem-quarterly-1::after,
+.streak-banner.emblem-quarterly-2::after,
+.streak-banner.emblem-quarterly-3::after {
+    opacity: 0.55;
+    background:
+        conic-gradient(
+            from 0deg,
+            rgba(255, 255, 255, 0.12),
+            rgba(255, 190, 90, 0.3),
+            rgba(255, 80, 40, 0.06),
+            rgba(255, 255, 255, 0.12)
+        );
+    mix-blend-mode: screen;
+    animation: reactiveCamoMedium 10s linear infinite;
+}
+
+/* Annual & Legendary – wild reactive skin */
+.streak-banner.emblem-annual-1::after,
+.streak-banner.emblem-annual-2::after,
+.streak-banner.emblem-legendary-1::after {
+    opacity: 0.7;
+    background:
+        conic-gradient(
+            from 0deg,
+            rgba(255, 255, 255, 0.2),
+            rgba(255, 230, 120, 0.45),
+            rgba(255, 100, 40, 0.1),
+            rgba(255, 255, 255, 0.2)
+        );
+    mix-blend-mode: screen;
+    animation: reactiveCamoFast 7s linear infinite;
+}
+
+@keyframes reactiveCamoSlow {
+    0%   { transform: rotate(0deg) scale(1); }
+    100% { transform: rotate(360deg) scale(1); }
+}
+
+@keyframes reactiveCamoMedium {
+    0%   { transform: rotate(0deg) scale(1.02); }
+    100% { transform: rotate(360deg) scale(1.02); }
+}
+
+@keyframes reactiveCamoFast {
+    0%   { transform: rotate(0deg) scale(1.05); }
+    100% { transform: rotate(360deg) scale(1.05); }
+}
+
 
 /* Post-workout motivational overlay */
 .postworkout-overlay {
@@ -1500,34 +1794,15 @@
 
 
 /* Aura when streak is active */
+/* Aura when streak is active */
 .streak-banner.streak-active {
     box-shadow:
-        0 0 calc(6px + 10px * var(--emblem-strength)) rgba(255, 81, 47, 0.5),
-        0 0 calc(14px + 18px * var(--emblem-strength)) rgba(221, 36, 118, 0.45);
-    animation: streakAura 2.4s infinite ease-in-out;
+        0 0 calc(10px + 12px * var(--emblem-strength)) rgba(255, 81, 47, 0.6),
+        0 0 calc(20px + 22px * var(--emblem-strength)) rgba(221, 36, 118, 0.55);
 }
 
-/* Smooth pulsing effect */
-@keyframes streakAura {
-    0% {
-        box-shadow:
-            0 0 8px rgba(255, 81, 47, 0.35),
-            0 0 18px rgba(221, 36, 118, 0.25);
-        transform: translateY(0);
-    }
-    45% {
-        box-shadow:
-            0 0 14px rgba(255, 81, 47, 0.75),
-            0 0 30px rgba(221, 36, 118, 0.55);
-        transform: translateY(-1px);
-    }
-    100% {
-        box-shadow:
-            0 0 8px rgba(255, 81, 47, 0.35),
-            0 0 18px rgba(221, 36, 118, 0.25);
-        transform: translateY(0);
-    }
-}
+
+
 /* === Weekly Volume Card === */
 .weekly-volume-card {
     display: flex;
@@ -1781,14 +2056,23 @@
         
 <div id="screen-daily">
     <div id="streak-banner" class="streak-banner hidden">
-        <div class="streak-icon">🔥</div>
+            <div class="streak-bg-layer"></div>
+
+        <div class="streak-emblem-wrapper">
+            <div id="streak-emblem" class="rankup-emblem-preview streak-emblem">
+                <span class="streak-emblem-icon">🔥</span>
+            </div>
+        </div>
     
         <div class="streak-body">
             <!-- Top row: week + tokens -->
             <div class="streak-row streak-row-top">
                 <span id="streak-week-label" class="streak-pill"></span>
                 <span id="streak-token-label" class="streak-pill streak-pill-secondary"></span>
+                <!-- 🔥 NEW: emblem label -->
+                <span id="streak-emblem-label" class="streak-pill streak-pill-emblem hidden"></span>
             </div>
+
     
             <!-- Middle row: short progress text -->
             <div class="streak-row">
@@ -3292,34 +3576,44 @@
 
         // Called from updateStreak()
         function handleEmblemTier(streak) {
-            const banner = document.getElementById("streak-banner");
-            if (!banner) return;
+                const banner = document.getElementById("streak-banner");
+                const emblem = document.getElementById("streak-emblem");
+                if (!banner) return;
 
-            const newTier = getEmblemTierForStreak(streak);
-            const prevTier = getStoredEmblemTier();
+                // 👉 apply emblem classes to the small emblem box if present,
+                // otherwise fall back to the whole banner
+                const target = emblem || banner;
 
-            // No streak → clear emblem
-            if (!newTier) {
-                applyEmblemTierClass(banner, null);
-                setStoredEmblemTier("");
-                return;
+                const newTier = getEmblemTierForStreak(streak);
+                const prevTier = getStoredEmblemTier();
+
+                // No streak → clear emblem
+                if (!newTier) {
+                    applyEmblemTierClass(target, null);
+                    setStoredEmblemTier("");
+                    return;
+                }
+
+                // Always apply the new tier class
+                applyEmblemTierClass(target, newTier);
+                applyEmblemTierClass(banner, newTier);
+                updateEmblemIconForTier(newTier);
+
+
+                // First time ever getting an emblem: set but don't pop an overlay
+                if (!prevTier) {
+                    setStoredEmblemTier(newTier);
+                    return;
+                }
+
+                // If tier changed → rank up!
+                if (prevTier !== newTier) {
+                    setStoredEmblemTier(newTier);
+                    // Keep using banner for the big full-screen overlay
+                    triggerEmblemRankUp(banner, newTier);
+                }
             }
 
-            // Always apply the new tier class
-            applyEmblemTierClass(banner, newTier);
-
-            // First time ever getting an emblem: set but don't pop an overlay
-            if (!prevTier) {
-                setStoredEmblemTier(newTier);
-                return;
-            }
-
-            // If tier changed → rank up!
-            if (prevTier !== newTier) {
-                setStoredEmblemTier(newTier);
-                triggerEmblemRankUp(banner, newTier);
-            }
-        }
     // Map weekly streak → tier window (start/end week inside that tier)
     function getStreakTierBounds(streak) {
         if (streak <= 0) return null;
@@ -3346,13 +3640,41 @@
         }
     }
 
+    function updateEmblemIconForTier(tier) {
+            const iconEl = document.getElementById("streak-icon");
+            if (!iconEl) return;
+
+            switch (tier) {
+                case "emblem-weekly-1":
+                case "emblem-weekly-2":
+                case "emblem-weekly-3":
+                    iconEl.textContent = "🔥"; break;
+                case "emblem-monthly-1":
+                case "emblem-monthly-2":
+                case "emblem-monthly-3":
+                    iconEl.textContent = "⚡"; break;
+                case "emblem-quarterly-1":
+                case "emblem-quarterly-2":
+                case "emblem-quarterly-3":
+                    iconEl.textContent = "💥"; break;
+                case "emblem-annual-1":
+                case "emblem-annual-2":
+                case "emblem-legendary-1":
+                    iconEl.textContent = "👑"; break;
+                default:
+                    iconEl.textContent = "🔥";
+            }
+        }
+
 
     function updateStreak() {
             const banner = document.getElementById("streak-banner");
             const weekLabelEl = document.getElementById("streak-week-label");
             const tokenLabelEl = document.getElementById("streak-token-label");
-            const progressTextEl = document.getElementById("streak-text"); // reuse existing id
+            const progressTextEl = document.getElementById("streak-text");
             const progressFillEl = document.getElementById("streak-progress-fill");
+            const emblemLabelEl = document.getElementById("streak-emblem-label"); // 🔥 NEW
+
 
             if (!banner || !weekLabelEl || !tokenLabelEl || !progressTextEl || !progressFillEl) return;
 
@@ -3362,7 +3684,7 @@
             const tokens = getRestTokens();
             const tokenProgress = getRestTokenProgress();
 
-            // No goal set → hide banner
+            // ❌ No goal set → banner off, aura off
             if (!goal) {
                 banner.classList.add("hidden");
                 banner.classList.remove("streak-active");
@@ -3372,20 +3694,19 @@
 
             banner.classList.remove("hidden");
 
-            // 1) Week streak label (left chip)
+            // 1) Week label chip
             if (streak > 0) {
                 weekLabelEl.textContent = `Week ${streak} streak`;
             } else {
                 weekLabelEl.textContent = "No active streak yet";
             }
 
-            // 2) Progress text (middle line)
+            // 2) Progress text
             const clampedDone = Math.min(done, goal);
             const progressPct = Math.round((clampedDone / goal) * 100);
-
             progressTextEl.textContent = `${done} / ${goal} sessions • ${progressPct}% of weekly goal`;
 
-            // 3) Token label (right chip)
+            // 3) Token label
             if (tokens > 0 || tokenProgress > 0) {
                 const tokenPct = Math.round(tokenProgress * 100);
                 const extra =
@@ -3396,34 +3717,49 @@
             } else {
                 tokenLabelEl.textContent = "Earn rest tokens with finishers";
             }
+            // Not sure if this goes here lol
+            if (emblemLabelEl) {
+                const tier = getEmblemTierForStreak(streak);
+                if (tier) {
+                    const label = getEmblemLabelForTier(tier); // you already have this helper
+                    emblemLabelEl.textContent = label;
+                    emblemLabelEl.classList.remove("hidden");
+                } else {
+                    emblemLabelEl.textContent = "";
+                    emblemLabelEl.classList.add("hidden");
+                }
+            }
+
 
             // 4) Progress bar fill
             progressFillEl.style.width = `${Math.min(progressPct, 100)}%`;
 
-            // 5) Aura + strength (simple intensification by streak length)
+            // 5) Continuous aura intensity (COD skin ramp)
             if (streak > 0) {
                 banner.classList.add("streak-active");
 
                 let strength = 0.25; // base for 1 week
                 if (streak >= 2 && streak <= 3) {
-                    strength = 0.5;
+                    strength = 0.55;
                 } else if (streak >= 4 && streak <= 7) {
-                    strength = 0.75;
+                    strength = 0.85;
                 } else if (streak > 7) {
-                    strength = 1;
+                    strength = 1.15; // turned up
                 }
+
                 banner.style.setProperty("--emblem-strength", String(strength));
             } else {
                 banner.classList.remove("streak-active");
                 banner.style.setProperty("--emblem-strength", "0");
             }
 
-            // 6) 🔥 Emblem tier + rank-up lightning / overlay
-            // (safe even if handleEmblemTier doesn’t exist for some reason)
+            // 6) Emblem tier + rank-up overlay / lightning
             if (typeof handleEmblemTier === "function") {
                 handleEmblemTier(streak);
             }
         }
+
+
 
 
 
