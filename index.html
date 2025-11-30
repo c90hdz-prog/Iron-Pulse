@@ -12,6 +12,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap"
         rel="stylesheet">
+    <link rel="manifest" href="manifest.json">
+
     <style>
         /* =========================
        1) ROOT + GLOBAL RESET
@@ -4583,6 +4585,11 @@
         initDebugStreakButton(); // 🔧 DEV ONLY – remove later
 
     });
+
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/service-worker.js');
+  }
+
 
 </script>
 
