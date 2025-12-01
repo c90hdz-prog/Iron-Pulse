@@ -1428,32 +1428,27 @@ function renderSessionIntoSplitCard(session, weeklyGoal) {
     const li = document.createElement("li");
     li.className = "exercise-row";
 
-    li.innerHTML = `
-      <label class="exercise-checkbox">
-        <input type="checkbox" id="${checkboxId}" />
-      </label>
-
-      <div class="exercise-main">
-        <button
-          type="button"
-          class="exercise-label exercise-name-btn"
-          data-exercise="${exerciseName}"
-        >
-          ${exerciseName}
-          <span class="exercise-focus-tag">• FOCUS</span>
-        </button>
-
-        <div class="exercise-meta-row">
-  <span class="exercise-meta-label">
-    3 sets planned
-  </span>
-  <span class="exercise-meta-value">
-    0 lbs logged
-  </span>
-</div>
-
+li.innerHTML = `
+  <div class="exercise-main">
+    <button
+      type="button"
+      class="exercise-name-btn"
+      data-exercise="${exerciseName}"
+    >
+      <div class="exercise-name-text-block">
+        <span class="exercise-name-title">${exerciseName}</span>
+        <span class="exercise-name-subtitle">Log sets</span>
       </div>
-    `;
+      <span class="exercise-name-chevron">›</span>
+    </button>
+
+    <div class="exercise-meta-row">
+      <span class="exercise-meta-label">Min 3 sets</span>
+      <span class="exercise-meta-value">0 lbs logged</span>
+    </div>
+  </div>
+`;
+
 
     // *** ATTACH FOCUS BUTTON HANDLERS HERE ***
     const btn = li.querySelector(".exercise-name-btn");
