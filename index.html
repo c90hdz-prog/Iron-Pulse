@@ -1904,6 +1904,265 @@
 .volume-object-emoji.levelup-pop {
     animation: volumeEmojiPop 0.6s ease-out;
 }
+/* === Exercise Focus Overlay =================================== */
+
+.exercise-focus-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease-out;
+}
+
+.exercise-focus-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.exercise-focus-overlay.hidden {
+  display: none;
+}
+
+.exercise-focus-backdrop {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top, rgba(255, 120, 40, 0.25), transparent 55%),
+              rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(18px);
+}
+
+/* Card */
+
+.exercise-focus-card {
+  position: relative;
+  width: min(420px, 92vw);
+  max-height: 86vh;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 1.5rem 1.4rem 1.6rem;
+  border-radius: 26px;
+  background:
+    radial-gradient(circle at top left, rgba(255, 120, 40, 0.14), transparent 60%),
+    radial-gradient(circle at bottom right, rgba(255, 40, 120, 0.12), transparent 55%),
+    #070708;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 18px 60px rgba(0, 0, 0, 0.9),
+    0 0 70px rgba(255, 110, 40, 0.4);
+  color: #f9fafb;
+  overflow-y: auto;
+}
+
+/* Header */
+
+.exercise-focus-header {
+  position: relative;
+  padding-right: 2.2rem;
+}
+
+.focus-close-btn {
+  position: absolute;
+  top: 0.1rem;
+  right: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: none;
+  background: rgba(15, 15, 20, 0.95);
+  color: #f9fafb;
+  font-size: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+.focus-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.18rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: linear-gradient(90deg, rgba(255, 120, 40, 0.25), rgba(255, 80, 120, 0.25));
+  color: #fde68a;
+}
+
+#focus-exercise-name {
+  margin: 0.55rem 0 0.2rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.focus-subtext {
+  margin: 0;
+  font-size: 0.86rem;
+  color: #9ca3af;
+}
+
+/* Progress row */
+
+.focus-progress-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+#focus-set-progress-label {
+  font-size: 0.78rem;
+  color: #e5e7eb;
+}
+
+.focus-set-dots {
+  display: inline-flex;
+  gap: 0.35rem;
+}
+
+.focus-set-dots {
+  display: inline-flex;
+  gap: 0.35rem;
+}
+
+.focus-set-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  border: none;
+  padding: 0;
+  background: rgba(148, 163, 184, 0.4);
+  box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.5);
+}
+
+.focus-set-dot.active {
+  box-shadow:
+    0 0 0 1px rgba(249, 115, 22, 0.7),
+    0 0 6px rgba(249, 115, 22, 0.6);
+}
+
+.focus-set-dot.filled {
+  background: #f97316;
+  box-shadow:
+    0 0 0 1px rgba(249, 115, 22, 0.7),
+    0 0 10px rgba(249, 115, 22, 0.9);
+}
+
+
+/* Weight block */
+
+.focus-weight-block {
+  padding: 0.75rem 0.9rem;
+  border-radius: 16px;
+  background: radial-gradient(circle at top left, rgba(249, 115, 22, 0.16), transparent 70%),
+              rgba(10, 10, 18, 0.95);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.02);
+}
+
+.focus-weight-block label {
+  display: block;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #fbbf24;
+  margin-bottom: 0.4rem;
+}
+
+.focus-weight-input-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+#focus-weight-input {
+  flex: 1;
+  padding: 0.38rem 0.6rem;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  background: rgba(15, 15, 23, 0.96);
+  color: #f9fafb;
+  font-size: 0.9rem;
+}
+
+#focus-weight-input:focus {
+  outline: none;
+  border-color: #f97316;
+  box-shadow: 0 0 0 1px rgba(249, 115, 22, 0.6);
+}
+
+.focus-weight-unit {
+  font-size: 0.9rem;
+  color: #e5e7eb;
+}
+
+.focus-weight-hint {
+  margin: 0.35rem 0 0;
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+/* Sets list */
+
+.focus-sets-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.focus-set-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.8);
+  box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.9);
+}
+
+.focus-set-row.completed {
+  background: radial-gradient(circle at top left, rgba(249, 115, 22, 0.32), rgba(15, 23, 42, 0.9));
+  box-shadow:
+    0 0 0 1px rgba(249, 115, 22, 0.4),
+    0 0 18px rgba(249, 115, 22, 0.55);
+}
+
+.focus-set-label {
+  font-size: 0.9rem;
+  color: #e5e7eb;
+}
+
+.focus-set-toggle {
+  font-size: 0.78rem;
+  border-radius: 999px;
+  padding: 0.32rem 0.85rem;
+  border: none;
+  background: rgba(148, 163, 184, 0.2);
+  color: #f9fafb;
+}
+
+.focus-set-row.completed .focus-set-toggle {
+  background: linear-gradient(90deg, #f97316, #fb7185);
+  box-shadow: 0 0 12px rgba(249, 115, 22, 0.7);
+}
+
+/* Complete exercise button */
+
+.focus-complete-btn {
+  margin-top: 0.4rem;
+  width: 100%;
+  border-radius: 999px;
+  padding: 0.7rem 1.2rem;
+  font-weight: 600;
+  box-shadow:
+    0 12px 30px rgba(248, 113, 113, 0.6),
+    0 0 0 1px rgba(248, 250, 252, 0.08);
+}
 
     </style>
 
@@ -2273,6 +2532,81 @@
         Get Started
     </button>
 </div>
+<!-- Focus Card Overlay -->
+<div id="focus-overlay" class="exercise-focus-overlay hidden">
+    <div class="exercise-focus-backdrop"></div>
+
+    <div class="exercise-focus-card">
+        <!-- Header: chip + close -->
+        <header class="exercise-focus-header">
+            <div class="focus-chip">Today’s split</div>
+            <button type="button" id="focus-close-btn" class="focus-close-btn" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </header>
+
+        <!-- Exercise title + subcopy -->
+        <h2 id="focus-exercise-name">Exercise name</h2>
+        <p class="focus-subtext">
+            Log your working sets and we’ll add them to your weekly volume.
+        </p>
+
+        <!-- Progress row: sets done + dots -->
+        <div class="focus-progress-row">
+            <span id="focus-sets-count">0 / 3</span>
+            <div id="focus-set-dots" class="focus-set-dots">
+                <button type="button" class="focus-set-dot focus-dot">1</button>
+                <button type="button" class="focus-set-dot focus-dot">2</button>
+                <button type="button" class="focus-set-dot focus-dot">3</button>
+            </div>
+        </div>
+
+        <!-- Working weight block -->
+        <div class="focus-weight-block">
+            <label for="focus-working-weight-input">Working weight</label>
+            <div class="focus-weight-input-row">
+                <input type="number" id="focus-working-weight-input" inputmode="decimal" min="0" step="5"
+                    placeholder="e.g. 135" />
+                <span class="focus-weight-unit">lbs</span>
+            </div>
+            <p class="focus-weight-hint">
+                We’ll copy this into any set that doesn’t have its own weight yet.
+            </p>
+        </div>
+
+        <!-- Set editor -->
+        <div id="focus-set-editor">
+            <p id="focus-set-editor-label" class="focus-set-label">Set 1</p>
+
+            <!-- Reps selector -->
+            <div class="focus-reps-row">
+                <button type="button" id="focus-reps-minus" class="btn btn-outline"
+                    style="padding:0.3rem 0.8rem;">−</button>
+                <span id="focus-reps-value" style="min-width:2rem;text-align:center;">8</span>
+                <button type="button" id="focus-reps-plus" class="btn btn-outline"
+                    style="padding:0.3rem 0.8rem;">+</button>
+            </div>
+
+            <!-- Per-set weight -->
+            <div class="focus-weight-input-row" style="margin-top:0.6rem;">
+                <input type="number" id="focus-set-weight-input" inputmode="decimal" min="0" step="5"
+                    placeholder="Set weight" />
+                <span class="focus-weight-unit">lbs</span>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="focus-actions" style="display:flex;gap:0.5rem;margin-top:1rem;flex-wrap:wrap;">
+            <button type="button" id="focus-cancel-btn" class="btn btn-outline" style="flex:1 1 120px;">
+                Cancel
+            </button>
+            <button type="button" id="focus-complete-btn" class="btn btn-primary" style="flex:1 1 120px;">
+                Save to Today's Split
+            </button>
+        </div>
+    </div>
+</div>
+
 
 <script src="app.js"></script>
 

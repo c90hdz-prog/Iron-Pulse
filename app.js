@@ -894,106 +894,124 @@
 
     let hasRecordedCompletionForCurrentSplit = false;    
 
-    function renderTodaySplit() {
-            const splitNameEl = document.getElementById("split-name");
-            const splitDaysEl = document.getElementById("split-days");
-            const splitDescEl = document.getElementById("split-description");
-            const exerciseListEl = document.getElementById("exercise-list");
+function renderTodaySplit() {
+    const splitNameEl = document.getElementById("split-name");
+    const splitDaysEl = document.getElementById("split-days");
+    const splitDescEl = document.getElementById("split-description");
+    const exerciseListEl = document.getElementById("exercise-list");
 
-            if (!splitNameEl || !exerciseListEl) return;
+    if (!splitNameEl || !exerciseListEl) return;
 
-            hasRecordedCompletionForCurrentSplit = false;
+    hasRecordedCompletionForCurrentSplit = false;
 
-            const split = getTodaySplitDefinition();
-            const weightMap = getExerciseWeights(); 
+    const split = getTodaySplitDefinition();
+    const weightMap = getExerciseWeights();
 
-            splitNameEl.textContent = split.name;
-            splitDaysEl.textContent = split.daysLabel || "";
-            splitDescEl.textContent = split.description || "";
+    splitNameEl.textContent = split.name;
+    splitDaysEl.textContent = split.daysLabel || "";
+    splitDescEl.textContent = split.description || "";
 
-            // Clear old list
-            exerciseListEl.innerHTML = "";
+    // Clear old list
+    exerciseListEl.innerHTML = "";
 
-            // Rest / recovery day: no checkboxes, just a message
-            if (!split.exercises || split.exercises.length === 0) {
-                const li = document.createElement("li");
-                li.style.marginBottom = "0.5rem";
-                li.textContent =
-                    "Rest or keep it light today. Walk, stretch, or move just enough to feel good.";
-                exerciseListEl.appendChild(li);
+    // Rest / recovery day: no checkboxes, just a message
+    if (!split.exercises || split.exercises.length === 0) {
+        const li = document.createElement("li");
+        li.style.marginBottom = "0.5rem";
+        li.textContent =
+            "Rest or keep it light today. Walk, stretch, or move just enough to feel good.";
+        exerciseListEl.appendChild(li);
 
+        if (typeof checkSplitCompletion === "function") {
+            checkSplitCompletion();
+        }
+        return;
+    }
+
+    split.exercises.forEach((exercise, index) => {
+        const li = document.createElement("li");
+        li.style.marginBottom = "0.75rem";
+
+        const checkboxId = `exercise-${index}`;
+        const weightInputId = `weight-${index}`;
+        const savedWeight = weightMap[exercise] ?? "";
+
+        li.innerHTML = `
+          <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;">
+            <input type="checkbox" id="${checkboxId}" />
+            <span class="exercise-label">${exercise}</span>
+          </label>
+          <div class="weight-row">
+            <span>Avg weight used:</span>
+            <input
+              type="number"
+              id="${weightInputId}"
+              inputmode="decimal"
+              min="0"
+              step="5"
+              value="${savedWeight !== "" ? savedWeight : ""}"
+              data-exercise="${exercise}"
+            />
+            <span>lbs</span>
+          </div>
+        `;
+
+        exerciseListEl.appendChild(li);
+
+        const checkbox = li.querySelector(`#${checkboxId}`);
+        const weightInput = li.querySelector(`#${weightInputId}`);
+
+        // Checkbox behavior
+        if (checkbox) {
+            checkbox.addEventListener("change", () => {
+                if (checkbox.checked && "vibrate" in navigator) {
+                    navigator.vibrate(20);
+                }
                 if (typeof checkSplitCompletion === "function") {
                     checkSplitCompletion();
                 }
-                return;
-            }
+            });
+        }
 
-            split.exercises.forEach((exercise, index) => {
-                const li = document.createElement("li");
-                li.style.marginBottom = "0.75rem";
+        // Weight input -> save per exercise
+        if (weightInput) {
+            weightInput.addEventListener("change", () => {
+                const exerciseName = weightInput.getAttribute("data-exercise");
+                const rawValue = weightInput.value.trim();
+                const num = parseFloat(rawValue);
 
-                const checkboxId = `exercise-${index}`;
-                const weightInputId = `weight-${index}`;
-                const savedWeight = weightMap[exercise] ?? "";
-
-                li.innerHTML = `
-            <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;">
-                <input type="checkbox" id="${checkboxId}" />
-                <span>${exercise}</span>
-            </label>
-            <div class="weight-row">
-                <span>Avg weight used:</span>
-                <input
-                    type="number"
-                    id="${weightInputId}"
-                    inputmode="decimal"
-                    min="0"
-                    step="5"
-                    value="${savedWeight !== "" ? savedWeight : ""}"
-                    data-exercise="${exercise}"
-                />
-                <span>lbs</span>
-            </div>
-        `;
-
-                exerciseListEl.appendChild(li);
-
-                // Checkbox behavior (haptic + finisher check)
-                const checkbox = li.querySelector('input[type="checkbox"]');
-                if (checkbox) {
-                    checkbox.addEventListener("change", () => {
-                        if (checkbox.checked && "vibrate" in navigator) {
-                            navigator.vibrate(20);
-                        }
-                        if (typeof checkSplitCompletion === "function") {
-                            checkSplitCompletion();
-                        }
-                    });
+                const weights = getExerciseWeights();
+                if (!isNaN(num) && num > 0) {
+                    weights[exerciseName] = num;
+                } else {
+                    delete weights[exerciseName];
                 }
+                saveExerciseWeights(weights);
+            });
+        }
 
-                // Weight input behavior (save last used weight)
-                const weightInput = li.querySelector(`#${weightInputId}`);
-                if (weightInput) {
-                    weightInput.addEventListener("change", () => {
-                        const exerciseName = weightInput.getAttribute("data-exercise");
-                        const rawValue = weightInput.value.trim();
-                        const num = parseFloat(rawValue);
+        // 🧡 Focus mode – click on exercise name (but not the checkbox)
+        const labelSpan = li.querySelector(".exercise-label");
+        if (labelSpan) {
+            labelSpan.addEventListener("click", (e) => {
+                e.preventDefault();
+                e.stopPropagation(); // don’t toggle the checkbox
 
-                        const weights = getExerciseWeights();
-                        if (!isNaN(num) && num > 0) {
-                            weights[exerciseName] = num;
-                        } else {
-                            delete weights[exerciseName];
-                        }
-                        saveExerciseWeights(weights);
-                    });
+                if (typeof window.openFocusCardForExercise === "function") {
+                    window.openFocusCardForExercise(exercise, weightInput);
+                } else {
+                    console.warn("openFocusCardForExercise is not defined yet");
                 }
             });
-
-            if (typeof checkSplitCompletion === "function") {
-                checkSplitCompletion();
-            }
         }
+    });
+
+    if (typeof checkSplitCompletion === "function") {
+        checkSplitCompletion();
+    }
+}
+
+
 
     function getEmblemVisualForTier(tier) {
             // Default if somehow no tier
@@ -1891,6 +1909,292 @@
             showToast?.(`Debug: weekly streak is now ${next} week(s).`);
         });
     }
+// =============================
+// FOCUS CARD (per-exercise sets)
+// =============================
+// =============================
+// FOCUS CARD (per-exercise sets)
+// =============================
+let focusState = {
+    exerciseName: "",
+    avgInputEl: null,      // reference to "Avg weight used" input on main list
+    sets: [],              // [{ weight, reps }]
+    currentIndex: 0
+};
+
+function initFocusCard() {
+    const overlay = document.getElementById("focus-overlay");
+    if (!overlay) {
+        console.warn("focus-overlay element not found");
+        return;
+    }
+
+    const closeBtn = document.getElementById("focus-close-btn");
+    const cancelBtn = document.getElementById("focus-cancel-btn");
+    const completeBtn = document.getElementById("focus-complete-btn");
+    const workingWeightInput = document.getElementById("focus-working-weight-input");
+    const dotsContainer = document.getElementById("focus-set-dots");
+    const repsMinusBtn = document.getElementById("focus-reps-minus");
+    const repsPlusBtn = document.getElementById("focus-reps-plus");
+    const repsValueEl = document.getElementById("focus-reps-value");
+    const setWeightInput = document.getElementById("focus-set-weight-input");
+    const setsCountEl = document.getElementById("focus-sets-count");
+    const setEditor = document.getElementById("focus-set-editor");
+    const setEditorLabel = document.getElementById("focus-set-editor-label");
+
+    if (
+        !closeBtn ||
+        !cancelBtn ||
+        !completeBtn ||
+        !workingWeightInput ||
+        !dotsContainer ||
+        !repsMinusBtn ||
+        !repsPlusBtn ||
+        !repsValueEl ||
+        !setWeightInput ||
+        !setsCountEl ||
+        !setEditor ||
+        !setEditorLabel
+    ) {
+        console.warn("Focus card elements missing – check IDs.");
+        return;
+    }
+
+    // Close actions
+    const closeOverlay = () => hideFocusOverlay();
+
+    closeBtn.addEventListener("click", closeOverlay);
+    cancelBtn.addEventListener("click", closeOverlay);
+
+    // Click outside card closes overlay
+    overlay.addEventListener("click", (e) => {
+        if (e.target === overlay) {
+            hideFocusOverlay();
+        }
+    });
+
+    // Click on set dots
+    const dotButtons = dotsContainer.querySelectorAll(".focus-set-dot");
+    dotButtons.forEach((btn, idx) => {
+        btn.addEventListener("click", () => {
+            // Save current set before switching
+            saveCurrentSetFromInputs();
+            focusState.currentIndex = idx;
+            setEditor.classList.remove("hidden");
+            updateFocusCardUI();
+        });
+    });
+
+    // Reps +/-
+    repsMinusBtn.addEventListener("click", () => {
+        const current = focusState.sets[focusState.currentIndex];
+        let reps = parseInt(current.reps || "0", 10);
+        if (isNaN(reps)) reps = 0;
+        reps = Math.max(0, reps - 1);
+        current.reps = reps;
+        repsValueEl.textContent = reps;
+        updateFocusCardUI(false); // no need to rewrite inputs
+    });
+
+    repsPlusBtn.addEventListener("click", () => {
+        const current = focusState.sets[focusState.currentIndex];
+        let reps = parseInt(current.reps || "0", 10);
+        if (isNaN(reps)) reps = 0;
+        reps = reps + 1;
+        current.reps = reps;
+        repsValueEl.textContent = reps;
+        updateFocusCardUI(false);
+    });
+
+    // Per-set weight input
+    setWeightInput.addEventListener("change", () => {
+        const current = focusState.sets[focusState.currentIndex];
+        current.weight = setWeightInput.value.trim();
+        updateFocusCardUI(false);
+    });
+
+    // Working weight: defaults into empty set weights
+    workingWeightInput.addEventListener("change", () => {
+        const val = workingWeightInput.value.trim();
+        focusState.sets.forEach((s) => {
+            if (!s.weight) {
+                s.weight = val;
+            }
+        });
+        updateFocusCardUI(false);
+    });
+
+    // Complete button → save + close
+    completeBtn.addEventListener("click", () => {
+        commitFocusCard();
+        hideFocusOverlay();
+    });
+}
+
+function showFocusOverlay() {
+    const overlay = document.getElementById("focus-overlay");
+    if (!overlay) return;
+    overlay.classList.remove("hidden");
+    overlay.classList.add("active");
+}
+
+function hideFocusOverlay() {
+    const overlay = document.getElementById("focus-overlay");
+    if (!overlay) return;
+    overlay.classList.remove("active");
+    overlay.classList.add("hidden");
+}
+
+
+// Called when you click an exercise name in the list
+window.openFocusCardForExercise = function (exerciseName, avgInputEl) {
+    const overlay = document.getElementById("focus-overlay");
+    if (!overlay) {
+        console.warn("focus-overlay element not found");
+        return;
+    }
+
+    // Start fresh for this exercise
+    focusState.exerciseName = exerciseName;
+    focusState.avgInputEl = avgInputEl || null;
+
+    // 3 sets, default reps 8, weight blank (we’ll fill from working weight if needed)
+    focusState.sets = [
+        { weight: "", reps: 8 },
+        { weight: "", reps: 8 },
+        { weight: "", reps: 8 }
+    ];
+    focusState.currentIndex = 0;
+
+    // Clear working weight input & editor state
+    const workingWeightInput = document.getElementById("focus-working-weight-input");
+    const setEditor = document.getElementById("focus-set-editor");
+    const repsValueEl = document.getElementById("focus-reps-value");
+    const setWeightInput = document.getElementById("focus-set-weight-input");
+
+    if (workingWeightInput) workingWeightInput.value = "";
+    if (setEditor) setEditor.classList.remove("hidden");
+    if (repsValueEl) repsValueEl.textContent = "8";
+    if (setWeightInput) setWeightInput.value = "";
+
+    updateFocusCardUI(true);
+    showFocusOverlay();
+};
+
+function saveCurrentSetFromInputs() {
+    const repsValueEl = document.getElementById("focus-reps-value");
+    const setWeightInput = document.getElementById("focus-set-weight-input");
+    if (!repsValueEl || !setWeightInput) return;
+
+    const r = repsValueEl.textContent.trim();
+    const w = setWeightInput.value.trim();
+
+    focusState.sets[focusState.currentIndex] = {
+        reps: r,
+        weight: w
+    };
+}
+
+function updateFocusCardUI(reloadInputs = true) {
+    const nameEl = document.getElementById("focus-exercise-name");
+    const dotsContainer = document.getElementById("focus-set-dots");
+    const setsCountEl = document.getElementById("focus-sets-count");
+    const setEditorLabel = document.getElementById("focus-set-editor-label");
+    const repsValueEl = document.getElementById("focus-reps-value");
+    const setWeightInput = document.getElementById("focus-set-weight-input");
+    const workingWeightInput = document.getElementById("focus-working-weight-input");
+
+    if (
+        !nameEl ||
+        !dotsContainer ||
+        !setsCountEl ||
+        !setEditorLabel ||
+        !repsValueEl ||
+        !setWeightInput
+    ) {
+        console.warn("Focus card elements missing during update");
+        return;
+    }
+
+    const idx = focusState.currentIndex;
+    const currentSet = focusState.sets[idx];
+
+    // Exercise name
+    nameEl.textContent = focusState.exerciseName || "Exercise";
+
+    // Dots state
+    const dotButtons = dotsContainer.querySelectorAll(".focus-set-dot");
+    let completedCount = 0;
+
+    dotButtons.forEach((btn, i) => {
+        btn.classList.remove("active", "filled");
+
+        const s = focusState.sets[i];
+        const reps = parseInt(s.reps || "0", 10);
+        const weight = parseFloat(s.weight || "0");
+
+        if (i === idx) {
+            btn.classList.add("active");
+        }
+        if (reps > 0 && !isNaN(weight) && weight > 0) {
+            btn.classList.add("filled");
+            completedCount += 1;
+        }
+    });
+
+    // Sets count text
+    setsCountEl.textContent = `${completedCount} / ${focusState.sets.length}`;
+
+    // Editor label (Set 1 / Set 2 / Set 3)
+    setEditorLabel.textContent = `Set ${idx + 1}`;
+
+    // Inputs for the active set
+    if (reloadInputs) {
+        const reps = parseInt(currentSet.reps || "0", 10);
+        repsValueEl.textContent = isNaN(reps) ? "0" : reps.toString();
+
+        let weightToUse = currentSet.weight;
+        if (!weightToUse && workingWeightInput && workingWeightInput.value) {
+            weightToUse = workingWeightInput.value.trim();
+            currentSet.weight = weightToUse;
+        }
+
+        setWeightInput.value = weightToUse || "";
+    }
+}
+
+function commitFocusCard() {
+    // Make sure we have latest set values
+    saveCurrentSetFromInputs();
+
+    // Average working weight across all sets with a valid weight
+    const workingWeights = focusState.sets
+        .map((s) => parseFloat(s.weight))
+        .filter((w) => !isNaN(w) && w > 0);
+
+    const workingWeightInput = document.getElementById("focus-working-weight-input");
+
+    let avgWeight = null;
+
+    if (workingWeights.length > 0) {
+        avgWeight =
+            workingWeights.reduce((sum, w) => sum + w, 0) / workingWeights.length;
+    } else if (workingWeightInput && workingWeightInput.value.trim() !== "") {
+        const fallback = parseFloat(workingWeightInput.value.trim());
+        if (!isNaN(fallback) && fallback > 0) {
+            avgWeight = fallback;
+        }
+    }
+
+    if (focusState.avgInputEl && avgWeight !== null) {
+        focusState.avgInputEl.value = Math.round(avgWeight);
+
+        // Trigger change handler so it gets saved to localStorage + volume calc
+        const evt = new Event("change", { bubbles: true });
+        focusState.avgInputEl.dispatchEvent(evt);
+    }
+}
+
 
     // =============================
     // 9) INIT
@@ -1907,5 +2211,5 @@
         updateStreak();
         updateWeeklyVolumeSummary();
         initDebugStreakButton(); // 🔧 DEV ONLY – remove later
-
+        initFocusCard();
     });
