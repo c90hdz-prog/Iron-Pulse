@@ -1,6 +1,4 @@
- // =============================
-    // 1) CONSTANTS & DATA
-    // =============================
+
     const ONBOARDED_KEY = "ironPulseOnboarded";
     const LAST_SCREEN_KEY = "ironPulseLastScreen";
     const WEEKLY_GOAL_KEY = "ironPulseWeeklyGoalDays";
@@ -16,7 +14,6 @@
     const LAST_EMBLEM_KEY = "ironPulseLastEmblem";
     const EMBLEM_TIER_KEY = "ironPulseEmblemTier";
     const VOLUME_TIER_KEY = "ironPulseVolumeTier";
-
     const VOLUME_OBJECTS = [
         { id: "start", threshold: 0, label: "Getting started", emoji: "⚪" },
         { id: "pack", threshold: 500, label: "Loaded backpack", emoji: "🎒" },
@@ -27,7 +24,6 @@
         { id: "plane", threshold: 50000, label: "Small plane", emoji: "✈️" }
     ];
 
-    // Short, neutral post-workout quotes (no attribution, no religion)
         const POST_WORKOUT_QUOTES = [
             "Small steps stack faster than you think.",
             "Every rep leaves a mark. Today’s is a good one.",
@@ -138,15 +134,11 @@
             "You did enough today to be proud. That’s enough."
         ];
 
-
     function getRandomPostWorkoutQuote() {
             if (!POST_WORKOUT_QUOTES || POST_WORKOUT_QUOTES.length === 0) return "";
             const idx = Math.floor(Math.random() * POST_WORKOUT_QUOTES.length);
             return POST_WORKOUT_QUOTES[idx];
         }
-
-
-
 
     function getExerciseWeights() {
         try {
@@ -167,6 +159,15 @@
         }
     }
 
+    function loadWeeklyGoalFromStorageOrDefault() {
+    const raw = localStorage.getItem(WEEKLY_GOAL_KEY);
+    const n = parseInt(raw ?? "", 10);
+    if (!Number.isFinite(n) || n <= 0) return DEFAULT_WEEKLY_GOAL;
+    return n;
+}
+
+
+
         // === Rest tokens ===
     const REST_TOKENS_KEY = "ironPulseRestTokens";
     const REST_TOKEN_PROGRESS_KEY = "ironPulseRestTokenProgress";
@@ -178,55 +179,397 @@
 
 
     // Splits by day (you already had this)
-    const splits = [
-        {
-            name: "Push Day – Chest, Shoulders, Triceps",
-            days: "Example: Mon / Thu",
-            description: "Press-focused session with plenty of push volume.",
-            exercises: [
-                "Barbell or DB Bench Press – 4 x 6–8",
-                "Overhead Press – 3 x 8–10",
-                "Incline DB Press – 3 x 10–12",
-                "Lateral Raises – 3 x 15",
-                "Cable Triceps Pushdown – 3 x 12–15"
-            ]
-        },
-        {
-            name: "Pull Day – Back, Biceps",
-            days: "Example: Tue / Fri",
-            description: "Pull-heavy work to build your back and biceps.",
-            exercises: [
-                "Deadlifts or RDL – 4 x 5",
-                "Pull-Ups or Lat Pulldown – 4 x 8–10",
-                "Seated Row – 3 x 10–12",
-                "Face Pulls – 3 x 15",
-                "Barbell or DB Curls – 3 x 10–12"
-            ]
-        },
-        {
-            name: "Leg Day – Quads, Hamstrings, Glutes",
-            days: "Example: Wed / Sat",
-            description: "Lower-body work that actually moves the bar.",
-            exercises: [
-                "Squats – 4 x 5–8",
-                "Romanian Deadlift – 3 x 8–10",
-                "Leg Press or Lunges – 3 x 10–12",
-                "Hamstring Curls – 3 x 12–15",
-                "Calf Raises – 3 x 15–20"
-            ]
-        },
-        {
-            name: "Full Body – Lighter Day",
-            days: "Example: Sunday or optional",
-            description: "Keep the habit alive with lighter full-body work.",
-            exercises: [
-                "Goblet Squats – 3 x 10",
-                "Push-Ups – 3 x AMRAP",
-                "DB Rows – 3 x 10–12",
-                "Plank – 3 x 30–45 seconds"
-            ]
-        }
-    ];
+  const trainingPrograms = {
+  /* =============================
+   *  3-DAY FULL BODY (A / B / C)
+   * ============================= */
+  fullBody3: {
+    label: "Full Body 3x / week",
+    rotation: [
+      {
+        id: "fb-a",
+        type: "full-body",
+        name: "Full Body A",
+        description: "Squat, press, and row to hit everything with solid strength work.",
+        exercises: [
+          {
+            name: "Squat",
+            modalities: ["Barbell", "Machine"],
+            description: "Aim for 3–4 work sets of 5–8 reps. Full range, controlled tempo.",
+            suggestedReps: 6
+          },
+          {
+            name: "Bench Press",
+            modalities: ["Barbell", "Dumbbell"],
+            description: "Push the bar in a straight line over mid-chest. 6–8 reps.",
+            suggestedReps: 8
+          },
+          {
+            name: "Row",
+            modalities: ["Barbell", "Cable", "Machine"],
+            description: "Pull elbows back and squeeze shoulder blades. 8–10 reps.",
+            suggestedReps: 8
+          },
+          {
+            name: "Plank",
+            modalities: ["Bodyweight"],
+            description: "Hold 30–45 seconds, 2–3 sets.",
+            suggestedReps: 1
+          }
+        ]
+      },
+      {
+        id: "fb-b",
+        type: "full-body",
+        name: "Full Body B",
+        description: "Hip hinge, vertical press, and pull to balance A-day volume.",
+        exercises: [
+          {
+            name: "Romanian Deadlift",
+            modalities: ["Barbell", "Dumbbell"],
+            description: "Hinge at the hips, feel the hamstring stretch. 6–8 reps.",
+            suggestedReps: 6
+          },
+          {
+            name: "Overhead Press",
+            modalities: ["Barbell", "Dumbbell"],
+            description: "Press from collarbone to overhead. 6–8 controlled reps.",
+            suggestedReps: 8
+          },
+          {
+            name: "Lat Pulldown",
+            modalities: ["Cable"],
+            description: "Pull to upper chest, no swinging. 8–10 reps.",
+            suggestedReps: 8
+          },
+          {
+            name: "Walking Lunges",
+            modalities: ["Dumbbell", "Bodyweight"],
+            description: "8–12 steps per leg. Short, controlled stride.",
+            suggestedReps: 10
+          }
+        ]
+      },
+      {
+        id: "fb-c",
+        type: "full-body",
+        name: "Full Body C",
+        description: "Front-loaded legs, upper chest, and lots of back and core.",
+        exercises: [
+          {
+            name: "Front Squat / Leg Press",
+            modalities: ["Barbell", "Machine"],
+            description: "Quads focused. 8–10 reps, 3 work sets.",
+            suggestedReps: 8
+          },
+          {
+            name: "Incline Press",
+            modalities: ["Dumbbell", "Barbell"],
+            description: "30° incline. Aim for 8–12 reps.",
+            suggestedReps: 10
+          },
+          {
+            name: "Seated Row",
+            modalities: ["Cable", "Machine"],
+            description: "Neutral spine, squeeze at the chest. 10–12 reps.",
+            suggestedReps: 10
+          },
+          {
+            name: "Core (Choice)",
+            modalities: ["Bodyweight", "Cable"],
+            description: "Pick crunches, hanging leg raises, or cable crunches.",
+            suggestedReps: 12
+          }
+        ]
+      }
+    ]
+  },
+
+  /* =============================
+   *  4-DAY UPPER / LOWER
+   * ============================= */
+  upperLower4: {
+    label: "Upper / Lower 4x / week",
+    rotation: [
+      {
+        id: "upper-1",
+        type: "upper",
+        name: "Upper A",
+        description: "Heavier presses and rows for overall upper strength.",
+        exercises: [
+          {
+            name: "Bench Press",
+            modalities: ["Barbell", "Dumbbell"],
+            description: "Main chest move. 3–4 sets of 6–8 reps.",
+            suggestedReps: 6
+          },
+          {
+            name: "Row",
+            modalities: ["Barbell", "Cable", "Machine"],
+            description: "Horizontal pull to balance the bench. 8–10 reps.",
+            suggestedReps: 8
+          },
+          {
+            name: "Overhead Press",
+            modalities: ["Barbell", "Dumbbell"],
+            description: "Press overhead for shoulder strength. 6–8 reps.",
+            suggestedReps: 8
+          },
+          {
+            name: "Lat Pulldown",
+            modalities: ["Cable"],
+            description: "Vertical pull. 8–10 controlled reps.",
+            suggestedReps: 8
+          },
+          {
+            name: "Triceps Pushdown",
+            modalities: ["Cable"],
+            description: "Keep elbows tucked. 12–15 reps.",
+            suggestedReps: 12
+          }
+        ]
+      },
+      {
+        id: "lower-1",
+        type: "lower",
+        name: "Lower A",
+        description: "Squat-focused leg day with hamstrings and calves.",
+        exercises: [
+          {
+            name: "Squat",
+            modalities: ["Barbell", "Machine"],
+            description: "3–4 sets of 5–8 reps. This is your main lower-body lift.",
+            suggestedReps: 6
+          },
+          {
+            name: "Romanian Deadlift",
+            modalities: ["Barbell", "Dumbbell"],
+            description: "Stretch hamstrings, keep bar close. 8 reps.",
+            suggestedReps: 8
+          },
+          {
+            name: "Leg Press",
+            modalities: ["Machine"],
+            description: "10–12 reps, no knee lockout at the top.",
+            suggestedReps: 10
+          },
+          {
+            name: "Calf Raises",
+            modalities: ["Machine", "Dumbbell"],
+            description: "Pause at the top. 15–20 reps.",
+            suggestedReps: 15
+          },
+          {
+            name: "Core (Plank / Crunches)",
+            modalities: ["Bodyweight"],
+            description: "Choose 2–3 sets of core work.",
+            suggestedReps: 1
+          }
+        ]
+      },
+      {
+        id: "upper-2",
+        type: "upper",
+        name: "Upper B",
+        description: "Higher-rep pressing and direct arm + shoulder work.",
+        exercises: [
+          {
+            name: "Incline Press",
+            modalities: ["Dumbbell", "Barbell"],
+            description: "Upper chest focus. 8–12 reps.",
+            suggestedReps: 10
+          },
+          {
+            name: "Pull-Ups / Lat Pulldown",
+            modalities: ["Bodyweight", "Cable"],
+            description: "Vertical pull. 8–10 controlled reps.",
+            suggestedReps: 8
+          },
+          {
+            name: "Lateral Raises",
+            modalities: ["Dumbbell", "Cable"],
+            description: "Light weight, controlled swings. 12–15 reps.",
+            suggestedReps: 12
+          },
+          {
+            name: "Face Pulls",
+            modalities: ["Cable"],
+            description: "Rear delts and posture. 12–15 reps.",
+            suggestedReps: 12
+          },
+          {
+            name: "Bicep Curls",
+            modalities: ["Dumbbell", "Barbell"],
+            description: "Strict form. 10–12 reps.",
+            suggestedReps: 10
+          }
+        ]
+      },
+      {
+        id: "lower-2",
+        type: "lower",
+        name: "Lower B",
+        description: "Hinge-focused lower day with single-leg work.",
+        exercises: [
+          {
+            name: "Deadlift or Trap Bar Deadlift",
+            modalities: ["Barbell", "Trap Bar"],
+            description: "Heavier 3–5 rep sets. Full rest between sets.",
+            suggestedReps: 5
+          },
+          {
+            name: "Bulgarian Split Squats",
+            modalities: ["Dumbbell"],
+            description: "8–10 reps per leg. Great for balance & hypertrophy.",
+            suggestedReps: 8
+          },
+          {
+            name: "Hamstring Curls",
+            modalities: ["Machine"],
+            description: "12–15 reps with a squeeze at the top.",
+            suggestedReps: 12
+          },
+          {
+            name: "Calf Raises",
+            modalities: ["Machine", "Dumbbell"],
+            description: "Burn out calves with 15–20 reps.",
+            suggestedReps: 15
+          },
+          {
+            name: "Core (Choice)",
+            modalities: ["Bodyweight", "Cable"],
+            description: "Another 2–3 sets of core of your choice.",
+            suggestedReps: 1
+          }
+        ]
+      }
+    ]
+  },
+
+  /* =============================
+   *  5–7 DAY PUSH / PULL / LEGS
+   * ============================= */
+  ppl: {
+    label: "Push / Pull / Legs rotation",
+    rotation: [
+      {
+        id: "push",
+        type: "push",
+        name: "Push – Chest, Shoulders, Triceps",
+        description: "Pressing and shoulder work. Great for strength and aesthetics.",
+        exercises: [
+          {
+            name: "Bench Press",
+            modalities: ["Barbell", "Dumbbell"],
+            description: "Main chest lift. 3–4 sets of 6–8 reps.",
+            suggestedReps: 6
+          },
+          {
+            name: "Incline Press",
+            modalities: ["Dumbbell", "Barbell"],
+            description: "Upper chest focus. 8–12 reps.",
+            suggestedReps: 10
+          },
+          {
+            name: "Overhead Press",
+            modalities: ["Barbell", "Dumbbell"],
+            description: "Vertical press. 6–8 steady reps.",
+            suggestedReps: 8
+          },
+          {
+            name: "Lateral Raises",
+            modalities: ["Dumbbell", "Cable"],
+            description: "High-rep shoulder width work. 12–15 reps.",
+            suggestedReps: 12
+          },
+          {
+            name: "Triceps Pushdown",
+            modalities: ["Cable"],
+            description: "Lock out hard without swinging. 12–15 reps.",
+            suggestedReps: 12
+          }
+        ]
+      },
+      {
+        id: "pull",
+        type: "pull",
+        name: "Pull – Back, Biceps",
+        description: "Rowing and pulling for a thicker back and arms.",
+        exercises: [
+          {
+            name: "Deadlift / RDL",
+            modalities: ["Barbell", "Dumbbell"],
+            description: "Heavy hip hinge. 3–5 reps if deadlifting, 6–8 for RDL.",
+            suggestedReps: 5
+          },
+          {
+            name: "Pull-Ups / Lat Pulldown",
+            modalities: ["Bodyweight", "Cable"],
+            description: "Vertical pull. 8–10 reps.",
+            suggestedReps: 8
+          },
+          {
+            name: "Seated Row",
+            modalities: ["Cable", "Machine"],
+            description: "Horizontal pull. 8–12 reps.",
+            suggestedReps: 10
+          },
+          {
+            name: "Face Pulls",
+            modalities: ["Cable"],
+            description: "Rear delts and upper back. 12–15 reps.",
+            suggestedReps: 12
+          },
+          {
+            name: "Bicep Curls",
+            modalities: ["Dumbbell", "Barbell"],
+            description: "Control the descent. 10–12 reps.",
+            suggestedReps: 10
+          }
+        ]
+      },
+      {
+        id: "legs",
+        type: "legs",
+        name: "Legs – Quads, Hamstrings, Glutes",
+        description: "Big leg session that hits everything once per rotation.",
+        exercises: [
+          {
+            name: "Squat",
+            modalities: ["Barbell", "Machine"],
+            description: "Main leg lift. 3–4 sets of 5–8 reps.",
+            suggestedReps: 6
+          },
+          {
+            name: "Romanian Deadlift",
+            modalities: ["Barbell", "Dumbbell"],
+            description: "Hamstring and glute focus. 8 reps.",
+            suggestedReps: 8
+          },
+          {
+            name: "Leg Press / Lunges",
+            modalities: ["Machine", "Dumbbell"],
+            description: "10–12 reps or steps per leg.",
+            suggestedReps: 10
+          },
+          {
+            name: "Hamstring Curls",
+            modalities: ["Machine"],
+            description: "12–15 reps. Squeeze at the top.",
+            suggestedReps: 12
+          },
+          {
+            name: "Calf Raises",
+            modalities: ["Machine", "Dumbbell"],
+            description: "High-rep finisher, 15–20 reps.",
+            suggestedReps: 15
+          }
+        ]
+      }
+    ]
+  }
+};
+
 
     function scrollToFinisherSection() {
         const section = document.getElementById("finisher");
@@ -243,6 +586,68 @@
             const day = String(d.getDate()).padStart(2, "0");
             return `${y}-${m}-${day}`; // e.g. "2025-11-24"
         }
+
+// Exercise Behaviors
+const STORAGE_KEYS = {
+  programId: "ironpulse_program_id",
+  nextIndex: "ironpulse_next_session_index"
+};
+
+let currentSessionMeta = {
+  programId: null,
+  recommendedIndex: null,
+  isRecommended: true,
+  session: null
+};
+
+function getProgramIdForWeeklyGoal(goalDays) {
+  if (goalDays <= 3) return "fullBody3";
+  if (goalDays === 4) return "upperLower4";
+  return "ppl"; // 5–7
+}
+
+function getProgramForCurrentGoal(weeklyGoal) {
+  const programId = getProgramIdForWeeklyGoal(weeklyGoal);
+  const program = trainingPrograms[programId];
+  localStorage.setItem(STORAGE_KEYS.programId, programId);
+  return { programId, program };
+}
+
+function getRecommendedSession(weeklyGoal) {
+  const { programId, program } = getProgramForCurrentGoal(weeklyGoal);
+  const rotation = program.rotation;
+
+  const storedIndex = parseInt(localStorage.getItem(STORAGE_KEYS.nextIndex), 10);
+  const index = Number.isFinite(storedIndex) ? storedIndex : 0;
+
+  const safeIndex = index % rotation.length;
+  return {
+    programId,
+    index: safeIndex,
+    session: rotation[safeIndex]
+  };
+}
+
+function advanceRecommendedSession(programId) {
+  const program = trainingPrograms[programId];
+  if (!program) return;
+
+  const rotationLen = program.rotation.length;
+  const storedIndex = parseInt(localStorage.getItem(STORAGE_KEYS.nextIndex), 10);
+  const index = Number.isFinite(storedIndex) ? storedIndex : 0;
+
+  const nextIndex = (index + 1) % rotationLen;
+  localStorage.setItem(STORAGE_KEYS.nextIndex, String(nextIndex));
+}
+
+
+
+
+
+
+
+
+
 
 
 // ----- Rest token helpers -----
@@ -399,67 +804,38 @@
         }
 
 
-    function getTodaySplitIndex() {
-            // Use the rotation index and map it into the splits array
-            const rotationIndex = getRotationIndex();      // 0..(ROTATION_ORDER.length-1)
-            return ROTATION_ORDER[rotationIndex];          // returns an index into `splits`
-        }
 
 
-    function getTodaySplitDefinition() {
-            const rotationIndex = getRotationIndex();        // 0..(ROTATION_ORDER.length - 1)
-            const splitIndex = ROTATION_ORDER[rotationIndex]; // maps into `splits` array
-            const weeklyGoal = getWeeklyGoal() || DEFAULT_WEEKLY_GOAL;
+    function getVolumeTierInfo(totalLbs) {
+            // Make sure total is non-negative
+            const total = Math.max(0, totalLbs || 0);
 
-            const template = splits[splitIndex];
+            let current = VOLUME_OBJECTS[0];
+            let next = null;
 
-            if (!template) {
-                // super defensive fallback so the app never breaks
-                return {
-                    name: "Training Day",
-                    description: "Simple training session. Get in, move some weight, and get out.",
-                    exercises: [],
-                    daysLabel: `${weeklyGoal} days / week`
-                };
+            for (let i = 0; i < VOLUME_OBJECTS.length; i++) {
+                const tier = VOLUME_OBJECTS[i];
+                if (total >= tier.threshold) {
+                    current = tier;
+                    next = VOLUME_OBJECTS[i + 1] || null;
+                } else {
+                    // first tier whose threshold we haven't reached yet
+                    next = tier;
+                    break;
+                }
             }
 
-            return {
-                ...template,
-                daysLabel: `${weeklyGoal} days / week`
-            };
+            let progress = 1;
+            if (next) {
+                const span = Math.max(next.threshold - current.threshold, 1);
+                const base = total - current.threshold;
+                progress = Math.min(Math.max(base / span, 0), 1);
+            } else {
+                progress = 1; // at or beyond the last object
+            }
+
+            return { current, next, progress };
         }
-
-
-            function getVolumeTierInfo(totalLbs) {
-                    // Make sure total is non-negative
-                    const total = Math.max(0, totalLbs || 0);
-
-                    let current = VOLUME_OBJECTS[0];
-                    let next = null;
-
-                    for (let i = 0; i < VOLUME_OBJECTS.length; i++) {
-                        const tier = VOLUME_OBJECTS[i];
-                        if (total >= tier.threshold) {
-                            current = tier;
-                            next = VOLUME_OBJECTS[i + 1] || null;
-                        } else {
-                            // first tier whose threshold we haven't reached yet
-                            next = tier;
-                            break;
-                        }
-                    }
-
-                    let progress = 1;
-                    if (next) {
-                        const span = Math.max(next.threshold - current.threshold, 1);
-                        const base = total - current.threshold;
-                        progress = Math.min(Math.max(base / span, 0), 1);
-                    } else {
-                        progress = 1; // at or beyond the last object
-                    }
-
-                    return { current, next, progress };
-                }
 
 
         function updateWeeklyVolumeSummary() {
@@ -687,7 +1063,7 @@
 
                     renderWeeklyFocusLive();
                     repositionWeeklyGoalSection();
-                    renderTodaySplit();
+                    initTodaysSplit();
                     updateStreak();
                 });
             }
@@ -729,7 +1105,7 @@
 
                     renderWeeklyFocusLive();
                     repositionWeeklyGoalSection();
-                    renderTodaySplit();
+                    initTodaysSplit();
                     updateStreak();
                 });
             }
@@ -892,123 +1268,366 @@
         }
    
 
-    let hasRecordedCompletionForCurrentSplit = false;    
-
+// =====================================
+// TODAY'S SPLIT – RECOMMENDED SESSION
+// =====================================
 function renderTodaySplit() {
-    const splitNameEl = document.getElementById("split-name");
-    const splitDaysEl = document.getElementById("split-days");
-    const splitDescEl = document.getElementById("split-description");
-    const exerciseListEl = document.getElementById("exercise-list");
+  const split = getTodaySplitDefinition();
+  const listEl = document.getElementById("exercise-list");
+  if (!split || !listEl) return;
 
-    if (!splitNameEl || !exerciseListEl) return;
+  // Header text
+  const nameEl = document.getElementById("split-name");
+  const daysEl = document.getElementById("split-days");
+  const descEl = document.getElementById("split-description");
 
-    hasRecordedCompletionForCurrentSplit = false;
+  if (nameEl) nameEl.textContent = split.name || "Training Day";
+  if (daysEl) daysEl.textContent = split.daysLabel || "";
+  if (descEl) descEl.textContent = split.description || "";
 
-    const split = getTodaySplitDefinition();
-    const weightMap = getExerciseWeights();
+  // Clear previous rows
+  listEl.innerHTML = "";
 
-    splitNameEl.textContent = split.name;
-    splitDaysEl.textContent = split.daysLabel || "";
-    splitDescEl.textContent = split.description || "";
+// Saved weights (localStorage)
+const weightsMap = getExerciseWeights();
 
-    // Clear old list
-    exerciseListEl.innerHTML = "";
+split.exercises.forEach((exercise, index) => {
+  const exerciseName = exercise.name;
+  const checkboxId = `split-ex-${index}`;
+  const weightInputId = `split-ex-weight-${index}`;
+  const metaLabelId = `split-ex-meta-label-${index}`;
+  const metaValueId = `split-ex-meta-value-${index}`;
+  const savedWeight = weightsMap[exerciseName] ?? "";
 
-    // Rest / recovery day: no checkboxes, just a message
-    if (!split.exercises || split.exercises.length === 0) {
-        const li = document.createElement("li");
-        li.style.marginBottom = "0.5rem";
-        li.textContent =
-            "Rest or keep it light today. Walk, stretch, or move just enough to feel good.";
-        exerciseListEl.appendChild(li);
+  const li = document.createElement("li");
+  li.className = "exercise-row";
 
-        if (typeof checkSplitCompletion === "function") {
-            checkSplitCompletion();
-        }
-        return;
-    }
+  li.innerHTML = `
+    <label class="exercise-checkbox">
+      <input type="checkbox" id="${checkboxId}">
+    </label>
 
-    split.exercises.forEach((exercise, index) => {
-        const li = document.createElement("li");
-        li.style.marginBottom = "0.75rem";
+    <div class="exercise-main">
+      <!-- clickable name → opens focus card -->
+      <button
+        type="button"
+        class="exercise-label exercise-name-btn"
+        data-exercise="${exerciseName}"
+      >
+        ${exerciseName}
+        <span class="exercise-focus-tag">• FOCUS</span>
+      </button>
 
-        const checkboxId = `exercise-${index}`;
-        const weightInputId = `weight-${index}`;
-        const savedWeight = weightMap[exercise] ?? "";
+      <!-- new meta row instead of input -->
+      <div class="exercise-meta-row">
+        <span class="exercise-meta-label" id="${metaLabelId}">
+          3 sets planned
+        </span>
+        <span class="exercise-meta-value" id="${metaValueId}">
+          0 lbs logged
+        </span>
+      </div>
 
-        li.innerHTML = `
-          <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;">
-            <input type="checkbox" id="${checkboxId}" />
-            <span class="exercise-label">${exercise}</span>
-          </label>
-          <div class="weight-row">
-            <span>Avg weight used:</span>
-            <input
-              type="number"
-              id="${weightInputId}"
-              inputmode="decimal"
-              min="0"
-              step="5"
-              value="${savedWeight !== "" ? savedWeight : ""}"
-              data-exercise="${exercise}"
-            />
-            <span>lbs</span>
-          </div>
-        `;
+      <!-- hidden helper input so volume logic still works -->
+      <input
+        type="number"
+        id="${weightInputId}"
+        class="exercise-weight-hidden"
+        inputmode="decimal"
+        min="0"
+        step="5"
+        value="${savedWeight}"
+        data-exercise="${exerciseName}"
+      />
+    </div>
+  `;
 
-        exerciseListEl.appendChild(li);
+  // 🔗 Open focus card when the name is tapped
+  const nameElInRow = li.querySelector(".exercise-name-btn");
+  if (nameElInRow) {
+    nameElInRow.addEventListener("click", () => {
+      window.openFocusCardForExercise(exerciseName, {
+        modalities: exercise.modalities || [],
+        description: exercise.description || "",
+        suggestedReps: exercise.suggestedReps || 10,
+      });
+    });
+  }
 
-        const checkbox = li.querySelector(`#${checkboxId}`);
-        const weightInput = li.querySelector(`#${weightInputId}`);
+  // ☑️ Checkbox → completion logic
+  const checkboxEl = li.querySelector(`#${checkboxId}`);
+  if (checkboxEl) {
+    checkboxEl.addEventListener("change", () => {
+      checkSplitCompletion();
+    });
+  }
 
-        // Checkbox behavior
-        if (checkbox) {
-            checkbox.addEventListener("change", () => {
-                if (checkbox.checked && "vibrate" in navigator) {
-                    navigator.vibrate(20);
-                }
-                if (typeof checkSplitCompletion === "function") {
-                    checkSplitCompletion();
-                }
-            });
-        }
+  // 💾 Save / clear avg weight (we’ll update this input programmatically later)
+  const weightInputEl = li.querySelector(`#${weightInputId}`);
+  if (weightInputEl) {
+    weightInputEl.addEventListener("change", () => {
+      const val = parseFloat(weightInputEl.value || "0");
+      const map = getExerciseWeights();
 
-        // Weight input -> save per exercise
-        if (weightInput) {
-            weightInput.addEventListener("change", () => {
-                const exerciseName = weightInput.getAttribute("data-exercise");
-                const rawValue = weightInput.value.trim();
-                const num = parseFloat(rawValue);
+      if (!isNaN(val) && val > 0) {
+        map[exerciseName] = val;
+      } else {
+        delete map[exerciseName];
+      }
 
-                const weights = getExerciseWeights();
-                if (!isNaN(num) && num > 0) {
-                    weights[exerciseName] = num;
-                } else {
-                    delete weights[exerciseName];
-                }
-                saveExerciseWeights(weights);
-            });
-        }
+      saveExerciseWeights(map);
+    });
+  }
 
-        // 🧡 Focus mode – click on exercise name (but not the checkbox)
-        const labelSpan = li.querySelector(".exercise-label");
-        if (labelSpan) {
-            labelSpan.addEventListener("click", (e) => {
-                e.preventDefault();
-                e.stopPropagation(); // don’t toggle the checkbox
+  listEl.appendChild(li);
+});
 
-                if (typeof window.openFocusCardForExercise === "function") {
-                    window.openFocusCardForExercise(exercise, weightInput);
-                } else {
-                    console.warn("openFocusCardForExercise is not defined yet");
-                }
-            });
-        }
+
+  // Make sure finisher locked/unlocked state is correct on first render
+  checkSplitCompletion();
+}
+
+
+
+// you already have this above, but make sure it exists ONCE:
+let hasRecordedCompletionForCurrentSplit = false;
+
+// =====================================
+// INIT TODAY'S SPLIT (NEW LOGIC)
+// =====================================
+function initTodaysSplit() {
+  const weeklyGoal = getWeeklyGoal();
+  const { programId, index, session } = getRecommendedSession(weeklyGoal);
+
+  // Store metadata so we can advance rotation after workout
+  currentSessionMeta = {
+    programId,
+    recommendedIndex: index,
+    isRecommended: true,
+    session
+  };
+
+  // Render the NEW session into the old UI
+  renderSessionIntoSplitCard(session, weeklyGoal);
+}
+
+function renderSessionIntoSplitCard(session, weeklyGoal) {
+  const listEl = document.getElementById("exercise-list");
+
+  document.getElementById("split-name").textContent = session.name;
+  document.getElementById("split-days").textContent = `${weeklyGoal} days / week`;
+  document.getElementById("split-description").textContent = session.description;
+
+  listEl.innerHTML = "";
+
+  session.exercises.forEach((ex) => {
+    const exerciseName = ex.name;
+    const checkboxId = `chk-${exerciseName.replace(/\s+/g, "-")}`;
+    const weightInputId = `wgt-${exerciseName.replace(/\s+/g, "-")}`;
+
+    const li = document.createElement("li");
+    li.className = "exercise-row";
+
+    li.innerHTML = `
+      <label class="exercise-checkbox">
+        <input type="checkbox" id="${checkboxId}" />
+      </label>
+
+      <div class="exercise-main">
+        <button
+          type="button"
+          class="exercise-label exercise-name-btn"
+          data-exercise="${exerciseName}"
+        >
+          ${exerciseName}
+          <span class="exercise-focus-tag">• FOCUS</span>
+        </button>
+
+        <div class="exercise-meta-row">
+  <span class="exercise-meta-label">
+    3 sets planned
+  </span>
+  <span class="exercise-meta-value">
+    0 lbs logged
+  </span>
+</div>
+
+      </div>
+    `;
+
+    // *** ATTACH FOCUS BUTTON HANDLERS HERE ***
+    const btn = li.querySelector(".exercise-name-btn");
+    btn.addEventListener("click", () => {
+      window.openFocusCardForExercise(exerciseName, {
+        modalities: ex.modalities || [],
+        description: ex.description || "",
+        suggestedReps: ex.suggestedReps || 10,
+      });
     });
 
+    listEl.appendChild(li);
+  });
+}
+
+function renderTodaySplitFromSession(session, weeklyGoal) {
+  const splitNameEl = document.getElementById("split-name");
+  const splitDaysEl = document.getElementById("split-days");
+  const splitDescEl = document.getElementById("split-description");
+  const exerciseListEl = document.getElementById("exercise-list");
+
+  if (!splitNameEl || !exerciseListEl) {
+    console.warn("Split DOM nodes missing");
+    return;
+  }
+
+  hasRecordedCompletionForCurrentSplit = false;
+
+  const daysLabel = weeklyGoal
+    ? `${weeklyGoal} days / week`
+    : "No weekly goal set";
+
+  // No session (defensive fallback)
+  if (!session) {
+    splitNameEl.textContent = "Training Day";
+    splitDaysEl.textContent = daysLabel;
+    splitDescEl.textContent =
+      "Simple training session. Get in, move some weight, and get out.";
+    exerciseListEl.innerHTML = "";
+    return;
+  }
+
+  // Header text
+  splitNameEl.textContent = session.name || "Training Day";
+  splitDaysEl.textContent = daysLabel;
+  splitDescEl.textContent = session.description || "";
+
+  // Clear placeholder + old items
+  exerciseListEl.innerHTML = "";
+
+  // Saved weights (localStorage)
+  const weightsMap = getExerciseWeights();
+
+  // Rest-day style sessions (no exercises)
+  if (!session.exercises || !session.exercises.length) {
+    const li = document.createElement("li");
+    li.style.marginBottom = "0.5rem";
+    li.textContent =
+      "Rest or keep it light today. Walk, stretch, or move just enough to feel good.";
+    exerciseListEl.appendChild(li);
+
     if (typeof checkSplitCompletion === "function") {
-        checkSplitCompletion();
+      checkSplitCompletion();
     }
+    return;
+  }
+
+  session.exercises.forEach((exercise, index) => {
+    const exerciseName = exercise.name;
+    const checkboxId = `split-ex-${index}`;
+    const hiddenWeightId = `split-ex-weight-${index}`;
+    const metaLabelId = `split-ex-meta-label-${index}`;
+    const metaValueId = `split-ex-meta-value-${index}`;
+    const savedWeight = weightsMap[exerciseName] ?? "";
+
+    const li = document.createElement("li");
+    li.className = "exercise-row";
+
+    li.innerHTML = `
+      <!-- hidden checkbox we can tick from JS for completion logic -->
+      <input
+        type="checkbox"
+        id="${checkboxId}"
+        class="exercise-complete-checkbox"
+      />
+
+      <div class="exercise-main">
+        <!-- clickable name → opens focus card -->
+        <button
+          type="button"
+          class="exercise-label exercise-name-btn"
+          data-exercise="${exerciseName}"
+        >
+          ${exerciseName}
+          <span class="exercise-focus-tag">• FOCUS</span>
+        </button>
+
+        <!-- NEW meta row instead of Avg weight input -->
+        <div class="exercise-meta-row">
+          <span class="exercise-meta-label" id="${metaLabelId}">
+            3 sets planned
+          </span>
+          <span class="exercise-meta-value" id="${metaValueId}">
+            ${savedWeight ? `${Math.round(savedWeight)} lbs logged` : "0 lbs logged"}
+          </span>
+        </div>
+
+        <!-- hidden helper input so your volume logic still works -->
+        <input
+          type="number"
+          id="${hiddenWeightId}"
+          class="exercise-weight-hidden"
+          inputmode="decimal"
+          min="0"
+          step="5"
+          value="${savedWeight}"
+          data-exercise="${exerciseName}"
+        />
+      </div>
+    `;
+
+    // 🔗 Open focus card when the name is tapped
+    const nameBtn = li.querySelector(".exercise-name-btn");
+    if (nameBtn) {
+      nameBtn.addEventListener("click", () => {
+        window.openFocusCardForExercise(exerciseName, {
+          modalities: exercise.modalities || [],
+          description: exercise.description || "",
+          suggestedReps: exercise.suggestedReps || 10
+        });
+      });
+    }
+
+    // ☑️ Checkbox → completion logic (we’ll tick this from JS later)
+    const checkboxEl = li.querySelector(`#${checkboxId}`);
+    if (checkboxEl && typeof checkSplitCompletion === "function") {
+      checkboxEl.addEventListener("change", () => {
+        checkSplitCompletion();
+      });
+    }
+
+    // 💾 Save / clear avg weight when this hidden input changes
+    const weightInputEl = li.querySelector(`#${hiddenWeightId}`);
+    if (weightInputEl) {
+      weightInputEl.addEventListener("change", () => {
+        const val = parseFloat(weightInputEl.value || "0");
+        const map = getExerciseWeights();
+
+        if (!Number.isNaN(val) && val > 0) {
+          map[exerciseName] = val;
+        } else {
+          delete map[exerciseName];
+        }
+
+        saveExerciseWeights(map);
+
+        // keep the “lbs logged” text in sync
+        const metaValueEl = document.getElementById(metaValueId);
+        if (metaValueEl) {
+          metaValueEl.textContent =
+            !Number.isNaN(val) && val > 0
+              ? `${Math.round(val)} lbs logged`
+              : "0 lbs logged";
+        }
+      });
+    }
+
+    exerciseListEl.appendChild(li);
+  });
+
+  // Make sure the finisher lock state is up to date
+  if (typeof checkSplitCompletion === "function") {
+    checkSplitCompletion();
+  }
 }
 
 
@@ -1369,8 +1988,11 @@ function renderTodaySplit() {
             setWorkoutsCompletedThisWeek(current + 1);
 
             // 2) Advance rotation
-            const currentRotation = getRotationIndex();
-            setRotationIndex(currentRotation + 1);
+            // 2) Advance recommended rotation (only if this was a recommended session)
+            if (currentSessionMeta.isRecommended && currentSessionMeta.programId) {
+                advanceRecommendedSession(currentSessionMeta.programId);
+            }
+
 
             // 3) Rough volume estimate from avg weights
             const exerciseListEl = document.getElementById("exercise-list");
@@ -1913,123 +2535,7 @@ function renderTodaySplit() {
 // FOCUS CARD (per-exercise sets)
 // =============================
 // =============================
-// FOCUS CARD (per-exercise sets)
-// =============================
-let focusState = {
-    exerciseName: "",
-    avgInputEl: null,      // reference to "Avg weight used" input on main list
-    sets: [],              // [{ weight, reps }]
-    currentIndex: 0
-};
 
-function initFocusCard() {
-    const overlay = document.getElementById("focus-overlay");
-    if (!overlay) {
-        console.warn("focus-overlay element not found");
-        return;
-    }
-
-    const closeBtn = document.getElementById("focus-close-btn");
-    const cancelBtn = document.getElementById("focus-cancel-btn");
-    const completeBtn = document.getElementById("focus-complete-btn");
-    const workingWeightInput = document.getElementById("focus-working-weight-input");
-    const dotsContainer = document.getElementById("focus-set-dots");
-    const repsMinusBtn = document.getElementById("focus-reps-minus");
-    const repsPlusBtn = document.getElementById("focus-reps-plus");
-    const repsValueEl = document.getElementById("focus-reps-value");
-    const setWeightInput = document.getElementById("focus-set-weight-input");
-    const setsCountEl = document.getElementById("focus-sets-count");
-    const setEditor = document.getElementById("focus-set-editor");
-    const setEditorLabel = document.getElementById("focus-set-editor-label");
-
-    if (
-        !closeBtn ||
-        !cancelBtn ||
-        !completeBtn ||
-        !workingWeightInput ||
-        !dotsContainer ||
-        !repsMinusBtn ||
-        !repsPlusBtn ||
-        !repsValueEl ||
-        !setWeightInput ||
-        !setsCountEl ||
-        !setEditor ||
-        !setEditorLabel
-    ) {
-        console.warn("Focus card elements missing – check IDs.");
-        return;
-    }
-
-    // Close actions
-    const closeOverlay = () => hideFocusOverlay();
-
-    closeBtn.addEventListener("click", closeOverlay);
-    cancelBtn.addEventListener("click", closeOverlay);
-
-    // Click outside card closes overlay
-    overlay.addEventListener("click", (e) => {
-        if (e.target === overlay) {
-            hideFocusOverlay();
-        }
-    });
-
-    // Click on set dots
-    const dotButtons = dotsContainer.querySelectorAll(".focus-set-dot");
-    dotButtons.forEach((btn, idx) => {
-        btn.addEventListener("click", () => {
-            // Save current set before switching
-            saveCurrentSetFromInputs();
-            focusState.currentIndex = idx;
-            setEditor.classList.remove("hidden");
-            updateFocusCardUI();
-        });
-    });
-
-    // Reps +/-
-    repsMinusBtn.addEventListener("click", () => {
-        const current = focusState.sets[focusState.currentIndex];
-        let reps = parseInt(current.reps || "0", 10);
-        if (isNaN(reps)) reps = 0;
-        reps = Math.max(0, reps - 1);
-        current.reps = reps;
-        repsValueEl.textContent = reps;
-        updateFocusCardUI(false); // no need to rewrite inputs
-    });
-
-    repsPlusBtn.addEventListener("click", () => {
-        const current = focusState.sets[focusState.currentIndex];
-        let reps = parseInt(current.reps || "0", 10);
-        if (isNaN(reps)) reps = 0;
-        reps = reps + 1;
-        current.reps = reps;
-        repsValueEl.textContent = reps;
-        updateFocusCardUI(false);
-    });
-
-    // Per-set weight input
-    setWeightInput.addEventListener("change", () => {
-        const current = focusState.sets[focusState.currentIndex];
-        current.weight = setWeightInput.value.trim();
-        updateFocusCardUI(false);
-    });
-
-    // Working weight: defaults into empty set weights
-    workingWeightInput.addEventListener("change", () => {
-        const val = workingWeightInput.value.trim();
-        focusState.sets.forEach((s) => {
-            if (!s.weight) {
-                s.weight = val;
-            }
-        });
-        updateFocusCardUI(false);
-    });
-
-    // Complete button → save + close
-    completeBtn.addEventListener("click", () => {
-        commitFocusCard();
-        hideFocusOverlay();
-    });
-}
 
 function showFocusOverlay() {
     const overlay = document.getElementById("focus-overlay");
@@ -2195,6 +2701,206 @@ function commitFocusCard() {
     }
 }
 
+// === Focus Card Logic ==========================================
+const focusOverlayEl = document.getElementById('focus-overlay');
+const focusNameEl = document.getElementById('focus-exercise-name');
+const focusModalitiesEl = document.getElementById('focus-exercise-modalities');
+const focusDescEl = document.getElementById('focus-exercise-description');
+const focusSetsListEl = document.getElementById('focus-sets-list');
+const focusAddSetBtn = document.getElementById('focus-add-set-btn');
+const focusCancelBtn = document.getElementById('focus-cancel-btn');
+const focusCompleteBtn = document.getElementById('focus-complete-btn');
+const focusCloseBtn = document.getElementById('focus-close-btn');
+
+const MAX_FOCUS_SETS = 5;
+
+let currentFocusExercise = null;
+
+// Render all set rows
+function renderFocusSets() {
+  if (!currentFocusExercise) return;
+
+  focusSetsListEl.innerHTML = '';
+
+  currentFocusExercise.sets.forEach((set, index) => {
+    const row = document.createElement('div');
+    row.className = 'focus-set-row';
+    row.dataset.index = index;
+
+    row.innerHTML = `
+      <div class="focus-set-label">Set ${index + 1}</div>
+      <div class="focus-set-main">
+        <div class="focus-weight-inline">
+          <input
+            type="number"
+            inputmode="decimal"
+            class="focus-weight-input"
+            placeholder="Set weight"
+            value="${set.weight ?? ''}"
+          />
+          <span class="focus-weight-unit">lbs</span>
+        </div>
+        <div class="focus-reps-control">
+          <button type="button" class="focus-reps-btn reps-minus">−</button>
+          <span class="focus-reps-count">${set.reps}</span>
+          <button type="button" class="focus-reps-btn reps-plus">+</button>
+        </div>
+      </div>
+    `;
+
+    focusSetsListEl.appendChild(row);
+  });
+
+  // Disable Add Set when we hit the cap
+  focusAddSetBtn.disabled = currentFocusExercise.sets.length >= MAX_FOCUS_SETS;
+}
+
+// Open the overlay for a given exercise
+window.openFocusCardForExercise = function (name, options = {}) {
+  const {
+    modalities = ['Barbell', 'Dumbbell'],
+    description = 'Log your working sets and we’ll add them to your weekly volume.',
+    suggestedReps = 10,
+    existingSets
+  } = options;
+
+  currentFocusExercise = {
+    name,
+    modalities,
+    description,
+    suggestedReps,
+    sets:
+      existingSets && existingSets.length
+        ? existingSets.map(s => ({ weight: s.weight || '', reps: s.reps || suggestedReps }))
+        : [
+            { weight: '', reps: suggestedReps },
+            { weight: '', reps: suggestedReps },
+            { weight: '', reps: suggestedReps }
+          ]
+  };
+
+  // Fill header
+  focusNameEl.textContent = name;
+  focusModalitiesEl.textContent = modalities.join(' · ');
+  focusDescEl.textContent = description;
+
+  renderFocusSets();
+
+  // Show overlay
+  focusOverlayEl.classList.remove('hidden');
+  focusOverlayEl.classList.add('active');
+  document.body.style.overflow = 'hidden';
+};
+
+function closeFocusCard() {
+  focusOverlayEl.classList.add('hidden');
+  focusOverlayEl.classList.remove('active');
+  document.body.style.overflow = '';
+  currentFocusExercise = null;
+}
+
+// Weight input → update state
+focusSetsListEl.addEventListener('input', (event) => {
+  const input = event.target;
+  if (!input.classList.contains('focus-weight-input')) return;
+
+  const row = input.closest('.focus-set-row');
+  if (!row || !currentFocusExercise) return;
+
+  const index = Number(row.dataset.index);
+  currentFocusExercise.sets[index].weight = input.value;
+});
+
+// Reps +/- buttons
+focusSetsListEl.addEventListener('click', (event) => {
+  if (!currentFocusExercise) return;
+
+  const btn = event.target.closest('.focus-reps-btn');
+  if (!btn) return;
+
+  const row = btn.closest('.focus-set-row');
+  const index = Number(row.dataset.index);
+  const set = currentFocusExercise.sets[index];
+  if (!set) return;
+
+  if (btn.classList.contains('reps-minus')) {
+    set.reps = Math.max(1, (set.reps || 0) - 1);
+  } else if (btn.classList.contains('reps-plus')) {
+    set.reps = (set.reps || 0) + 1;
+  }
+
+  renderFocusSets();
+});
+
+// Add Set (up to 5)
+focusAddSetBtn.addEventListener('click', () => {
+  if (!currentFocusExercise) return;
+  if (currentFocusExercise.sets.length >= MAX_FOCUS_SETS) return;
+
+  currentFocusExercise.sets.push({
+    weight: '',
+    reps: currentFocusExercise.suggestedReps || 10
+  });
+
+  renderFocusSets();
+});
+
+// Cancel / close
+focusCancelBtn.addEventListener('click', closeFocusCard);
+focusCloseBtn.addEventListener('click', closeFocusCard);
+
+// Complete – for now just log + close; you can hook this into your volume logic
+focusCompleteBtn.addEventListener('click', () => {
+  if (!currentFocusExercise) return;
+
+  const cleanedSets = currentFocusExercise.sets.filter(
+    (s) => s.weight !== '' && s.reps > 0
+  );
+
+  console.log('Saving exercise sets:', {
+    exercise: currentFocusExercise.name,
+    sets: cleanedSets
+  });
+
+  // 🔹 Find the matching exercise row by name
+  const rows = document.querySelectorAll('#exercise-list .exercise-row');
+  let targetRow = null;
+
+  rows.forEach((row) => {
+    const btn = row.querySelector('.exercise-name-btn');
+    if (!btn) return;
+
+    const nameAttr = btn.getAttribute('data-exercise');
+    const label = nameAttr || btn.textContent.trim();
+
+    if (label === currentFocusExercise.name) {
+      targetRow = row;
+    }
+  });
+
+  if (targetRow) {
+    // Add "completed" class for styling
+    targetRow.classList.add('completed');
+
+    // Check the hidden checkbox so your existing logic still works
+    const checkbox = targetRow.querySelector('input[type="checkbox"]');
+    if (checkbox && !checkbox.checked) {
+      checkbox.checked = true;
+      // fire change so anything listening reacts
+      checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+  }
+
+  // Re-run your completion logic to potentially unlock the finisher
+  if (typeof checkSplitCompletion === 'function') {
+    checkSplitCompletion();
+  }
+
+  closeFocusCard();
+});
+
+
+
 
     // =============================
     // 9) INIT
@@ -2204,12 +2910,12 @@ function commitFocusCard() {
         //resetWeeklyWeightByDay();
         updateStreak();
         initScreens();
-        renderTodaySplit();
+        initTodaysSplit();
         initWeeklyGoalControls();
         initFinisherControls();
         initServiceWorker();
         updateStreak();
         updateWeeklyVolumeSummary();
         initDebugStreakButton(); // 🔧 DEV ONLY – remove later
-        initFocusCard();
+
     });
