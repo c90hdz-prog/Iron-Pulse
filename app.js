@@ -15,14 +15,101 @@
     const EMBLEM_TIER_KEY = "ironPulseEmblemTier";
     const VOLUME_TIER_KEY = "ironPulseVolumeTier";
     const VOLUME_OBJECTS = [
-        { id: "start", threshold: 0, label: "Getting started", emoji: "⚪" },
-        { id: "pack", threshold: 500, label: "Loaded backpack", emoji: "🎒" },
-        { id: "barbell", threshold: 2000, label: "Heavy barbell", emoji: "🏋️" },
-        { id: "car", threshold: 4000, label: "Small car", emoji: "🚗" },
-        { id: "truck", threshold: 8000, label: "Pickup truck", emoji: "🚚" },
-        { id: "bus", threshold: 20000, label: "City bus", emoji: "🚌" },
-        { id: "plane", threshold: 50000, label: "Small plane", emoji: "✈️" }
-    ];
+  {
+    id: "backpack",
+    label: "Small backpack",
+    emoji: "🎒",
+    threshold: 0
+  },
+  {
+    id: "car",
+    label: "Small car",
+    emoji: "🚗",
+    threshold: 800      // hit this pretty early
+  },
+  {
+    id: "suv",
+    label: "Pickup truck",
+    emoji: "🚙",
+    threshold: 2500
+  },
+  {
+    id: "truck",
+    label: "Delivery truck",
+    emoji: "🚚",
+    threshold: 6000
+  },
+  {
+    id: "tank",
+    label: "Battle tank",
+    emoji: "🛡️",
+    threshold: 12000
+  },
+  {
+    id: "jet",
+    label: "Fighter jet",
+    emoji: "✈️",
+    threshold: 22000
+  }
+];
+
+// --- Skipped workout tracking ---
+
+
+
+
+
+function markTodayAsSkippedInWeeklyState() {
+  const key = "ironpulse.weeklyState.v1";
+  let state;
+  try {
+    state = JSON.parse(localStorage.getItem(key)) || {};
+  } catch {
+    state = {};
+  }
+
+  const today = getTodayKey(); // you already use this for logging sets
+
+  state[today] = {
+    ...(state[today] || {}),
+    status: "skipped"
+  };
+
+  localStorage.setItem(key, JSON.stringify(state));
+}
+
+// Moves the program cursor forward by 1 day
+function advanceSessionRotation(meta) {
+  if (!meta || !meta.programId) return;
+
+  // however you're storing program cursor – adjust key if needed
+  const KEY = "ironpulse.programCursor.v1";
+
+  let state;
+  try {
+    state = JSON.parse(localStorage.getItem(KEY)) || {};
+  } catch {
+    state = {};
+  }
+
+  const programId = meta.programId;
+  const currentIndex = meta.recommendedIndex ?? 0;
+
+  // bump index (wrap around within the program length)
+  // if you know your program length, you can store it here or
+  // pull it from your PROGRAMS array
+  const program = PROGRAMS.find(p => p.id === programId);
+  const sessionCount = program ? program.sessions.length : 1;
+
+  const nextIndex = (currentIndex + 1) % sessionCount;
+
+  state[programId] = {
+    index: nextIndex,
+    lastUpdated: new Date().toISOString()
+  };
+
+  localStorage.setItem(KEY, JSON.stringify(state));
+}
 
         const POST_WORKOUT_QUOTES = [
             "Small steps stack faster than you think.",
@@ -134,6 +221,189 @@
             "You did enough today to be proud. That’s enough."
         ];
 
+    // Key: "ironpulse.exerciseLog.v1"
+// Shape:
+// {
+//   "2025-12-01": {
+//     "Squat": [ { weight: 135, reps: 8 }, ... ],
+//     "Bench Press": [ ... ]
+//   },
+//   ... more days ...
+// }
+
+// ---- Exercise volume log helpers ----
+
+const EXERCISE_LOG_KEY = "ironpulse.exerciseLog.v1";
+
+// Optional: map each exercise to a muscle group
+const EXERCISE_MUSCLE_MAP = {
+  "Squat": "Legs",
+  "Bench Press": "Chest",
+  "Row": "Back",
+  "Plank": "Core"
+  // add more as you add exercises
+};
+
+const MUSCLE_EMOJI_MAP = {
+  "Legs": "🦵",
+  "Chest": "💪",
+  "Back": "🏹",
+  "Core": "🛡️",
+  "Full Body": "🔥"
+};
+
+function getTodayKey() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function getExerciseLog() {
+  try {
+    const raw = localStorage.getItem(EXERCISE_LOG_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch (e) {
+    console.warn("Bad exercise log, resetting", e);
+    return {};
+  }
+}
+
+function saveExerciseLog(log) {
+  localStorage.setItem(EXERCISE_LOG_KEY, JSON.stringify(log));
+}
+
+/**
+ * Save the sets for a single exercise for *today*.
+ * cleanedSets = [{ weight: number, reps: number }, ...]
+ */
+function recordExerciseSetsForToday(exerciseName, cleanedSets) {
+  const log = getExerciseLog();
+  const todayKey = getTodayKey();
+
+  if (!log[todayKey]) {
+    log[todayKey] = {};
+  }
+
+  // Overwrite today's sets for this exercise with the latest completed ones
+  log[todayKey][exerciseName] = cleanedSets;
+
+  saveExerciseLog(log);
+
+  // Recompute weekly volume + refresh UI
+  updateWeeklyVolumeSummaryFromLog();
+}
+    
+// ---- Weekly volume aggregation ----
+
+/**
+ * Get the Date object for the start of this week.
+ * Here I'm treating Monday as the start. Change if you prefer Sunday.
+ */
+function getStartOfWeek(date = new Date()) {
+  const d = new Date(date);
+  const day = d.getDay(); // 0 = Sun, 1 = Mon, ...
+  const diff = (day === 0 ? -6 : 1) - day; // shift to Monday
+  d.setDate(d.getDate() + diff);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+function dateToKey(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+/**
+ * Compute weekly totals:
+ * - totalVolume: sum of (weight * reps)
+ * - perMuscle: { "Legs": xxx, "Chest": yyy, ... }
+ * - perExercise: { "Squat": xxx, ... }
+ */
+function computeWeeklyVolumeSummary() {
+  const log = getExerciseLog();
+  const startOfWeek = getStartOfWeek();
+  const now = new Date();
+
+  let totalVolume = 0;
+  const perMuscle = {};
+  const perExercise = {};
+
+  // Walk each day of the week up to today
+  const cursor = new Date(startOfWeek);
+  while (cursor <= now) {
+    const key = dateToKey(cursor);
+    const dayLog = log[key];
+    if (dayLog) {
+      Object.entries(dayLog).forEach(([exerciseName, sets]) => {
+        const muscle =
+          EXERCISE_MUSCLE_MAP[exerciseName] || "Full Body";
+
+        const exerciseVolume = (sets || []).reduce((sum, set) => {
+          const w = Number(set.weight) || 0;
+          const r = Number(set.reps) || 0;
+          return sum + w * r;
+        }, 0);
+
+        totalVolume += exerciseVolume;
+        perExercise[exerciseName] =
+          (perExercise[exerciseName] || 0) + exerciseVolume;
+        perMuscle[muscle] =
+          (perMuscle[muscle] || 0) + exerciseVolume;
+      });
+    }
+
+    cursor.setDate(cursor.getDate() + 1);
+  }
+
+  return { totalVolume, perMuscle, perExercise };
+}
+
+/**
+ * Update the weekly volume card UI.
+ * Adjust element IDs if your HTML uses different ones.
+ */
+function updateWeeklyVolumeSummaryFromLog() {
+  const { totalVolume } = computeWeeklyVolumeSummary();
+
+  // DOM hooks – these IDs match your HTML snippet
+  const emojiEl   = document.getElementById("volume-object-emoji");
+  const labelEl   = document.getElementById("volume-object-label");
+  const barFillEl = document.getElementById("volume-bar-fill");
+  const captionEl = document.getElementById("volume-bar-caption");
+
+  // If card isn't on this screen, bail quietly
+  if (!emojiEl || !labelEl || !barFillEl || !captionEl) return;
+
+  // Use your tier system instead of muscles
+  const { current, next, progress } = getVolumeTierInfo(totalVolume);
+
+  // Emoji + label from the current vehicle tier
+  emojiEl.textContent = current.emoji;
+  labelEl.textContent = current.label;
+
+  // Fill the bar based on progress within this tier
+  barFillEl.style.width = `${Math.round(progress * 100)}%`;
+
+  const roundedTotal = Math.round(totalVolume).toLocaleString();
+
+  if (!next) {
+    // Last tier reached (e.g. tank / jet)
+    captionEl.textContent =
+      `You’ve moved ${roundedTotal} lbs so far — you’ve maxed out this week’s ${current.label.toLowerCase()} tier.`;
+  } else {
+    const remaining = Math.max(0, next.threshold - totalVolume);
+    captionEl.textContent =
+      `You’ve moved ${roundedTotal} lbs so far — ` +
+      `${Math.round(remaining).toLocaleString()} lbs to upgrade into a ${next.label.toLowerCase()}.`;
+  }
+}
+
+
+
     function getRandomPostWorkoutQuote() {
             if (!POST_WORKOUT_QUOTES || POST_WORKOUT_QUOTES.length === 0) return "";
             const idx = Math.floor(Math.random() * POST_WORKOUT_QUOTES.length);
@@ -195,7 +465,7 @@
           {
             name: "Squat",
             modalities: ["Barbell", "Machine"],
-            description: "Aim for 3–4 work sets of 5–8 reps. Full range, controlled tempo.",
+            description: "Aim for 3–4 working sets of 5–8 reps. Full range, controlled tempo.",
             suggestedReps: 6
           },
           {
@@ -838,63 +1108,45 @@ function advanceRecommendedSession(programId) {
         }
 
 
-        function updateWeeklyVolumeSummary() {
-                const emojiEl = document.getElementById("volume-object-emoji");
-                const labelEl = document.getElementById("volume-object-label");
-                const barFillEl = document.getElementById("volume-bar-fill");
-                const captionEl = document.getElementById("volume-bar-caption");
+function updateWeeklyVolumeSummary() {
+  // 1) Get weekly total (weight × reps)
+  const { totalVolume } = computeWeeklyVolumeSummary();
 
-                if (!emojiEl || !labelEl || !barFillEl || !captionEl) return;
+  // 2) Figure out which vehicle we’re on + progress within that tier
+  const { current, next, progress } = getVolumeTierInfo(totalVolume);
 
-                const total = getWeeklyTotalWeight();
-                const { current, next, progress } = getVolumeTierInfo(total);
+  // 3) Grab DOM elements
+  const emojiEl   = document.getElementById("volume-object-emoji");
+  const labelEl   = document.getElementById("volume-object-label");
+  const barFillEl = document.getElementById("volume-bar-fill");
+  const captionEl = document.getElementById("volume-bar-caption");
 
-                // --- Basic display ---
-                emojiEl.textContent = current.emoji;
-                labelEl.textContent = current.label;
+  if (!emojiEl || !labelEl || !barFillEl || !captionEl) return;
 
-                const pct = Math.round(progress * 100);
-                barFillEl.style.width = `${Math.min(Math.max(pct, 0), 100)}%`;
+  // 4) Set emoji + label for current object
+  emojiEl.textContent = current.emoji;
+  labelEl.textContent = current.label;
 
-                const totalPretty = Math.round(total).toLocaleString();
+  // 5) Set bar width based on progress in current tier (0–1)
+  const pct = Math.round(progress * 100);
+  barFillEl.style.width = pct + "%";
 
-                if (!next) {
-                    // Maxed out ladder for now
-                    captionEl.textContent =
-                        `You’ve moved ${totalPretty} lbs this week — you’ve out-lifted our heaviest tier. Monster status.`;
-                } else if (current.id === "start" && total === 0) {
-                    captionEl.textContent =
-                        "You haven’t logged any weight yet this week — every set you do moves this bar.";
-                } else {
-                    const toNext = Math.max(next.threshold - total, 0);
-                    const toNextPretty = Math.round(toNext).toLocaleString();
-                    captionEl.textContent =
-                        `You’ve moved ${totalPretty} lbs — ${pct}% of the way to a ${next.label} (${toNextPretty} lbs to go).`;
-                }
+  // Optional little “pop” animation
+  barFillEl.classList.add("volume-levelup");
+  setTimeout(() => barFillEl.classList.remove("volume-levelup"), 700);
 
-                // --- Level-up detection & explosion animation ---
-                const lastTierId = localStorage.getItem(VOLUME_TIER_KEY);
-                const leveledUp = lastTierId && lastTierId !== current.id && total > 0;
+  // 6) Caption text (current total + tease next object)
+  const totalRounded = Math.round(totalVolume).toLocaleString();
 
-                // Remember current tier for next time
-                localStorage.setItem(VOLUME_TIER_KEY, current.id);
+  if (next) {
+    captionEl.textContent =
+      `You’ve moved ${totalRounded} lbs so far — next up: ${next.label.toLowerCase()}.`;
+  } else {
+    captionEl.textContent =
+      `You’ve moved ${totalRounded} lbs — you’ve outlifted the final tier. Monster work.`;
+  }
+}
 
-                if (leveledUp) {
-                    const barBlock = document.querySelector(".volume-bar-block");
-                    if (barBlock) {
-                        barBlock.classList.add("volume-levelup");
-                        // reset after animation
-                        setTimeout(() => {
-                            barBlock.classList.remove("volume-levelup");
-                        }, 800);
-                    }
-
-                    emojiEl.classList.add("levelup-pop");
-                    setTimeout(() => {
-                        emojiEl.classList.remove("levelup-pop");
-                    }, 650);
-                }
-            }
 
 
 
@@ -1267,129 +1519,22 @@ function advanceRecommendedSession(programId) {
             localStorage.setItem(WEEK_ID_KEY, currentWeekId);
         }
    
+function getTodaysVolumeForExercise(exerciseName) {
+  const log = getExerciseLog();   // uses EXERCISE_LOG_KEY
+  const todayKey = getTodayKey(); // you already have this helper
+  const dayLog = log[todayKey];
 
-// =====================================
-// TODAY'S SPLIT – RECOMMENDED SESSION
-// =====================================
-function renderTodaySplit() {
-  const split = getTodaySplitDefinition();
-  const listEl = document.getElementById("exercise-list");
-  if (!split || !listEl) return;
+  if (!dayLog || !dayLog[exerciseName]) return 0;
 
-  // Header text
-  const nameEl = document.getElementById("split-name");
-  const daysEl = document.getElementById("split-days");
-  const descEl = document.getElementById("split-description");
-
-  if (nameEl) nameEl.textContent = split.name || "Training Day";
-  if (daysEl) daysEl.textContent = split.daysLabel || "";
-  if (descEl) descEl.textContent = split.description || "";
-
-  // Clear previous rows
-  listEl.innerHTML = "";
-
-// Saved weights (localStorage)
-const weightsMap = getExerciseWeights();
-
-split.exercises.forEach((exercise, index) => {
-  const exerciseName = exercise.name;
-  const checkboxId = `split-ex-${index}`;
-  const weightInputId = `split-ex-weight-${index}`;
-  const metaLabelId = `split-ex-meta-label-${index}`;
-  const metaValueId = `split-ex-meta-value-${index}`;
-  const savedWeight = weightsMap[exerciseName] ?? "";
-
-  const li = document.createElement("li");
-  li.className = "exercise-row";
-
-  li.innerHTML = `
-    <label class="exercise-checkbox">
-      <input type="checkbox" id="${checkboxId}">
-    </label>
-
-    <div class="exercise-main">
-      <!-- clickable name → opens focus card -->
-      <button
-        type="button"
-        class="exercise-label exercise-name-btn"
-        data-exercise="${exerciseName}"
-      >
-        ${exerciseName}
-        <span class="exercise-focus-tag">• FOCUS</span>
-      </button>
-
-      <!-- new meta row instead of input -->
-      <div class="exercise-meta-row">
-        <span class="exercise-meta-label" id="${metaLabelId}">
-          3 sets planned
-        </span>
-        <span class="exercise-meta-value" id="${metaValueId}">
-          0 lbs logged
-        </span>
-      </div>
-
-      <!-- hidden helper input so volume logic still works -->
-      <input
-        type="number"
-        id="${weightInputId}"
-        class="exercise-weight-hidden"
-        inputmode="decimal"
-        min="0"
-        step="5"
-        value="${savedWeight}"
-        data-exercise="${exerciseName}"
-      />
-    </div>
-  `;
-
-  // 🔗 Open focus card when the name is tapped
-  const nameElInRow = li.querySelector(".exercise-name-btn");
-  if (nameElInRow) {
-    nameElInRow.addEventListener("click", () => {
-      window.openFocusCardForExercise(exerciseName, {
-        modalities: exercise.modalities || [],
-        description: exercise.description || "",
-        suggestedReps: exercise.suggestedReps || 10,
-      });
-    });
-  }
-
-  // ☑️ Checkbox → completion logic
-  const checkboxEl = li.querySelector(`#${checkboxId}`);
-  if (checkboxEl) {
-    checkboxEl.addEventListener("change", () => {
-      checkSplitCompletion();
-    });
-  }
-
-  // 💾 Save / clear avg weight (we’ll update this input programmatically later)
-  const weightInputEl = li.querySelector(`#${weightInputId}`);
-  if (weightInputEl) {
-    weightInputEl.addEventListener("change", () => {
-      const val = parseFloat(weightInputEl.value || "0");
-      const map = getExerciseWeights();
-
-      if (!isNaN(val) && val > 0) {
-        map[exerciseName] = val;
-      } else {
-        delete map[exerciseName];
-      }
-
-      saveExerciseWeights(map);
-    });
-  }
-
-  listEl.appendChild(li);
-});
-
-
-  // Make sure finisher locked/unlocked state is correct on first render
-  checkSplitCompletion();
+  return dayLog[exerciseName].reduce((sum, set) => {
+    const w = Number(set.weight) || 0;
+    const r = Number(set.reps) || 0;
+    return sum + w * r;
+  }, 0);
 }
 
 
 
-// you already have this above, but make sure it exists ONCE:
 let hasRecordedCompletionForCurrentSplit = false;
 
 // =====================================
@@ -1410,59 +1555,147 @@ function initTodaysSplit() {
   // Render the NEW session into the old UI
   renderSessionIntoSplitCard(session, weeklyGoal);
 }
+function handleSkipToday() {
+  if (!currentSessionMeta) return;
+
+  // 1) Mark this day as skipped in your weekly state (no streak credit)
+  markTodayAsSkippedInWeeklyState?.();
+
+  // 2) Visually mark the card as skipped (greyed out, etc.)
+  const splitCard = document.querySelector("#todays-split .workout-card");
+  if (splitCard) {
+    splitCard.classList.add("day-skipped");
+  }
+
+  const weeklyGoal = getWeeklyGoal();
+  const programId =
+    currentSessionMeta.programId || getProgramIdForWeeklyGoal(weeklyGoal);
+
+  // 3) Advance the *real* recommended rotation cursor
+  advanceRecommendedSession(programId);
+
+  // 4) Pull the next recommended session and render it
+  const next = getRecommendedSession(weeklyGoal);
+
+  currentSessionMeta = {
+    programId: next.programId,
+    recommendedIndex: next.index,
+    isRecommended: true,
+    session: next.session
+  };
+
+  renderSessionIntoSplitCard(next.session, weeklyGoal);
+
+  // 5) Toast so user knows what happened
+  showToast?.("Today’s workout skipped. You’re on the next session in your rotation.");
+}
+
+
 
 function renderSessionIntoSplitCard(session, weeklyGoal) {
-  const listEl = document.getElementById("exercise-list");
+  const listEl  = document.getElementById("exercise-list");
+  const nameEl  = document.getElementById("split-name");
+  const skipBtn = document.getElementById("split-days");
+  const descEl  = document.getElementById("split-description");
 
-  document.getElementById("split-name").textContent = session.name;
-  document.getElementById("split-days").textContent = `${weeklyGoal} days / week`;
-  document.getElementById("split-description").textContent = session.description;
+  if (!listEl || !session) return;
 
+  // Header text
+  if (nameEl) nameEl.textContent = session.name || "Training Day";
+  if (descEl) descEl.textContent = session.description || "";
+
+  // Turn the old "3 days / week" chip into a Skip button
+  if (skipBtn) {
+    skipBtn.textContent = "Skip today";
+    skipBtn.onclick = () => {
+      const ok = window.confirm(
+        "Skip today's workout?\n(It won't log any volume for today.)"
+      );
+      if (!ok) return;
+
+      // Use your proper skip logic (marks skipped + advances rotation)
+      handleSkipToday();
+    };
+  }
+
+  // Clear previous rows
   listEl.innerHTML = "";
 
-  session.exercises.forEach((ex) => {
+  // Build exercise rows
+  session.exercises.forEach((ex, index) => {
     const exerciseName = ex.name;
-    const checkboxId = `chk-${exerciseName.replace(/\s+/g, "-")}`;
-    const weightInputId = `wgt-${exerciseName.replace(/\s+/g, "-")}`;
+    const checkboxId = `split-ex-${index}`;
 
     const li = document.createElement("li");
     li.className = "exercise-row";
 
-li.innerHTML = `
-  <div class="exercise-main">
-    <button
-      type="button"
-      class="exercise-name-btn"
-      data-exercise="${exerciseName}"
-    >
-      <div class="exercise-name-text-block">
-        <span class="exercise-name-title">${exerciseName}</span>
-        <span class="exercise-name-subtitle">Log sets</span>
+    li.innerHTML = `
+      <!-- hidden checkbox so completion logic & finisher unlock work -->
+      <input
+        type="checkbox"
+        id="${checkboxId}"
+        class="exercise-complete-checkbox"
+        style="display:none;"
+      />
+
+      <div class="exercise-main">
+        <button
+          type="button"
+          class="exercise-name-btn"
+          data-exercise="${exerciseName}"
+        >
+          <div class="exercise-name-text-block">
+            <span class="exercise-name-title">${exerciseName}</span>
+            <span class="exercise-name-subtitle">Log sets</span>
+          </div>
+          <span class="exercise-name-chevron">›</span>
+        </button>
+
+        <div class="exercise-meta-row">
+          <span class="exercise-meta-label">Min 3 sets</span>
+          <span class="exercise-meta-value">0 lbs logged</span>
+        </div>
       </div>
-      <span class="exercise-name-chevron">›</span>
-    </button>
+    `;
 
-    <div class="exercise-meta-row">
-      <span class="exercise-meta-label">Min 3 sets</span>
-      <span class="exercise-meta-value">0 lbs logged</span>
-    </div>
-  </div>
-`;
-
-
-    // *** ATTACH FOCUS BUTTON HANDLERS HERE ***
+    // Open focus card on click
     const btn = li.querySelector(".exercise-name-btn");
     btn.addEventListener("click", () => {
       window.openFocusCardForExercise(exerciseName, {
         modalities: ex.modalities || [],
         description: ex.description || "",
-        suggestedReps: ex.suggestedReps || 10,
+        suggestedReps: ex.suggestedReps || 10
       });
     });
 
+    // Hook checkbox into split completion (finisher unlock)
+    const checkboxEl = li.querySelector(`#${checkboxId}`);
+    if (checkboxEl && typeof checkSplitCompletion === "function") {
+      checkboxEl.addEventListener("change", () => {
+        checkSplitCompletion();
+      });
+    }
+
+    // Fill the "X lbs logged" text from today's log
+    const metaValueEl = li.querySelector(".exercise-meta-value");
+    if (metaValueEl) {
+      const todaysVolume = getTodaysVolumeForExercise(exerciseName);
+      metaValueEl.textContent =
+        todaysVolume > 0
+          ? `${todaysVolume.toLocaleString()} lbs logged`
+          : "0 lbs logged";
+    }
+
     listEl.appendChild(li);
   });
+
+  // Make sure finisher lock state reflects any already-logged exercises
+  if (typeof checkSplitCompletion === "function") {
+    checkSplitCompletion();
+  }
 }
+
+
 
 function renderTodaySplitFromSession(session, weeklyGoal) {
   const splitNameEl = document.getElementById("split-name");
@@ -2526,175 +2759,7 @@ function renderTodaySplitFromSession(session, weeklyGoal) {
             showToast?.(`Debug: weekly streak is now ${next} week(s).`);
         });
     }
-// =============================
-// FOCUS CARD (per-exercise sets)
-// =============================
-// =============================
 
-
-function showFocusOverlay() {
-    const overlay = document.getElementById("focus-overlay");
-    if (!overlay) return;
-    overlay.classList.remove("hidden");
-    overlay.classList.add("active");
-}
-
-function hideFocusOverlay() {
-    const overlay = document.getElementById("focus-overlay");
-    if (!overlay) return;
-    overlay.classList.remove("active");
-    overlay.classList.add("hidden");
-}
-
-
-// Called when you click an exercise name in the list
-window.openFocusCardForExercise = function (exerciseName, avgInputEl) {
-    const overlay = document.getElementById("focus-overlay");
-    if (!overlay) {
-        console.warn("focus-overlay element not found");
-        return;
-    }
-
-    // Start fresh for this exercise
-    focusState.exerciseName = exerciseName;
-    focusState.avgInputEl = avgInputEl || null;
-
-    // 3 sets, default reps 8, weight blank (we’ll fill from working weight if needed)
-    focusState.sets = [
-        { weight: "", reps: 8 },
-        { weight: "", reps: 8 },
-        { weight: "", reps: 8 }
-    ];
-    focusState.currentIndex = 0;
-
-    // Clear working weight input & editor state
-    const workingWeightInput = document.getElementById("focus-working-weight-input");
-    const setEditor = document.getElementById("focus-set-editor");
-    const repsValueEl = document.getElementById("focus-reps-value");
-    const setWeightInput = document.getElementById("focus-set-weight-input");
-
-    if (workingWeightInput) workingWeightInput.value = "";
-    if (setEditor) setEditor.classList.remove("hidden");
-    if (repsValueEl) repsValueEl.textContent = "8";
-    if (setWeightInput) setWeightInput.value = "";
-
-    updateFocusCardUI(true);
-    showFocusOverlay();
-};
-
-function saveCurrentSetFromInputs() {
-    const repsValueEl = document.getElementById("focus-reps-value");
-    const setWeightInput = document.getElementById("focus-set-weight-input");
-    if (!repsValueEl || !setWeightInput) return;
-
-    const r = repsValueEl.textContent.trim();
-    const w = setWeightInput.value.trim();
-
-    focusState.sets[focusState.currentIndex] = {
-        reps: r,
-        weight: w
-    };
-}
-
-function updateFocusCardUI(reloadInputs = true) {
-    const nameEl = document.getElementById("focus-exercise-name");
-    const dotsContainer = document.getElementById("focus-set-dots");
-    const setsCountEl = document.getElementById("focus-sets-count");
-    const setEditorLabel = document.getElementById("focus-set-editor-label");
-    const repsValueEl = document.getElementById("focus-reps-value");
-    const setWeightInput = document.getElementById("focus-set-weight-input");
-    const workingWeightInput = document.getElementById("focus-working-weight-input");
-
-    if (
-        !nameEl ||
-        !dotsContainer ||
-        !setsCountEl ||
-        !setEditorLabel ||
-        !repsValueEl ||
-        !setWeightInput
-    ) {
-        console.warn("Focus card elements missing during update");
-        return;
-    }
-
-    const idx = focusState.currentIndex;
-    const currentSet = focusState.sets[idx];
-
-    // Exercise name
-    nameEl.textContent = focusState.exerciseName || "Exercise";
-
-    // Dots state
-    const dotButtons = dotsContainer.querySelectorAll(".focus-set-dot");
-    let completedCount = 0;
-
-    dotButtons.forEach((btn, i) => {
-        btn.classList.remove("active", "filled");
-
-        const s = focusState.sets[i];
-        const reps = parseInt(s.reps || "0", 10);
-        const weight = parseFloat(s.weight || "0");
-
-        if (i === idx) {
-            btn.classList.add("active");
-        }
-        if (reps > 0 && !isNaN(weight) && weight > 0) {
-            btn.classList.add("filled");
-            completedCount += 1;
-        }
-    });
-
-    // Sets count text
-    setsCountEl.textContent = `${completedCount} / ${focusState.sets.length}`;
-
-    // Editor label (Set 1 / Set 2 / Set 3)
-    setEditorLabel.textContent = `Set ${idx + 1}`;
-
-    // Inputs for the active set
-    if (reloadInputs) {
-        const reps = parseInt(currentSet.reps || "0", 10);
-        repsValueEl.textContent = isNaN(reps) ? "0" : reps.toString();
-
-        let weightToUse = currentSet.weight;
-        if (!weightToUse && workingWeightInput && workingWeightInput.value) {
-            weightToUse = workingWeightInput.value.trim();
-            currentSet.weight = weightToUse;
-        }
-
-        setWeightInput.value = weightToUse || "";
-    }
-}
-
-function commitFocusCard() {
-    // Make sure we have latest set values
-    saveCurrentSetFromInputs();
-
-    // Average working weight across all sets with a valid weight
-    const workingWeights = focusState.sets
-        .map((s) => parseFloat(s.weight))
-        .filter((w) => !isNaN(w) && w > 0);
-
-    const workingWeightInput = document.getElementById("focus-working-weight-input");
-
-    let avgWeight = null;
-
-    if (workingWeights.length > 0) {
-        avgWeight =
-            workingWeights.reduce((sum, w) => sum + w, 0) / workingWeights.length;
-    } else if (workingWeightInput && workingWeightInput.value.trim() !== "") {
-        const fallback = parseFloat(workingWeightInput.value.trim());
-        if (!isNaN(fallback) && fallback > 0) {
-            avgWeight = fallback;
-        }
-    }
-
-    if (focusState.avgInputEl && avgWeight !== null) {
-        focusState.avgInputEl.value = Math.round(avgWeight);
-
-        // Trigger change handler so it gets saved to localStorage + volume calc
-        const evt = new Event("change", { bubbles: true });
-        focusState.avgInputEl.dispatchEvent(evt);
-    }
-}
 
 // === Focus Card Logic ==========================================
 const focusOverlayEl = document.getElementById('focus-overlay');
@@ -2730,7 +2795,7 @@ function renderFocusSets() {
             type="number"
             inputmode="decimal"
             class="focus-weight-input"
-            placeholder="Set weight"
+            placeholder="Weight"
             value="${set.weight ?? ''}"
           />
           <span class="focus-weight-unit">lbs</span>
@@ -2848,16 +2913,15 @@ focusCloseBtn.addEventListener('click', closeFocusCard);
 focusCompleteBtn.addEventListener('click', () => {
   if (!currentFocusExercise) return;
 
+  // 1) Clean the sets (only keep ones with weight + reps)
   const cleanedSets = currentFocusExercise.sets.filter(
     (s) => s.weight !== '' && s.reps > 0
   );
 
-  console.log('Saving exercise sets:', {
-    exercise: currentFocusExercise.name,
-    sets: cleanedSets
-  });
+  // 2) Save to today's exercise log (this also updates weekly volume card)
+  recordExerciseSetsForToday(currentFocusExercise.name, cleanedSets);
 
-  // 🔹 Find the matching exercise row by name
+  // 3) Find the matching exercise row in the Today's Split list
   const rows = document.querySelectorAll('#exercise-list .exercise-row');
   let targetRow = null;
 
@@ -2874,25 +2938,37 @@ focusCompleteBtn.addEventListener('click', () => {
   });
 
   if (targetRow) {
-    // Add "completed" class for styling
+    // a) Visually mark it as completed
     targetRow.classList.add('completed');
 
-    // Check the hidden checkbox so your existing logic still works
+    // b) Tick the hidden checkbox so your existing logic still fires
     const checkbox = targetRow.querySelector('input[type="checkbox"]');
     if (checkbox && !checkbox.checked) {
       checkbox.checked = true;
-      // fire change so anything listening reacts
       checkbox.dispatchEvent(new Event('change', { bubbles: true }));
     }
+
+    // c) Update that row's "X lbs logged" text from today's log
+   const metaValueEl = targetRow.querySelector('.exercise-meta-value');
+        if (metaValueEl) {
+        const todaysVolume = getTodaysVolumeForExercise(currentFocusExercise.name);
+        metaValueEl.textContent =
+            todaysVolume > 0
+            ? `${todaysVolume.toLocaleString()} lbs logged`
+            : "0 lbs logged";
+        }
+
   }
 
-  // Re-run your completion logic to potentially unlock the finisher
+  // 4) Re-run your split completion logic (unlock finisher, streak, etc.)
   if (typeof checkSplitCompletion === 'function') {
     checkSplitCompletion();
   }
 
+  // 5) Close the focus card
   closeFocusCard();
 });
+
 
 
 
@@ -2911,6 +2987,8 @@ focusCompleteBtn.addEventListener('click', () => {
         initServiceWorker();
         updateStreak();
         updateWeeklyVolumeSummary();
+        updateWeeklyVolumeSummaryFromLog();
+
         initDebugStreakButton(); // 🔧 DEV ONLY – remove later
 
     });
