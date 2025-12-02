@@ -1697,167 +1697,6 @@ function renderSessionIntoSplitCard(session, weeklyGoal) {
 
 
 
-function renderTodaySplitFromSession(session, weeklyGoal) {
-  const splitNameEl = document.getElementById("split-name");
-  const splitDaysEl = document.getElementById("split-days");
-  const splitDescEl = document.getElementById("split-description");
-  const exerciseListEl = document.getElementById("exercise-list");
-
-  if (!splitNameEl || !exerciseListEl) {
-    console.warn("Split DOM nodes missing");
-    return;
-  }
-
-  hasRecordedCompletionForCurrentSplit = false;
-
-  const daysLabel = weeklyGoal
-    ? `${weeklyGoal} days / week`
-    : "No weekly goal set";
-
-  // No session (defensive fallback)
-  if (!session) {
-    splitNameEl.textContent = "Training Day";
-    splitDaysEl.textContent = daysLabel;
-    splitDescEl.textContent =
-      "Simple training session. Get in, move some weight, and get out.";
-    exerciseListEl.innerHTML = "";
-    return;
-  }
-
-  // Header text
-  splitNameEl.textContent = session.name || "Training Day";
-  splitDaysEl.textContent = daysLabel;
-  splitDescEl.textContent = session.description || "";
-
-  // Clear placeholder + old items
-  exerciseListEl.innerHTML = "";
-
-  // Saved weights (localStorage)
-  const weightsMap = getExerciseWeights();
-
-  // Rest-day style sessions (no exercises)
-  if (!session.exercises || !session.exercises.length) {
-    const li = document.createElement("li");
-    li.style.marginBottom = "0.5rem";
-    li.textContent =
-      "Rest or keep it light today. Walk, stretch, or move just enough to feel good.";
-    exerciseListEl.appendChild(li);
-
-    if (typeof checkSplitCompletion === "function") {
-      checkSplitCompletion();
-    }
-    return;
-  }
-
-  session.exercises.forEach((exercise, index) => {
-    const exerciseName = exercise.name;
-    const checkboxId = `split-ex-${index}`;
-    const hiddenWeightId = `split-ex-weight-${index}`;
-    const metaLabelId = `split-ex-meta-label-${index}`;
-    const metaValueId = `split-ex-meta-value-${index}`;
-    const savedWeight = weightsMap[exerciseName] ?? "";
-
-    const li = document.createElement("li");
-    li.className = "exercise-row";
-
-    li.innerHTML = `
-      <!-- hidden checkbox we can tick from JS for completion logic -->
-      <input
-        type="checkbox"
-        id="${checkboxId}"
-        class="exercise-complete-checkbox"
-      />
-
-      <div class="exercise-main">
-        <!-- clickable name → opens focus card -->
-        <button
-          type="button"
-          class="exercise-label exercise-name-btn"
-          data-exercise="${exerciseName}"
-        >
-          ${exerciseName}
-          <span class="exercise-focus-tag">• FOCUS</span>
-        </button>
-
-        <!-- NEW meta row instead of Avg weight input -->
-        <div class="exercise-meta-row">
-          <span class="exercise-meta-label" id="${metaLabelId}">
-            3 sets planned
-          </span>
-          <span class="exercise-meta-value" id="${metaValueId}">
-            ${savedWeight ? `${Math.round(savedWeight)} lbs logged` : "0 lbs logged"}
-          </span>
-        </div>
-
-        <!-- hidden helper input so your volume logic still works -->
-        <input
-          type="number"
-          id="${hiddenWeightId}"
-          class="exercise-weight-hidden"
-          inputmode="decimal"
-          min="0"
-          step="5"
-          value="${savedWeight}"
-          data-exercise="${exerciseName}"
-        />
-      </div>
-    `;
-
-    // 🔗 Open focus card when the name is tapped
-    const nameBtn = li.querySelector(".exercise-name-btn");
-    if (nameBtn) {
-      nameBtn.addEventListener("click", () => {
-        window.openFocusCardForExercise(exerciseName, {
-          modalities: exercise.modalities || [],
-          description: exercise.description || "",
-          suggestedReps: exercise.suggestedReps || 10
-        });
-      });
-    }
-
-    // ☑️ Checkbox → completion logic (we’ll tick this from JS later)
-    const checkboxEl = li.querySelector(`#${checkboxId}`);
-    if (checkboxEl && typeof checkSplitCompletion === "function") {
-      checkboxEl.addEventListener("change", () => {
-        checkSplitCompletion();
-      });
-    }
-
-    // 💾 Save / clear avg weight when this hidden input changes
-    const weightInputEl = li.querySelector(`#${hiddenWeightId}`);
-    if (weightInputEl) {
-      weightInputEl.addEventListener("change", () => {
-        const val = parseFloat(weightInputEl.value || "0");
-        const map = getExerciseWeights();
-
-        if (!Number.isNaN(val) && val > 0) {
-          map[exerciseName] = val;
-        } else {
-          delete map[exerciseName];
-        }
-
-        saveExerciseWeights(map);
-
-        // keep the “lbs logged” text in sync
-        const metaValueEl = document.getElementById(metaValueId);
-        if (metaValueEl) {
-          metaValueEl.textContent =
-            !Number.isNaN(val) && val > 0
-              ? `${Math.round(val)} lbs logged`
-              : "0 lbs logged";
-        }
-      });
-    }
-
-    exerciseListEl.appendChild(li);
-  });
-
-  // Make sure the finisher lock state is up to date
-  if (typeof checkSplitCompletion === "function") {
-    checkSplitCompletion();
-  }
-}
-
 
 
     function getEmblemVisualForTier(tier) {
@@ -2274,198 +2113,284 @@ function renderTodaySplitFromSession(session, weeklyGoal) {
 
             if (allChecked) {
                 finisherCard.classList.remove("locked");
-                doBtn.disabled = false;
+
+                // Primary: disabled until a finisher is selected
+                doBtn.disabled = true;
+
+                // Secondary: you can always choose to skip the finisher for today
                 skipBtn.disabled = false;
+
                 // --- Update finisher card text on unlock ---
                 const titleEl = document.getElementById("finisher-title");
-                const tagEl = document.getElementById("finisher-tag");
-                const descEl = document.getElementById("finisher-description");
+                const tagEl   = document.getElementById("finisher-tag");
+                const descEl  = document.getElementById("finisher-description");
                 const statusEl = document.getElementById("finisher-status");
 
                 titleEl.textContent = "Choose Your Finisher";
-                tagEl.textContent = "Unlocked";
-                descEl.textContent = "Pick a category below to customize your finisher.";
+                tagEl.textContent   = "Unlocked";
+                descEl.textContent  = "Pick a category below to customize your finisher.";
                 statusEl.textContent = "Select conditioning, bodyweight, pump, or recovery.";
 
                 onWorkoutCompleted();
-                
-            } else {
+                }
+                else {
+                // Still locked because not all exercises are complete
                 finisherCard.classList.add("locked");
+
+                // Buttons fully disabled while locked
                 doBtn.disabled = true;
                 skipBtn.disabled = true;
-                // if they uncheck something, we don't undo the logged workout,
-                // but we do keep the finisher locked until it's all done
-            }
+                }
+
+
         }
 
 
     // If you have extra finisher-specific controls, they can live here:
-    function initFinisherControls() {
-            const finisherCard = document.getElementById("finisher-card");
-            if (!finisherCard) return;
+   function initFinisherControls() {
+  const finisherCard = document.getElementById("finisher-card");
+  if (!finisherCard) return;
 
-            const titleEl = document.getElementById("finisher-title");
-            const tagEl = document.getElementById("finisher-tag");
-            const descEl = document.getElementById("finisher-description");
-            const statusEl = document.getElementById("finisher-status");
-            const catButtons = document.querySelectorAll(".finisher-cat-btn");
-            const diffButtons = document.querySelectorAll(".finisher-diff-btn");
-            const diffContainer = document.getElementById("finisher-difficulties");
-            const doBtn = document.getElementById("finisher-do-btn");
-            const skipBtn = document.getElementById("finisher-skip-btn");
+  const titleEl       = document.getElementById("finisher-title");
+  const tagEl         = document.getElementById("finisher-tag");
+  const descEl        = document.getElementById("finisher-description");
+  const statusEl      = document.getElementById("finisher-status");
+  const catButtons    = document.querySelectorAll(".finisher-cat-btn");
+  const diffButtons   = document.querySelectorAll(".finisher-diff-btn");
+  const diffContainer = document.getElementById("finisher-difficulties");
+  const doBtn         = document.getElementById("finisher-do-btn");
+  const skipBtn       = document.getElementById("finisher-skip-btn");
 
-            if (!titleEl || !tagEl || !descEl || !statusEl || !diffContainer || !doBtn || !skipBtn) return;
+  if (!titleEl || !tagEl || !descEl || !statusEl || !diffContainer || !doBtn || !skipBtn) return;
 
-            let selectedCategory = null;
-            let selectedDifficulty = null;
-            let currentFinisher = null;
+  // --- Local state for this card ---
+  let selectedCategory   = null;
+  let selectedDifficulty = null;
+  let currentFinisher    = null;
+  let hasStartedFinisher = false; // 🔹 NEW: tracks "in progress" state
 
-            function clearDiffSelection() {
-                diffButtons.forEach(btn => btn.classList.remove("btn-primary"));
-            }
+  function clearDiffSelection() {
+    diffButtons.forEach(btn => btn.classList.remove("btn-primary"));
+  }
 
-            function clearCatSelection() {
-                catButtons.forEach(btn => btn.classList.remove("btn-primary"));
-            }
+  function clearCatSelection() {
+    catButtons.forEach(btn => btn.classList.remove("btn-primary"));
+  }
 
-            function selectFinisher(catKey, diffKey) {
-                const cat = FINISHERS[catKey];
-                if (!cat) return;
+  // 🔹 Central place to keep button labels + disabled state in sync
+  function updateFinisherButtons() {
+    const todayKey = getTodayDateKey();
+    const lastFinisherDay = localStorage.getItem(LAST_FINISHER_DATE_KEY);
+    const decisionLocked = lastFinisherDay === todayKey;
+    const hardLocked = finisherCard.classList.contains("locked") || decisionLocked;
 
-                const data = cat[diffKey];
-                if (!data) return;
+    // Skip is always allowed (until locked) – "I choose not to do a finisher today"
+    skipBtn.disabled = hardLocked;
 
-                currentFinisher = data;
-                selectedCategory = catKey;
-                selectedDifficulty = diffKey;
+    if (!currentFinisher || !selectedCategory || !selectedDifficulty) {
+      // No finisher chosen yet → can't start
+      doBtn.textContent = hasStartedFinisher ? "Mark finisher done" : "Start finisher";
+      doBtn.disabled = true || hardLocked;
+      return;
+    }
 
-                titleEl.textContent = data.title;
-                descEl.textContent = data.description;
-                tagEl.textContent = `${catKey} • ${diffKey}`.toUpperCase();
+    if (!hasStartedFinisher) {
+      // Finisher chosen, not started yet
+      doBtn.textContent = "Start finisher";   // wording easy to change later
+      doBtn.disabled = hardLocked;
+      skipBtn.textContent = "Skip finisher today";
+    } else {
+      // User already tapped "Start finisher" → we're in progress
+      doBtn.textContent = "Mark finisher done"; // final commit
+      doBtn.disabled = hardLocked;
+      skipBtn.textContent = "I didn’t do it";
+    }
+  }
 
-                statusEl.textContent =
-                    data.tokenReward > 0
-                        ? `Complete this finisher to earn ${data.tokenReward >= 1 ? "a Rest Token" : `${data.tokenReward * 100}% of a Rest Token`}.`
-                        : "Extra work for extra pride — no token reward on this one.";
+  function selectFinisher(catKey, diffKey) {
+    const cat = FINISHERS[catKey];
+    if (!cat) return;
 
-                doBtn.disabled = false;
-                skipBtn.disabled = false;
-            }
+    const data = cat[diffKey];
+    if (!data) return;
 
-            // Category buttons
-            catButtons.forEach(btn => {
-                btn.addEventListener("click", () => {
-                    if (finisherCard.classList.contains("locked")) return;
+    currentFinisher    = data;
+    selectedCategory   = catKey;
+    selectedDifficulty = diffKey;
+    hasStartedFinisher = false; // reset if they change their mind
 
-                    const cat = btn.getAttribute("data-category");
-                    if (!cat) return;
+    titleEl.textContent = data.title;
+    descEl.textContent  = data.description;
+    tagEl.textContent   = `${catKey} • ${diffKey}`.toUpperCase();
 
-                    clearCatSelection();
-                    btn.classList.add("btn-primary");
+    statusEl.textContent =
+      data.tokenReward > 0
+        ? `Complete this finisher to earn ${
+            data.tokenReward >= 1
+              ? "a Rest Token"
+              : `${data.tokenReward * 100}% of a Rest Token`
+          }.`
+        : "Extra work for extra pride — no token reward on this one.";
 
-                    diffContainer.classList.remove("hidden");
-                    clearDiffSelection();
-                    selectedDifficulty = null;
-                    currentFinisher = null;
+    updateFinisherButtons();
+  }
 
-                    titleEl.textContent = "Pick your finisher difficulty";
-                    descEl.textContent = "Choose how hard you want to push today. Harder options can earn Rest Tokens.";
-                    tagEl.textContent = cat.toUpperCase();
-                    statusEl.textContent = "Select Easy, Standard, or Hard to lock in your finisher.";
-                });
-            });
+  // --- Category buttons ---
+  catButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      if (finisherCard.classList.contains("locked")) return;
 
-            // Difficulty buttons
-            diffButtons.forEach(btn => {
-                btn.addEventListener("click", () => {
-                    if (finisherCard.classList.contains("locked")) return;
+      const cat = btn.getAttribute("data-category");
+      if (!cat) return;
 
-                    const diff = btn.getAttribute("data-difficulty");
-                    if (!diff) return;
+      clearCatSelection();
+      btn.classList.add("btn-primary");
 
-                    const activeCatBtn = Array.from(catButtons).find(b => b.classList.contains("btn-primary"));
-                    if (!activeCatBtn) return;
+      // Reset difficulty + finisher when switching categories
+      diffContainer.classList.remove("hidden");
+      clearDiffSelection();
+      selectedCategory   = cat;
+      selectedDifficulty = null;
+      currentFinisher    = null;
+      hasStartedFinisher = false;
 
-                    const cat = activeCatBtn.getAttribute("data-category");
-                    clearDiffSelection();
-                    btn.classList.add("btn-primary");
+      titleEl.textContent = "Pick your finisher difficulty";
+      descEl.textContent  = "Choose how hard you want to push today. Harder options can earn Rest Tokens.";
+      tagEl.textContent   = cat.toUpperCase();
+      statusEl.textContent = "Select Easy, Standard, or Hard to lock in your finisher.";
 
-                    selectFinisher(cat, diff);
-                });
-            });
+      updateFinisherButtons();
+    });
+  });
 
-            // ✅ Mark Completed (with 1-per-day decision gate)
-        doBtn.addEventListener("click", () => {
-            if (!currentFinisher) return;
-            if (finisherCard.classList.contains("locked")) return;
+  // --- Difficulty buttons ---
+  diffButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      if (finisherCard.classList.contains("locked")) return;
 
-            const todayKey = getTodayDateKey();
-            const lastFinisherDay = localStorage.getItem(LAST_FINISHER_DATE_KEY);
+      const diff = btn.getAttribute("data-difficulty");
+      if (!diff) return;
 
-            // Already made a decision (completed or skipped) today
-            if (lastFinisherDay === todayKey) {
-                showToast("You already locked in today’s finisher decision. Extra work now is pure bonus. 💪");
-                return;
-            }
+      const activeCatBtn = Array.from(catButtons).find(b => b.classList.contains("btn-primary"));
+      if (!activeCatBtn) return;
 
-            const ok = window.confirm("Mark this finisher as completed for today?");
-            if (!ok) return;
+      const cat = activeCatBtn.getAttribute("data-category");
+      if (!cat) return;
 
-            const reward = currentFinisher.tokenReward || 0;
-            if (reward > 0) {
-                addRestTokenProgress(reward);
-                updateStreak();
-            }
+      clearDiffSelection();
+      btn.classList.add("btn-primary");
 
-            // 🔒 Lock today’s finisher decision
-            localStorage.setItem(LAST_FINISHER_DATE_KEY, todayKey);
+      selectFinisher(cat, diff);
+    });
+  });
 
-            statusEl.textContent = "Finisher completed. Nice work.";
-            finisherCard.classList.add("completed-pulse");
+  // === PRIMARY BUTTON: two-stage behavior ===
+  doBtn.addEventListener("click", () => {
+    if (finisherCard.classList.contains("locked")) return;
 
-            // Lock the card for the rest of the day
-            finisherCard.classList.add("locked");
-            doBtn.disabled = true;
-            skipBtn.disabled = true;
-            tagEl.textContent = "DONE";
+    const todayKey = getTodayDateKey();
+    const lastFinisherDay = localStorage.getItem(LAST_FINISHER_DATE_KEY);
 
-            setTimeout(() => {
-                finisherCard.classList.remove("completed-pulse");
-            }, 800);
+    // Already made a decision (completed or skipped) today
+    if (lastFinisherDay === todayKey) {
+      showToast("You already locked in today’s finisher decision. Extra work now is pure bonus. 💪");
+      return;
+    }
 
-            celebrateFinisher?.();
-        });
+    // No finisher chosen yet – shouldn’t happen if updateFinisherButtons is working,
+    // but let's guard anyway
+    if (!currentFinisher || !selectedCategory || !selectedDifficulty) {
+      showToast("Pick a finisher and difficulty first.");
+      return;
+    }
 
+    // Stage 1: Start finisher
+    if (!hasStartedFinisher) {
+      const ok = window.confirm(
+        "Start this finisher now?\n\n" +
+        "Do the work, then come back and mark it done."
+      );
+      if (!ok) return;
 
-            // ❌ Skip for Today (with confirmation + lock)
-        skipBtn.addEventListener("click", () => {
-            if (finisherCard.classList.contains("locked")) return;
+      hasStartedFinisher = true;
 
-            const confirmSkip = window.confirm(
-                "Skip today’s finisher and lock it in for the day?\n\n" +
-                "You won’t be able to come back and complete it later."
-            );
+      tagEl.textContent = "IN PROGRESS";
+      statusEl.textContent =
+        "Do this finisher block, then come back and mark it done when you’re finished.";
 
-            // ❗ If they fat-fingered, this lets them back out
-            if (!confirmSkip) {
-                statusEl.textContent = "Finisher is still optional for today.";
-                return;
-            }
+      updateFinisherButtons();
+      return;
+    }
 
-            const todayKey = getTodayDateKey();
-            // Mark that today’s finisher decision is made (even though it was a skip)
-            localStorage.setItem(LAST_FINISHER_DATE_KEY, todayKey);
+    // Stage 2: Mark done (final commit)
+    const confirmDone = window.confirm(
+      "Mark this finisher as completed for today?\n\n" +
+      "This will award Rest Token progress and lock today’s finisher."
+    );
+    if (!confirmDone) return;
 
-            statusEl.textContent =
-                "You skipped the finisher today. Main work still counts — come back stronger tomorrow.";
-            tagEl.textContent = "SKIPPED";
+    const reward = currentFinisher.tokenReward || 0;
+    if (reward > 0) {
+      addRestTokenProgress(reward);
+      updateStreak();
+    }
 
-            finisherCard.classList.add("locked");
-            doBtn.disabled = true;
-            skipBtn.disabled = true;
-        });
+    // Lock today's finisher decision
+    localStorage.setItem(LAST_FINISHER_DATE_KEY, todayKey);
 
-        }
+    statusEl.textContent = "Finisher completed. Nice work.";
+    tagEl.textContent    = "DONE";
+
+    finisherCard.classList.add("completed-pulse");
+    finisherCard.classList.add("locked");
+    doBtn.disabled   = true;
+    skipBtn.disabled = true;
+
+    setTimeout(() => {
+      finisherCard.classList.remove("completed-pulse");
+    }, 800);
+
+    celebrateFinisher?.();
+  });
+
+  // === SECONDARY BUTTON: skip / "I didn't do it" ===
+  skipBtn.addEventListener("click", () => {
+    if (finisherCard.classList.contains("locked")) return;
+
+    const todayKey = getTodayDateKey();
+    const lastFinisherDay = localStorage.getItem(LAST_FINISHER_DATE_KEY);
+
+    if (lastFinisherDay === todayKey) {
+      showToast("You already locked in today’s finisher decision.");
+      return;
+    }
+
+    const confirmSkip = window.confirm(
+      "Skip today’s finisher and lock that decision for the day?\n\n" +
+      "You won’t be able to come back and complete it later."
+    );
+
+    if (!confirmSkip) {
+      statusEl.textContent = "Finisher is still optional for today.";
+      return;
+    }
+
+    // Mark that today’s finisher decision is made (even though it was a skip)
+    localStorage.setItem(LAST_FINISHER_DATE_KEY, todayKey);
+
+    statusEl.textContent =
+      "You skipped the finisher today. Main work still counts — come back stronger tomorrow.";
+    tagEl.textContent = "SKIPPED";
+
+    finisherCard.classList.add("locked");
+    doBtn.disabled   = true;
+    skipBtn.disabled = true;
+  });
+
+  // Initial button state on load
+  updateFinisherButtons();
+}
+
 
 
 
@@ -2816,47 +2741,47 @@ function renderFocusSets() {
 }
 
 // Open the overlay for a given exercise
-window.openFocusCardForExercise = function (name, options = {}) {
-  const {
-    modalities = ['Barbell', 'Dumbbell'],
-    description = 'Log your working sets and we’ll add them to your weekly volume.',
-    suggestedReps = 10,
-    existingSets
-  } = options;
+    window.openFocusCardForExercise = function (name, options = {}) {
+    const {
+        modalities = ['Barbell', 'Dumbbell'],
+        description = 'Log your working sets and we’ll add them to your weekly volume.',
+        suggestedReps = 10,
+        existingSets
+    } = options;
 
-  currentFocusExercise = {
-    name,
-    modalities,
-    description,
-    suggestedReps,
-    sets:
-      existingSets && existingSets.length
-        ? existingSets.map(s => ({ weight: s.weight || '', reps: s.reps || suggestedReps }))
-        : [
-            { weight: '', reps: suggestedReps },
-            { weight: '', reps: suggestedReps },
-            { weight: '', reps: suggestedReps }
-          ]
-  };
+    currentFocusExercise = {
+        name,
+        modalities,
+        description,
+        suggestedReps,
+        sets:
+        existingSets && existingSets.length
+            ? existingSets.map(s => ({ weight: s.weight || '', reps: s.reps || suggestedReps }))
+            : [
+                { weight: '', reps: suggestedReps },
+                { weight: '', reps: suggestedReps },
+                { weight: '', reps: suggestedReps }
+            ]
+    };
 
-  // Fill header
-  focusNameEl.textContent = name;
-  focusModalitiesEl.textContent = modalities.join(' · ');
-  focusDescEl.textContent = description;
+    // Fill header
+    focusNameEl.textContent = name;
+    focusModalitiesEl.textContent = modalities.join(' · ');
+    focusDescEl.textContent = description;
 
-  renderFocusSets();
+    renderFocusSets();
 
-  // Show overlay
-  focusOverlayEl.classList.remove('hidden');
-  focusOverlayEl.classList.add('active');
-  document.body.style.overflow = 'hidden';
-};
+    // Show overlay
+    focusOverlayEl.classList.remove('hidden');
+    focusOverlayEl.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    };
 
 function closeFocusCard() {
-  focusOverlayEl.classList.add('hidden');
-  focusOverlayEl.classList.remove('active');
-  document.body.style.overflow = '';
-  currentFocusExercise = null;
+focusOverlayEl.classList.add('hidden');
+focusOverlayEl.classList.remove('active');
+document.body.style.overflow = '';
+currentFocusExercise = null;
 }
 
 // Weight input → update state
@@ -2986,7 +2911,6 @@ focusCompleteBtn.addEventListener('click', () => {
         initFinisherControls();
         initServiceWorker();
         updateStreak();
-        updateWeeklyVolumeSummary();
         updateWeeklyVolumeSummaryFromLog();
 
         initDebugStreakButton(); // 🔧 DEV ONLY – remove later
