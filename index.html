@@ -22,38 +22,66 @@
     <link rel="apple-touch-icon" href="icons/icon-512.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+
+
     <style>
+
 :root {
+  /* ===================================================================
+     🎨 THEME CONTROL PANEL
+     =================================================================== */
+
+--font-main: 'Urbanist', sans-serif;
+
+
+
+  /* ====== BRAND ACCENTS ====== */
+  --accent-primary:    #FF5C88;   /* slightly cooler pink */
+  --accent-secondary:  #FF9E4F;   /* peachy orange */
+  --accent-yellow:     #FFD46A;   /* softer, brighter gold */
+
   /* PAGE BACKGROUND */
-  --bg-page:             #05040A;                 /* almost black */
-  --bg-top-glow:         rgba(255, 72, 132, 0.35);/* pink glow */
+  --bg-page:             #05040A;
+  --bg-top-glow:         rgba(255, 72, 132, 0.48); /* slightly stronger halo */
 
   /* CARD / TILE SURFACES */
-  --surface-main:        #17131F;                 /* big cards, modals */
-  --surface-subtle:      #261B30;                 /* rows, tiles, inputs */
+  --surface-main:        #17131F;
+  --surface-subtle:      #221726;  /* a touch darker, less “flat” */
 
-  /* ACCENT GRADIENTS */
-  --accent-warm-start:   #FF5C77;                 /* pink */
-  --accent-warm-end:     #FF9D4B;                 /* orange */
+  /* ACCENT GRADIENTS – deeper, more saturated */
+  --accent-warm-start:   #FF345C;  /* deeper pink/red */
+  --accent-warm-end: #FF7A1F;  /* slightly darker orange */
 
-  /* SOFT GLOW VERSIONS */
-  --accent-warm-soft-start: rgba(255, 92, 119, 0.25);
-  --accent-warm-soft-end:   rgba(255, 157, 75, 0.18);
+
+  /* SOFT GLOW VERSIONS – more visible */
+  --accent-warm-soft-start: rgba(255, 52, 92, 0.38);
+  --accent-warm-soft-end:   rgba(255, 138, 42, 0.30);
 
   /* TEXT COLORS */
   --text-primary:        rgba(255, 255, 255, 0.96);
-  --text-muted:          rgba(255, 255, 255, 0.55);
-  --text-accent:         #FFC65C;                 /* numbers, labels */
+  --text-muted:          rgba(255, 255, 255, 0.58);
+  --text-accent:         #FFC65C;
 
-  /* RADIUS / SHADOW – shared feel */
+  /* ====== BORDERS / SHADOW / RADIUS ====== */
+  --card-border: rgba(255, 255, 255, 0.09);
+
+  /* Back-compat button gradient */
+  --accent:   var(--accent-primary);
+  --accent-2: var(--accent-secondary);
+
+  /* RADIUS / SHADOW */
   --radius-card:         24px;
   --radius-pill:         999px;
-  --shadow-soft:         0 22px 40px rgba(0, 0, 0, 0.7);
+  --shadow-soft:         0 22px 40px rgba(0, 0, 0, 0.8);
 
-  /* keep these from your old setup */
-  --card-border: rgba(255, 255, 255, 0.08);
-  --glass:       rgba(255, 255, 255, 0.05);
+    /* Legacy aliases (safe to leave) */
+  --bg-dark:   #040405;
+  --bg-panel:  var(--surface-main);
+  --glass:     rgba(255, 255, 255, 0.05);
 }
+
 
 
 html.no-scroll,
@@ -73,96 +101,97 @@ body {
     background: radial-gradient(circle at top, var(--bg-top-glow), transparent 55%),
                 var(--bg-page);
     color: var(--text-primary);
-    }
+    font-family: var(--font-main);
+}
 
 
-        a {
-            color: inherit;
-            text-decoration: none;
-        }
-    
-        /* Screens – JS controls which is visible */
-        #screen-daily {
-            display: none;
-            /* first-time visitors see setup */
-        }
-    
-        /* =========================
-       2) LAYOUT: HEADER / NAV
-       ========================= */
-        header {
-            position: sticky;
-            top: 0;
-            z-index: 10;
-            background: rgba(5, 4, 10, 0.9); /* close to --bg-page */
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--card-border);
-        }
-    
-        nav {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 1rem clamp(1rem, 4vw, 3rem);
-        }
-    
-        .logo {
-            font-weight: 700;
-            letter-spacing: 1px;
-            font-size: 1.2rem;
-            display: flex;
-            align-items: center;
-            gap: 0.35rem;
-        }
-    
-        .logo span {
-            color: var(--accent-yellow);
-            font-size: 1.4rem;
-        }
-    
-        .nav-links {
-            display: flex;
-            gap: 1.25rem;
-            font-size: 0.95rem;
-        }
-    
-        .nav-links a {
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-size: 0.78rem;
-        }
-    
-        /* Right-side nav actions: Setup + Start Today */
-        .nav-actions {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-    
-        .nav-actions .btn {
-            padding: 0.55rem 1.25rem;
-            font-size: 0.85rem;
-        }
-    
-        /* =========================
-       3) BUTTONS / CONTROLS
-       ========================= */
-        .btn {
-            border: none;
-            padding: 0.85rem 1.75rem;
-            font-size: 0.95rem;
-            font-weight: 600;
-            border-radius: 999px;
-            cursor: pointer;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            border-radius: var(--radius-pill);
-        }
-    
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+/* Screens – JS controls which is visible */
+#screen-daily {
+    display: none;
+    /* first-time visitors see setup */
+}
+
+/* =========================
+2) LAYOUT: HEADER / NAV
+========================= */
+header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: rgba(5, 4, 10, 0.9); /* close to --bg-page */
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--card-border);
+}
+
+nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem clamp(1rem, 4vw, 3rem);
+}
+
+.logo {
+    font-weight: 700;
+    letter-spacing: 1px;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.logo span {
+    color: var(--accent-yellow);
+    font-size: 1.4rem;
+}
+
+.nav-links {
+    display: flex;
+    gap: 1.25rem;
+    font-size: 0.95rem;
+}
+
+.nav-links a {
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.78rem;
+}
+
+/* Right-side nav actions: Setup + Start Today */
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.nav-actions .btn {
+    padding: 0.55rem 1.25rem;
+    font-size: 0.85rem;
+}
+
+/* =========================
+3) BUTTONS / CONTROLS
+========================= */
+.btn {
+    border: none;
+    padding: 0.85rem 1.75rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    border-radius: var(--radius-pill);
+}
+
 .btn-primary {
     background-image: linear-gradient(
       135deg,
@@ -1006,7 +1035,8 @@ body {
     height: 100%;
     width: 0;
     border-radius: 999px;
-    background: linear-gradient(90deg, #ff512f, #f6c343);
+    background: linear-gradient(90deg, var(--accent), var(--accent-yellow));
+
     transition: width 0.35s ease-out;
 }
 
@@ -1336,30 +1366,6 @@ footer {
 
 /* Clickable exercise title */
 /* Clickable exercise title in Today's Split card */
-.exercise-name-btn {
-  background: none;
-  border: none;
-  padding: 0;
-  margin: 0;
-
-  display: inline-flex;
-  align-items: baseline;
-  gap: 0.35rem;
-
-  width: 100%;
-  text-align: left;
-
-  font-size: 1.05rem;
-  font-weight: 600;
-  color: var(--text-primary);  /* was #ffffff */
-
-  cursor: pointer;
-  text-decoration: underline;
-  text-decoration-color: rgba(255, 255, 255, 0.25);
-  text-underline-offset: 0.18em;
-
-  -webkit-tap-highlight-color: transparent;
-}
 
 /* Tap feedback (for mobile) */
 .exercise-name-btn:active {
@@ -2034,34 +2040,7 @@ footer {
   animation: volumeEmojiPop 0.6s ease-out;
 }
 
-/* === Exercise Focus Overlay =================================== */
 
-.exercise-focus-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 1200;
-  display: flex;
-  align-items: flex-end; /* bottom sheet */
-  justify-content: center;
-  background:
-    radial-gradient(circle at top, var(--accent-warm-soft-start), transparent 55%),
-    radial-gradient(circle at bottom, var(--accent-warm-soft-end), transparent 55%),
-    rgba(0, 0, 0, 0.9);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  transition: opacity 0.18s ease-out;
-  opacity: 0;
-  pointer-events: none;
-}
-
-.exercise-focus-overlay.active {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.exercise-focus-overlay.hidden {
-  display: none;
-}
 
 .exercise-focus-backdrop {
   position: absolute;
@@ -2076,26 +2055,53 @@ footer {
 
 /* Card */
 
+/* Card base state */
 .exercise-focus-card {
   position: relative;
-  width: min(420px, 92vw);
-  max-height: 86vh;
+  width: min(380px, 92vw);
+  max-height: 80vh;
+  padding: 1.3rem 1.4rem 1.4rem;
+  border-radius: 22px;
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
-  padding: 1.5rem 1.4rem 1.6rem;
-  border-radius: var(--radius-card);
+  gap: 1.1rem;
+
   background:
     radial-gradient(circle at top left,
-      rgba(221, 36, 118, 0.18), transparent 60%),
-    radial-gradient(circle at bottom right,
-      rgba(255, 81, 47, 0.14), transparent 55%),
-    var(--surface-main); /* was #050509 */
+      rgba(255, 255, 255, 0.04),
+      transparent 60%),
+    var(--surface-main);
   box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.04),
-    0 18px 60px rgba(0, 0, 0, 0.9),
-    0 0 40px rgba(255, 81, 47, 0.35);
+    0 18px 50px rgba(0, 0, 0, 0.85),
+    0 0 26px rgba(0, 0, 0, 0.9);
+
+  /* 👇 start slightly down + smaller + invisible */
+  opacity: 0;
+  transform: translateY(18px) scale(0.97);
 }
+
+/* When overlay is active → animate card in */
+.exercise-focus-overlay.active .exercise-focus-card,
+#focus-overlay.active .exercise-focus-card {
+  animation: focusCardIn .5s cubic-bezier(0.22, 0.9, 0.3, 1.1) forwards;
+}
+
+@keyframes focusCardIn {
+  0% {
+    opacity: 0;
+    transform: translateY(18px) scale(0.97);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(-2px) scale(1.01); /* little overshoot */
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+
 
 /* Header */
 
@@ -2138,30 +2144,31 @@ footer {
   color: var(--text-accent);
 }
 
-/* Title spacing */
-#focus-exercise-name {
-  margin: 0.6rem 0 0.25rem;
-  font-size: 1.1rem;
-  line-height: 1.3;
-}
-
 /* Set rows */
 .focus-sets-list {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
-  margin-top: 0.75rem;
+  gap: 0.65rem;        /* a little more breathing room */
+  margin-top: 0.6rem;
 }
 
+/* Single set row */
 .focus-set-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  padding: 0.55rem 0.75rem;
-  border-radius: 14px;
-  background: var(--surface-subtle); /* was rgba(15, 23, 42, 0.85) */
-  box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.9);
+
+  padding: 0.6rem 0.8rem;
+  border-radius: 16px;
+
+background: linear-gradient(
+        135deg,
+        rgba(18, 22, 35, 1),
+        rgba(12, 14, 22, 1)
+    );
+  box-shadow:
+    0 0 0 1px rgba(148, 163, 184, 0.28);  /* subtle edge */
 }
 
 .focus-set-label {
@@ -2312,12 +2319,13 @@ footer {
 
 .focus-set-row.completed {
   background: radial-gradient(circle at top left,
-    rgba(249, 115, 22, 0.32),
-    rgba(15, 23, 42, 0.9));
+                rgba(249, 115, 22, 0.28),
+                rgba(15, 23, 42, 0.98));
   box-shadow:
-    0 0 0 1px rgba(249, 115, 22, 0.4),
-    0 0 18px rgba(249, 115, 22, 0.55);
+    0 0 0 1px rgba(249, 115, 22, 0.65),
+    0 0 16px rgba(249, 115, 22, 0.55);
 }
+
 
 .focus-set-toggle {
   font-size: 0.78rem;
@@ -2329,7 +2337,8 @@ footer {
 }
 
 .focus-set-row.completed .focus-set-toggle {
-  background: linear-gradient(90deg, #f97316, #fb7185);
+  background: linear-gradient(90deg, var(--accent), var(--accent-yellow));
+
   box-shadow: 0 0 12px rgba(249, 115, 22, 0.7);
 }
 
@@ -2366,35 +2375,17 @@ footer {
 }
 
 #focus-exercise-name {
-  margin: 0 0 0.35rem;
-  font-size: 1.35rem;
+  margin: 0.4rem 0 0.25rem;
+  font-size: 1.25rem;
   font-weight: 700;
 }
 
 .focus-subtext {
-  margin: 0 0 1.1rem;
+  margin: 0 0 0.9rem;
   font-size: 0.9rem;
-  color: #9ca3af;
+  color: var(--text-muted);
 }
 
-/* Sets container */
-.focus-sets-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-/* Single set row */
-.focus-set-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  padding: 0.55rem 0.75rem;
-  border-radius: 16px;
-  background: var(--surface-subtle);
-  box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.9);
-}
 
 .focus-set-label {
   font-size: 0.9rem;
@@ -2417,8 +2408,8 @@ footer {
   gap: 0.35rem;
   padding: 0.4rem 0.6rem;
   border-radius: 999px;
-  background: rgba(15, 23, 42, 0.95);
-  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.35);
+  background: rgba(9, 12, 26, 0.96);
+  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.4);
 }
 
 .focus-weight-input {
@@ -2445,8 +2436,8 @@ footer {
   gap: 0.45rem;
   padding: 0.4rem 0.7rem;
   border-radius: 999px;
-  background: rgba(15, 23, 42, 0.95);
-  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.35);
+  background: rgba(9, 12, 26, 0.96);
+  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.4);
 }
 
 .focus-reps-btn {
@@ -2554,18 +2545,18 @@ footer {
   border-radius: inherit;
   z-index: 0;
 
-  /* glow */
   background:
     radial-gradient(
       120% 160% at 50% 0%,
-      rgba(120, 90, 255, 0.20),   /* softer violet */
-      rgba(70, 110, 255, 0.16),   /* brighter blue */
-      rgba(0, 0, 0, 0.12)         /* deeper shadow */
+      var(--accent-warm-soft-start),
+      var(--accent-warm-soft-end),
+      rgba(0, 0, 0, 0.18)
     );
 
-  opacity: 0.85;
+  opacity: 0.9;
   transition: opacity 0.35s ease, transform 0.35s ease;
 }
+
 
 /* make sure row content sits above glow */
 .exercise-row > * {
@@ -2580,10 +2571,10 @@ footer {
 }
 
 .exercise-row.completed {
-  opacity: 0.45;
-  filter: grayscale(0.6);
-  background: rgba(255, 255, 255, 0.015);
+  animation: exerciseCompleteBounce 0.35s ease-out forwards;
+  background: rgba(255, 255, 255, 0.02); /* middle ground between 0.015 & 0.03 */
 }
+
 
 
 /* Checkbox block */
@@ -2597,19 +2588,6 @@ footer {
 }
 
 /* Exercise name as tappable text */
-.exercise-name-btn {
-  border: none;
-  background: transparent;
-  padding: 0;
-  margin: 0 0 0.15rem 0;
-  font-size: 1rem;
-  font-weight: 700;
-  color: #ffffff;
-  letter-spacing: 0.01em;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-}
 
 /* Make it feel tappable without screaming “button” */
 .exercise-name-btn span.exercise-focus-tag {
@@ -2656,10 +2634,6 @@ footer {
   border-color: var(--accent-yellow);
 }
 
-/* Slight highlight for active / checked exercise */
-.exercise-row.completed {
-  background: rgba(255, 255, 255, 0.03);
-}
 /* Hide the physical checkbox squares */
 .exercise-checkbox input[type="checkbox"] {
   position: absolute;
@@ -2734,26 +2708,47 @@ footer {
   color: var(--accent-yellow);
 }
 
+/* === Exercise pill inside Today's Split card === */
 .exercise-name-btn {
-  width: 100%;
-  padding: 0.6rem 0.9rem;
-  margin-bottom: 0.25rem;
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.06),
-    rgba(255, 255, 255, 0.02)
-  );
-  border-radius: 0.9rem;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
+
+  width: 100%;
+  margin: 0 0 0.35rem;
+  padding: 0.7rem 1rem;
+
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  /* 🔥 main gradient */
+  background-image: linear-gradient(
+    90deg,
+    var(--accent-warm-start),
+    var(--accent-warm-end)
+  );
+
+  /* 🧽 fix skinny lines at left/right */
+  background-size: 110% 100%;
+  background-position: center;
+  background-clip: padding-box;
+  -webkit-background-clip: padding-box;
+
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-weight: 600;
   text-align: left;
-  color: #fff;
-  font: inherit;
+  cursor: pointer;
   outline: none;
 }
+
+/* Small press feedback */
+.exercise-name-btn:active {
+  transform: scale(0.97);
+}
+
 
 .exercise-name-text-block {
   display: flex;
@@ -2780,35 +2775,43 @@ footer {
   transform: scale(0.97);
   background: rgba(255, 255, 255, 0.08);
 }
+/* === Exercise Focus Overlay (single source of truth) === */
 #focus-overlay {
   position: fixed;
   inset: 0;
-  z-index: 999;
+  z-index: 1200;
   display: flex;
-  align-items: center;      /* center vertically */
+  align-items: center;
   justify-content: center;
 
+  padding: 1.25rem;
   background:
-    radial-gradient(circle at top, rgba(255, 80, 150, 0.12), transparent 55%),
-    radial-gradient(circle at bottom, rgba(255, 120, 40, 0.18), transparent 55%),
-    rgba(0, 0, 0, 0.86);
+    radial-gradient(circle at top,
+      var(--accent-warm-soft-start),
+      transparent 55%),
+    radial-gradient(circle at bottom,
+      var(--accent-warm-soft-end),
+      transparent 55%),
+    rgba(0, 0, 0, 0.9);
 
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
 
-  transition: opacity 0.18s ease-out;
   opacity: 0;
   pointer-events: none;
 }
 
+/* When JS adds .active */
 #focus-overlay.active {
   opacity: 1;
   pointer-events: auto;
 }
 
+/* When JS adds .hidden */
 #focus-overlay.hidden {
   display: none;
 }
+
 
 /* Skip button where "3 days/week" used to be */
 /* Skip button where "3 days/week" used to be */
@@ -2888,6 +2891,24 @@ footer {
 }
 
 
+/* --- Exercise Completion Bounce --- */
+@keyframes exerciseCompleteBounce {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  35% {
+    transform: scale(1.05);
+  }
+  60% {
+    transform: scale(0.97);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.45;
+    filter: grayscale(0.6);
+  }
+}
 
 
     </style>
