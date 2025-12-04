@@ -831,7 +831,7 @@ function updateWeeklyVolumeSummaryFromLog() {
           {
             name: "Calf Raises",
             modalities: ["Machine", "Dumbbell"],
-            description: "High-rep finisher, 15–20 reps.",
+            description: "High-rep finisher, 15-20 reps.",
             suggestedReps: 15
           }
         ]
@@ -1416,7 +1416,7 @@ function updateWeeklyVolumeSummary() {
                         tokenReward: 0.25
                     },
                     hard: {
-                        title: "100-Rep Finisher",
+                        title: "100-Rep Afterburn",
                         description: "Choose one movement (curls, pushdowns, lateral raises, etc.) and complete 100 total reps.",
                         tokenReward: 1
                     }
@@ -1988,7 +1988,7 @@ function renderSessionIntoSplitCard(session, weeklyGoal) {
                         : "";
                 tokenLabelEl.textContent = `Rest tokens: ${tokens}${extra}`;
             } else {
-                tokenLabelEl.textContent = "Earn rest tokens with finishers";
+                tokenLabelEl.textContent = "Earn rest tokens with Afterburn sessions";
             }
             // Not sure if this goes here lol
             if (emblemLabelEl) {
@@ -2100,50 +2100,51 @@ function renderSessionIntoSplitCard(session, weeklyGoal) {
 
 
 
-    function checkSplitCompletion() {
-            const exerciseListEl = document.getElementById("exercise-list");
-            const finisherCard = document.querySelector(".finisher-card");
-            const doBtn = document.getElementById("finisher-do-btn");
-            const skipBtn = document.getElementById("finisher-skip-btn");
+function checkSplitCompletion() {
+    const exerciseListEl = document.getElementById("exercise-list");
+    const finisherCard = document.querySelector(".finisher-card");
+    const doBtn = document.getElementById("finisher-do-btn");
+    const skipBtn = document.getElementById("finisher-skip-btn");
 
-            if (!exerciseListEl || !finisherCard || !doBtn || !skipBtn) return;
+    if (!exerciseListEl || !finisherCard || !doBtn || !skipBtn) return;
 
-            const checkboxes = exerciseListEl.querySelectorAll('input[type="checkbox"]');
-            const allChecked = checkboxes.length > 0 && Array.from(checkboxes).every(cb => cb.checked);
+    const checkboxes = exerciseListEl.querySelectorAll('input[type="checkbox"]');
+    const allChecked = checkboxes.length > 0 && Array.from(checkboxes).every(cb => cb.checked);
 
-            if (allChecked) {
-                finisherCard.classList.remove("locked");
+    const titleEl  = document.getElementById("finisher-title");
+    const tagEl    = document.getElementById("finisher-tag");
+    const descEl   = document.getElementById("finisher-description");
+    const statusEl = document.getElementById("finisher-status");
 
-                // Primary: disabled until a finisher is selected
-                doBtn.disabled = true;
+    if (allChecked) {
+        // unlocked
+        finisherCard.classList.remove("locked");
 
-                // Secondary: you can always choose to skip the finisher for today
-                skipBtn.disabled = false;
+        // Control button states
+        doBtn.disabled = true;   // still disabled until user picks category/diff
+        skipBtn.disabled = false;
 
-                // --- Update finisher card text on unlock ---
-                const titleEl = document.getElementById("finisher-title");
-                const tagEl   = document.getElementById("finisher-tag");
-                const descEl  = document.getElementById("finisher-description");
-                const statusEl = document.getElementById("finisher-status");
+        // === 🔓 Unlocked text ===
+        titleEl.textContent  = "Choose Your Afterburn";
+        tagEl.textContent    = "UNLOCKED";            // <— HERE
+        descEl.textContent   = "Pick a category below to customize your Afterburn.";
+        statusEl.textContent = "Select conditioning, bodyweight, pump, or recovery.";
 
-                titleEl.textContent = "Choose Your Finisher";
-                tagEl.textContent   = "Unlocked";
-                descEl.textContent  = "Pick a category below to customize your finisher.";
-                statusEl.textContent = "Select conditioning, bodyweight, pump, or recovery.";
+        onWorkoutCompleted();
+    }
+    else {
+        // locked
+        finisherCard.classList.add("locked");
 
-                onWorkoutCompleted();
-                }
-                else {
-                // Still locked because not all exercises are complete
-                finisherCard.classList.add("locked");
+        // Lock buttons
+        doBtn.disabled = true;
+        skipBtn.disabled = true;
 
-                // Buttons fully disabled while locked
-                doBtn.disabled = true;
-                skipBtn.disabled = true;
-                }
+    const tagEl = document.getElementById("finisher-tag");
+    if (tagEl) tagEl.textContent = "Locked";
+    }
+}
 
-
-        }
 
 
     // If you have extra finisher-specific controls, they can live here:
@@ -2196,7 +2197,7 @@ function renderSessionIntoSplitCard(session, weeklyGoal) {
 
     if (!hasStartedFinisher) {
       // Finisher chosen, not started yet
-      doBtn.textContent = "Start finisher";   // wording easy to change later
+      doBtn.textContent = "Start Afterburn";   // wording easy to change later
       doBtn.disabled = hardLocked;
       skipBtn.textContent = "Skip Afterburn today";
     } else {
@@ -2221,7 +2222,7 @@ function renderSessionIntoSplitCard(session, weeklyGoal) {
 
     titleEl.textContent = data.title;
     descEl.textContent  = data.description;
-    tagEl.textContent   = `${catKey} • ${diffKey}`.toUpperCase();
+    tagEl.textContent   = "Unlocked"
 
     statusEl.textContent =
       data.tokenReward > 0
@@ -2256,8 +2257,8 @@ function renderSessionIntoSplitCard(session, weeklyGoal) {
 
       titleEl.textContent = "Pick your Afterburn difficulty";
       descEl.textContent  = "Choose how hard you want to push today. Harder options can earn Rest Tokens.";
-      tagEl.textContent   = cat.toUpperCase();
-      statusEl.textContent = "Select Easy, Standard, or Hard to lock in your finisher.";
+      tagEl.textContent   = "Unlocked";
+      statusEl.textContent = "Rest is important. But you have to earn it!";
 
       updateFinisherButtons();
     });
@@ -2382,7 +2383,7 @@ function renderSessionIntoSplitCard(session, weeklyGoal) {
       "You skipped the Afterburn sesssion today. Main work still counts — come back stronger tomorrow.";
     tagEl.textContent = "SKIPPED";
 
-    finisherCard.classList.add("locked");
+    finisherCard.classList.add("Locked");
     doBtn.disabled   = true;
     skipBtn.disabled = true;
   });
