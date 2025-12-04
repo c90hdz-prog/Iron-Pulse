@@ -2189,7 +2189,7 @@ function renderSessionIntoSplitCard(session, weeklyGoal) {
 
     if (!currentFinisher || !selectedCategory || !selectedDifficulty) {
       // No finisher chosen yet → can't start
-      doBtn.textContent = hasStartedFinisher ? "Mark finisher done" : "Start finisher";
+      doBtn.textContent = hasStartedFinisher ? "Mark Afterburn done" : "Lock In";
       doBtn.disabled = true || hardLocked;
       return;
     }
@@ -2198,12 +2198,12 @@ function renderSessionIntoSplitCard(session, weeklyGoal) {
       // Finisher chosen, not started yet
       doBtn.textContent = "Start finisher";   // wording easy to change later
       doBtn.disabled = hardLocked;
-      skipBtn.textContent = "Skip finisher today";
+      skipBtn.textContent = "Skip Afterburn today";
     } else {
       // User already tapped "Start finisher" → we're in progress
-      doBtn.textContent = "Mark finisher done"; // final commit
+      doBtn.textContent = "Mark Afterburn done"; // final commit
       doBtn.disabled = hardLocked;
-      skipBtn.textContent = "I didn’t do it";
+      skipBtn.textContent = "Too burned out to finish";
     }
   }
 
@@ -2225,7 +2225,7 @@ function renderSessionIntoSplitCard(session, weeklyGoal) {
 
     statusEl.textContent =
       data.tokenReward > 0
-        ? `Complete this finisher to earn ${
+        ? `Complete this Afterburn session to earn ${
             data.tokenReward >= 1
               ? "a Rest Token"
               : `${data.tokenReward * 100}% of a Rest Token`
@@ -2247,14 +2247,14 @@ function renderSessionIntoSplitCard(session, weeklyGoal) {
       btn.classList.add("btn-primary");
 
       // Reset difficulty + finisher when switching categories
-      diffContainer.classList.remove("hidden");
+      diffContainer.classList.add("is-visible");
       clearDiffSelection();
       selectedCategory   = cat;
       selectedDifficulty = null;
       currentFinisher    = null;
       hasStartedFinisher = false;
 
-      titleEl.textContent = "Pick your finisher difficulty";
+      titleEl.textContent = "Pick your Afterburn difficulty";
       descEl.textContent  = "Choose how hard you want to push today. Harder options can earn Rest Tokens.";
       tagEl.textContent   = cat.toUpperCase();
       statusEl.textContent = "Select Easy, Standard, or Hard to lock in your finisher.";
@@ -2293,21 +2293,21 @@ function renderSessionIntoSplitCard(session, weeklyGoal) {
 
     // Already made a decision (completed or skipped) today
     if (lastFinisherDay === todayKey) {
-      showToast("You already locked in today’s finisher decision. Extra work now is pure bonus. 💪");
+      showToast("You already locked in today's Afterburn session. Extra work now is pure bonus. 💪");
       return;
     }
 
     // No finisher chosen yet – shouldn’t happen if updateFinisherButtons is working,
     // but let's guard anyway
     if (!currentFinisher || !selectedCategory || !selectedDifficulty) {
-      showToast("Pick a finisher and difficulty first.");
+      showToast("Pick an Afterburn catetory and difficulty first.");
       return;
     }
 
     // Stage 1: Start finisher
     if (!hasStartedFinisher) {
       const ok = window.confirm(
-        "Start this finisher now?\n\n" +
+        "Start this Afterburn session now?\n\n" +
         "Do the work, then come back and mark it done."
       );
       if (!ok) return;
@@ -2316,7 +2316,7 @@ function renderSessionIntoSplitCard(session, weeklyGoal) {
 
       tagEl.textContent = "IN PROGRESS";
       statusEl.textContent =
-        "Do this finisher block, then come back and mark it done when you’re finished.";
+        "Do this Afterburn session, then come back and mark it done when you're finished.";
 
       updateFinisherButtons();
       return;
@@ -2324,8 +2324,8 @@ function renderSessionIntoSplitCard(session, weeklyGoal) {
 
     // Stage 2: Mark done (final commit)
     const confirmDone = window.confirm(
-      "Mark this finisher as completed for today?\n\n" +
-      "This will award Rest Token progress and lock today’s finisher."
+      "Mark this Afterburn session as completed for today?\n\n" +
+      "This will award Rest Token progress."
     );
     if (!confirmDone) return;
 
@@ -2361,13 +2361,13 @@ function renderSessionIntoSplitCard(session, weeklyGoal) {
     const lastFinisherDay = localStorage.getItem(LAST_FINISHER_DATE_KEY);
 
     if (lastFinisherDay === todayKey) {
-      showToast("You already locked in today’s finisher decision.");
+      showToast("You already locked in today's Afterburn session.");
       return;
     }
 
     const confirmSkip = window.confirm(
-      "Skip today’s finisher and lock that decision for the day?\n\n" +
-      "You won’t be able to come back and complete it later."
+      "Skip today's Afterburn session for the day?\n\n" +
+      "You won't be able to come back and complete it later."
     );
 
     if (!confirmSkip) {
@@ -2379,7 +2379,7 @@ function renderSessionIntoSplitCard(session, weeklyGoal) {
     localStorage.setItem(LAST_FINISHER_DATE_KEY, todayKey);
 
     statusEl.textContent =
-      "You skipped the finisher today. Main work still counts — come back stronger tomorrow.";
+      "You skipped the Afterburn sesssion today. Main work still counts — come back stronger tomorrow.";
     tagEl.textContent = "SKIPPED";
 
     finisherCard.classList.add("locked");
@@ -2547,22 +2547,23 @@ function renderSessionIntoSplitCard(session, weeklyGoal) {
                     const quote = getRandomPostWorkoutQuote();
 
                     overlay.innerHTML = `
-        <div class="postworkout-card">
-            <h2>Workout complete 🔥</h2>
-            <p class="postworkout-quote">${quote}</p>
-            <p class="postworkout-hint">
-                Feeling good? You can cash in a finisher for extra progress.
-            </p>
-            <div class="postworkout-actions">
-                <button class="btn btn-primary" id="postworkout-do-finisher">
-                    Do finisher
-                </button>
-                <button class="btn btn-outline" id="postworkout-close">
-                    Close
-                </button>
-            </div>
-        </div>
-    `;
+                        <div class="postworkout-card">
+                            <h2>Workout complete 🔥</h2>
+                            <p class="postworkout-quote">${quote}</p>
+                            <p class="postworkout-hint">
+                                Feeling good? Ignite your Afterburn and push past the finish line.
+                            </p>
+                            <div class="postworkout-actions">
+                                <button class="btn btn-primary" id="postworkout-do-finisher">
+                                    Fire It Up
+                                </button>
+                                <button class="btn btn-outline" id="postworkout-close">
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+                    `;
+
 
                     document.body.appendChild(overlay);
 
@@ -2618,7 +2619,7 @@ function renderSessionIntoSplitCard(session, weeklyGoal) {
         overlay.innerHTML = `
         <div class="weekly-overlay-card">
             <h2>Weekly goal hit 🎉</h2>
-            <p>You showed up for all ${goal} planned sessions. That’s how streaks are built.</p>
+            <p>You showed up for all ${goal} planned sessions. That's how streaks are built.</p>
             <button class="btn btn-primary" id="weekly-overlay-continue">Continue</button>
         </div>
     `;

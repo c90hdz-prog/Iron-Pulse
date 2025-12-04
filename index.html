@@ -91,8 +91,50 @@ body.no-scroll {
 }
 
 
-       html, body {
-            overflow-x: hidden;
+html, body {
+    overflow-x: hidden;
+}
+/* ===========================================================
+   MOBILE APP RESET – put this near the top, after :root
+   =========================================================== */
+
+/* 1) Consistent box model */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* 2) Kill blue tap highlight on mobile */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 3) Buttons / tappables – no default outline or delay */
+button,
+.btn,
+.exercise-name-btn,
+[role="button"] {
+  outline: none;
+  touch-action: manipulation;  /* removes old 300ms tap delay */
+}
+
+/* 4) Normalize form controls so only YOUR styles show */
+input,
+button,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  border-radius: 0;
+  border: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+/* 5) Prevent weird overscroll glow / scroll chaining (optional) */
+html,
+body {
+  overscroll-behavior: none;
 }
 
 
@@ -1041,16 +1083,7 @@ nav {
 }
 
 
-    
-        .finisher-card.locked {
-            opacity: 0.6;
-            border-style: dashed;
-        }
-    
-        .finisher-card:not(.locked) {
-            opacity: 1;
-            border-style: solid;
-        }
+
     
         /* =========================
        6) FOOTER
@@ -1465,10 +1498,7 @@ footer {
     }
 }
 
-.finisher-card.completed-pulse {
-    box-shadow: 0 0 0 0 rgba(246, 195, 67, 0.7);
-    animation: finisherPulse 0.6s ease-out;
-}
+
 
 @keyframes finisherPulse {
     0% {
@@ -1489,96 +1519,123 @@ footer {
 
 
 
+/* ============================================================
+   🧨 TODAY'S FINISHER – MISSION CARD
+   Uses your global theme tokens from :root
+   ============================================================ */
+
+/* 🧨 TODAY'S FINISHER – MISSION CARD
+   This version keeps all buttons clickable (no overlay catching clicks) */
 .finisher-card {
-  padding: 1.25rem 1.4rem;
+  position: relative;
+  padding: 1.6rem 1.5rem 1.5rem;
   border-radius: var(--radius-card);
-  background: var(--surface-main);                  /* was var(--card-bg-strong, #050509) */
-  border: 1px solid var(--card-border);             /* was hard-coded rgba */
+  background:
+    radial-gradient(circle at top,
+      rgba(255, 92, 119, 0.14),
+      transparent 60%),
+    radial-gradient(circle at bottom,
+      rgba(255, 157, 75, 0.10),
+      transparent 60%),
+    var(--surface-main);
+  border: 1px solid var(--card-border);
+  box-shadow: var(--shadow-soft);
+  overflow: hidden; /* just for the inner glow, no overlay */
 }
 
 
-.finisher-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-}
 
 .finisher-title-block h3 {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: 1.2rem;
+  line-height: 1.3;
 }
 
 .finisher-title-block p {
-  margin: 0.25rem 0 0;
+  margin: 0.35rem 0 0;
   font-size: 0.9rem;
-  opacity: 0.9;
+  color: var(--text-muted);
 }
 
+/* Little pill on the right (LOCKED, PUMP, etc.) */
 .finisher-tag-pill {
-  font-size: 0.75rem;
-  letter-spacing: 0.08em;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  padding: 0.25rem 0.6rem;
+  padding: 0.25rem 0.9rem;
   border-radius: 999px;
-  border: 1px solid rgba(255, 198, 92, 0.6);
-  color: var(--text-accent);  
+  border: 1px solid rgba(255, 212, 106, 0.7);
+  color: var(--text-accent);
+  background: rgba(0, 0, 0, 0.35);
   align-self: flex-start;
   white-space: nowrap;
 }
 
+/* Step labels “1 · PICK A CATEGORY” etc. */
 .finisher-step {
-  margin-top: 0.75rem;
+  margin-top: 0.9rem;
 }
 
 .finisher-step-label {
-  font-size: 0.75rem;
+  font-size: 0.74rem;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.14em;
   color: rgba(255, 255, 255, 0.7);
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.4rem;
 }
 
-.finisher-chip-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
 
-.finisher-chip {
-  border-radius: 999px;
-  padding: 0.4rem 1.1rem;
-  font-size: 0.9rem;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.02);
-  color: var(--text-primary, #fff);
-}
 
-.finisher-chip.btn-primary {
-  border-color: transparent;
-  background: linear-gradient(
-      135deg,
-      var(--accent-warm-start),
-      var(--accent-warm-end)
-  );                                           /* was #ff4b4b → #f6c343 */
-  box-shadow: 0 0 18px rgba(255, 92, 119, 0.35);
-}
-
+/* Helper text under chips */
 .finisher-status-helper {
-  margin-top: 0.9rem;
+  margin-top: 1rem;
   font-size: 0.85rem;
-  opacity: 0.9;
+  color: var(--text-muted);
 }
 
+/* Buttons row */
 .finisher-actions {
-    margin-top: 1rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;   /* ⬅ centers the content */
-    text-align: center;    /* ⬅ centers text inside */
-    gap: 0.5rem;
+  margin-top: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
 }
+
+.finisher-actions .btn {
+  width: 100%;
+  justify-content: center;
+}
+
+/* Make “Start finisher / Mark Completed” feel special */
+#finisher-do-btn {
+  background-image: linear-gradient(
+    135deg,
+    var(--accent-warm-start),
+    var(--accent-warm-end)
+  );
+  box-shadow: 0 18px 32px rgba(0, 0, 0, 0.9);
+}
+
+/* Skip button – softer outline look */
+#finisher-skip-btn {
+  border-radius: var(--radius-pill);
+  border-width: 1px;
+}
+
+/* Disabled state (JS sets disabled attr) */
+.finisher-actions .btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Locked state – just visual, still allows JS to toggle chips if you do */
+.finisher-card.locked {
+  opacity: 0.85;
+  filter: saturate(0.9);
+}
+
+
 
 .finisher-complete-message {
     font-size: 0.95rem;
@@ -1591,6 +1648,333 @@ footer {
     from { opacity: 0; transform: translateY(4px); }
     to   { opacity: 1; transform: translateY(0); }
 }
+
+
+/* ------------------------------------
+
+/* === CATEGORY TILES =================================================== */
+
+.finisher-category-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.35rem;
+}
+
+/* Base tile button reset */
+.finisher-cat-btn {
+  border: none;
+  width: 100%;
+  border-radius: 1rem;
+  padding: 0.7rem 0.9rem;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  cursor: pointer;
+
+  /* text */
+  color: var(--text-primary);
+  font: inherit;
+
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 14px 24px rgba(0, 0, 0, 0.8);
+
+  transition:
+    background 0.18s ease,
+    box-shadow 0.18s ease,
+    transform 0.12s ease;
+}
+
+.finisher-cat-btn:hover {
+  transform: translateY(-1px);
+  background: rgba(20, 15, 30, 0.95);
+}
+
+/* Left text block */
+.finisher-cat-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.finisher-cat-title {
+  font-weight: 600;
+  font-size: 0.98rem;
+}
+
+.finisher-cat-subtitle {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* Right icon “silhouette” */
+.finisher-cat-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+  opacity: 0.9;
+}
+
+/* ACTIVE STATE – looks like selected tile, glow ON the tile */
+.finisher-cat-btn.active {
+  background: linear-gradient(
+    135deg,
+    var(--accent-warm-start),
+    var(--accent-warm-end)
+  );
+  box-shadow:
+    0 18px 32px rgba(0, 0, 0, 0.95),
+    0 0 26px rgba(255, 92, 119, 0.55);
+  color: #fff;
+}
+
+.finisher-cat-btn.active .finisher-cat-subtitle {
+  color: rgba(255, 255, 255, 0.88);
+}
+
+
+/* OVERIDING
+
+
+/* =========================
+   FINISHER CARD – LAYOUT TWEAKS
+   ========================= */
+
+/* Card breathing room + nicer top spacing */
+#finisher .finisher-card {
+  padding: 1.5rem 1.55rem 1.7rem;
+}
+
+/* Header sits a bit lower from the top, and further from the content */
+.finisher-header {
+  margin-bottom: 1.6rem;
+}
+
+/* Step blocks spacing */
+.finisher-step {
+  margin-top: 1.4rem;
+}
+
+/* First step (category) a bit tighter to the header */
+.finisher-step:first-of-type {
+  margin-top: 0.6rem;
+}
+
+/* Section label “1 · PICK A CATEGORY” / “2 · PICK DIFFICULTY” */
+.finisher-step-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.42);
+  margin-bottom: 0.7rem;
+}
+
+
+/* =========================
+   CATEGORY TILES (already look good, we just tighten a bit)
+   ========================= */
+
+.finisher-category-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.finisher-category-tile {
+  padding: 0.7rem 0.85rem;
+}
+
+
+/* =========================
+   DIFFICULTY ROW – make it feel designed
+   ========================= */
+/* Collapse by default */
+#finisher-difficulties {
+  margin-top: 1.5rem;
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+  transform: translateY(4px);
+  transition:
+    max-height 0.25s ease,
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+/* Only layout controls for the chips — KEEP THIS */
+#finisher-difficulties .finisher-chip-row {
+  display: flex;
+  gap: 0.55rem;
+  flex-wrap: nowrap;
+}
+
+/* Expanded state */
+#finisher-difficulties.is-visible {
+  max-height: 140px;
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+/* Base difficulty pill */
+.finisher-diff-btn {
+  flex: 1;
+  min-width: 0;
+  border-radius: 999px;
+  padding: 0.45rem 0.8rem;
+  font-size: 0.85rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(0, 0, 0, 0.45);
+  color: var(--text-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  white-space: nowrap;
+}
+
+/* Hover/tap feedback */
+.finisher-diff-btn:active {
+  transform: translateY(1px);
+}
+
+/* Selected state – whatever JS already uses, catch it here */
+/* if your JS toggles .active, .selected, or btn-primary */
+.finisher-diff-btn.active,
+.finisher-diff-btn.selected,
+.finisher-diff-btn.btn-primary {
+  border-color: transparent;
+  background: linear-gradient(
+    135deg,
+    var(--accent-warm-start),
+    var(--accent-warm-end)
+  );
+  box-shadow: 0 0 18px rgba(255, 92, 119, 0.4);
+}
+
+
+/* =========================
+   SECTION HEAD ABOVE CARD
+   ========================= */
+
+#finisher .section-head {
+  margin-bottom: 0.8rem;   /* brings the card closer to the title */
+}
+
+
+/* -----------------------------------------
+   Finisher – section + step labels
+----------------------------------------- */
+
+/* Make the card sit a bit closer to "Today's Finisher" */
+#finisher .section-head {
+  margin-bottom: 0.6rem;
+}
+
+.finisher-card {
+  margin-top: 0.25rem;
+}
+
+/* Label above each area (Category / Effort level) */
+.finisher-step-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--text-muted);
+  margin: 0.9rem 0 0.4rem;
+}
+
+/* Visual divider before difficulty block */
+.finisher-step--difficulty {
+  margin-top: 1.4rem;
+  padding-top: 1.1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* -----------------------------------------
+   Finisher – category tiles (Conditioning, etc.)
+----------------------------------------- */
+
+.finisher-category-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+/* Whole tile is a button */
+.finisher-cat-btn {
+  width: 100%;
+  padding: 0.75rem 0.9rem;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: radial-gradient(circle at top left,
+              rgba(255, 255, 255, 0.02),
+              rgba(0, 0, 0, 0.9));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+
+  cursor: pointer;
+  color: var(--text-primary);
+  font: inherit;
+  text-align: left;
+
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    transform 0.12s ease,
+    box-shadow 0.18s ease;
+}
+
+.finisher-cat-btn:active {
+  transform: scale(0.98) translateY(1px);
+}
+
+/* Left side text block */
+.finisher-cat-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.finisher-cat-title {
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.finisher-cat-subtitle {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+/* Emoji icon on the right */
+.finisher-cat-icon {
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+/* Selected state – JS will add .active to the chosen category */
+.finisher-cat-btn.active {
+  border-color: transparent;
+  background: linear-gradient(
+      135deg,
+      var(--accent-warm-start),
+      var(--accent-warm-end)
+  );
+  box-shadow: 0 0 22px rgba(255, 92, 136, 0.55);
+}
+
+.finisher-cat-btn.active .finisher-cat-subtitle {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+
+
+
 
 /* Continuous heartbeat aura (always on when streak is active) */
 .streak-banner.streak-active::before {
@@ -3181,9 +3565,11 @@ background: linear-gradient(
             <div id="finisher-card" class="finisher-card locked">
                 <div class="finisher-header">
                     <div class="finisher-title-block">
+                        <span class="finisher-mission-label">MISSION · OPTIONAL</span> <!-- 👈 add this -->
+
                         <h3 id="finisher-title">Choose Your Finisher</h3>
                         <p id="finisher-description">
-                            Pick a category and difficulty, then hit <strong>Complete</strong> to lock in today's finisher.
+                            Pick a category and difficulty, then hit <strong>Lock In</strong> start today's Afterburn session.
                         </p>
                     </div>
 
@@ -3192,26 +3578,53 @@ background: linear-gradient(
             
                 <!-- STEP 1: CATEGORY -->
                 <div class="finisher-step">
-                    <p class="finisher-step-label">1 · Pick a category</p>
-                    <div class="finisher-chip-row">
-                        <button type="button" class="btn finisher-chip finisher-cat-btn" data-category="conditioning">
-                            Conditioning
+                    <p class="finisher-step-label">Category</p>
+                
+                    <div class="finisher-category-list">
+                        <!-- Conditioning -->
+                        <button type="button" class="finisher-cat-btn" data-category="conditioning">
+                            <div class="finisher-cat-main">
+                                <span class="finisher-cat-title">Conditioning</span>
+                                <span class="finisher-cat-subtitle">Heart, lungs, sweat.</span>
+                            </div>
+                            <span class="finisher-cat-icon">🏃‍♂️</span>
                         </button>
-                        <button type="button" class="btn finisher-chip finisher-cat-btn" data-category="bodyweight">
-                            Bodyweight
+                
+                        <!-- Bodyweight -->
+                        <button type="button" class="finisher-cat-btn" data-category="bodyweight">
+                            <div class="finisher-cat-main">
+                                <span class="finisher-cat-title">Bodyweight</span>
+                                <span class="finisher-cat-subtitle">Push-ups, dips, holds.</span>
+                            </div>
+                            <span class="finisher-cat-icon">🤸‍♂️</span>
                         </button>
-                        <button type="button" class="btn finisher-chip finisher-cat-btn" data-category="pump">
-                            Pump
+                
+                        <!-- Pump -->
+                        <button type="button" class="finisher-cat-btn" data-category="pump">
+                            <div class="finisher-cat-main">
+                                <span class="finisher-cat-title">Pump</span>
+                                <span class="finisher-cat-subtitle">High reps, big burn.</span>
+                            </div>
+                            <span class="finisher-cat-icon">💪</span>
                         </button>
-                        <button type="button" class="btn finisher-chip finisher-cat-btn" data-category="recovery">
-                            Recovery
+                
+                        <!-- Recovery -->
+                        <button type="button" class="finisher-cat-btn" data-category="recovery">
+                            <div class="finisher-cat-main">
+                                <span class="finisher-cat-title">Recovery</span>
+                                <span class="finisher-cat-subtitle">Mobility, breathing, chill.</span>
+                            </div>
+                            <span class="finisher-cat-icon">🧘‍♂️</span>
                         </button>
                     </div>
                 </div>
+
             
                 <!-- STEP 2: DIFFICULTY -->
-                <div class="finisher-step" id="finisher-difficulties">
-                    <p class="finisher-step-label">2 · Pick difficulty</p>
+                <!-- STEP 2: DIFFICULTY -->
+                <div class="finisher-step finisher-step--difficulty" id="finisher-difficulties">
+                    <p class="finisher-step-label">Afterburn Level</p>
+
                     <div class="finisher-chip-row">
                         <button type="button" class="btn finisher-chip finisher-diff-btn" data-difficulty="easy">
                             Easy
@@ -3227,8 +3640,9 @@ background: linear-gradient(
             
                 <!-- STATUS / EXPLANATION -->
                 <p id="finisher-status" class="finisher-status-helper">
-                    Select a category first, then choose difficulty to see your finisher and any
-                    Rest Token reward.
+                    Easy = 0
+                    Standard = .25
+                    Hard = 1.0
                 </p>
             
                 <!-- ACTIONS -->
