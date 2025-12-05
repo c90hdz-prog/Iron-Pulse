@@ -36,36 +36,32 @@
 
 --font-main: 'Urbanist', sans-serif;
 
+  /* ====== BRAND ACCENTS / THEME TOKENS ====== */
+  /* ------------------------------------------ */
 
+  /* Core accent palette (hex) */
+  --accent-primary:   #0d0b82;   /* deep indigo */
+  --accent-secondary: #aaa8ff;   /* soft lilac */
+  --accent-yellow:    #f2ecff;   /* pale highlight */
 
-/* ====== BRAND ACCENTS ====== */
-/*-----------------------------------------------------------------------------*/
+  --bg-page:    #020204;
+  --bg-top-glow: rgba(100, 100, 255, 0.22);
 
-  --aura-strong: rgba(111, 99, 255, 0.55);  /* based off accent-primary */
-  --aura-soft:  rgba(40, 160, 255, 0.45);  /* based off accent-secondary */
+  --surface-main:   #0e0d12;
+  --surface-subtle: #15141a;
 
-  --accent-primary: #0d0b82;
-  --accent-secondary: #AAA8FF;
-  --accent-yellow: #F2ECFF;
+  --accent-warm-start:       #1a17c0;
+  --accent-warm-end:         #a29cff;
+  --accent-warm-soft-start:  rgba(26, 23, 192, 0.35);  /* from warm start */
+  --accent-warm-soft-end:    rgba(162, 156, 255, 0.28);
 
-  --bg-page: #020204;
-  --bg-top-glow: rgba(100,100,255,0.22);
+  --text-primary: rgba(245, 245, 255, 0.95);
+  --text-muted:   rgba(200, 200, 220, 0.55);
+  --text-accent:  #d2ceff;
 
-  --surface-main: #0E0D12;
-  --surface-subtle: #15141A;
+  --card-border: rgba(150, 150, 255, 0.08);
 
-  --accent-warm-start: #1a17c0;
-  --accent-warm-end: #A29CFF;
-  --accent-warm-soft-start: rgba(110,107,255,0.35);
-  --accent-warm-soft-end: #a096ff47;
-
-  --text-primary: rgba(245,245,255,0.95);
-  --text-muted: rgba(200,200,220,0.55);
-  --text-accent: #D2CEFF;
-
-  --card-border: rgba(150,150,255,0.08);
-
-    /* Focus modal surfaces / borders */
+  /* Neutral / focus surfaces */
   --surface-focus-row-start: #121623;
   --surface-focus-row-end:   #0c0e16;
   --surface-focus-pill:      rgba(9, 12, 26, 0.96);
@@ -73,46 +69,71 @@
   --border-soft:        rgba(148, 163, 184, 0.28);
   --border-soft-strong: rgba(148, 163, 184, 0.40);
 
-  /* Progress orange for dots / completed set row */
-  --accent-progress:       #1a17c0;
-  --accent-progress-soft:  #a29cff(249, 115, 22, 0.7);
-  --accent-progress-soft2: #a096ff47(249, 115, 22, 0.55);
+  /* === Accent RGB helpers (for aura / glows) === */
+  --accent-rgb:             13, 11, 130;   /* from --accent-primary */
+  --accent-2-rgb:           170, 168, 255; /* from --accent-secondary */
+  --accent-warm-start-rgb:  26, 23, 192;   /* from --accent-warm-start */
 
-  /* === Shadow tokens (theme aware) ==================== */
---shadow-soft:           0 10px 26px rgba(0, 0, 0, 0.55);
---shadow-medium:         0 18px 40px rgba(0, 0, 0, 0.75);
---shadow-strong:         0 24px 50px rgba(0, 0, 0, 0.88);
+  /* Aura / glow tokens (theme-aware) */
+  --aura-soft:   rgba(var(--accent-rgb), 0.18);
+  --aura-strong: rgba(var(--accent-rgb), 0.65);
+  --aura-glow:   rgba(var(--accent-2-rgb), 0.50);
+  --aura-border: rgba(var(--accent-warm-start-rgb), 0.90);
 
-/* Accent glows based on your aura colors */
---shadow-accent-soft:    0 16px 32px var(--aura-soft);
---shadow-accent-strong:  0 18px 38px var(--aura-strong);
+  /* Progress / dots / completed row */
+  --accent-progress:       var(--accent-warm-start);
+  --accent-progress-soft:  rgba(var(--accent-warm-start-rgb), 0.70);
+  --accent-progress-soft2: rgba(162, 156, 255, 0.55); /* from --accent-warm-end */
 
-/* Progress / streak glows */
---shadow-progress:       0 0 12px var(--accent-progress-soft);
---shadow-progress-strong:0 0 20px var(--accent-progress-soft2);
+  /* STREAK COLORS (feel free to tweak later) */
+  --streak-grad-start: rgba(var(--accent-rgb), 0.7);
+  --streak-grad-end:   rgba(var(--accent-2-rgb), 0.7);
 
-/* STREAK COLORS*/
---streak-hot-1: #5b8dff;
---streak-hot-2: #9ea8ff;
---streak-hot-glow: rgba(158, 168, 255, 0.9);
+  --streak-hot-1:      #5b8dff;
+  --streak-hot-2:      #9ea8ff;
+  --streak-hot-glow:   rgba(158, 168, 255, 0.9);
+
+  /* Shadow tokens */
+  --shadow-soft:    0 10px 26px rgba(0, 0, 0, 0.55);
+  --shadow-medium:  0 18px 40px rgba(0, 0, 0, 0.75);
+  --shadow-strong:  0 24px 50px rgba(0, 0, 0, 0.88);
+
+  --shadow-accent-soft:   0 16px 32px var(--aura-soft);
+  --shadow-accent-strong: 0 18px 38px var(--aura-strong);
+
+  --shadow-progress:        0 0 12px var(--accent-progress-soft);
+  --shadow-progress-strong: 0 0 20px var(--accent-progress-soft2);
 
 
 
-/*--------------------------------------------------------------------------
-  /* Back-compat button gradient */
+  /* Progress / dots / completed row */
+  --accent-progress:       var(--accent-warm-start);
+  --accent-progress-soft:  rgba(var(--accent-warm-start-rgb), 0.70);
+  --accent-progress-soft2: rgba(162, 156, 255, 0.55); /* from --accent-warm-end */
+
+  /* NEW: weekly dots theme (can tweak later) */
+--weekly-dot-off: rgba(255, 255, 255, 0.20);
+--weekly-dot-border: rgba(255, 255, 255, 0.35);
+  --weekly-dot-on:        var(--accent-progress);     /* your warm accent */
+  --weekly-dot-on-glow:   var(--accent-progress-soft2);
+
+
+
+  /* Back-compat gradient aliases */
   --accent:   var(--accent-primary);
   --accent-2: var(--accent-secondary);
 
-  /* RADIUS / SHADOW */
-  --radius-card:         24px;
-  --radius-pill:         999px;
-  --shadow-soft:         0 22px 40px rgba(0, 0, 0, 0.8);
+  /* Radius */
+  --radius-card: 24px;
+  --radius-pill: 999px;
 
-    /* Legacy aliases (safe to leave) */
-  --bg-dark:   #040405;
-  --bg-panel:  var(--surface-main);
-  --glass:     rgba(255, 255, 255, 0.05);
+  /* Legacy aliases (safe to leave) */
+  --bg-dark:  #040405;
+  --bg-panel: var(--surface-main);
+  --glass:    rgba(255, 255, 255, 0.05);
 }
+
+
 
 
 
@@ -127,6 +148,8 @@ html,
 body {
   max-width: 100%;
   overflow-x: hidden;
+  overscroll-behavior: none;
+
 }
 
 /* ===========================================================
@@ -164,12 +187,6 @@ textarea {
   border: none;
   -webkit-appearance: none;
   -moz-appearance: none;
-}
-
-/* 5) Prevent weird overscroll glow / scroll chaining (optional) */
-html,
-body {
-  overscroll-behavior: none;
 }
 
 
@@ -595,24 +612,13 @@ nav {
 }
     
 /* Week 1 */
-.emblem-weekly-1::before {
-    background: radial-gradient(circle, rgba(255,120,80,0.18), rgba(255,80,60,0.05));
-    opacity: 0.6;
-    filter: blur(10px);
-}
-
-/* Week 2 */
-.emblem-weekly-2::before {
-    background: radial-gradient(circle, rgba(255,150,100,0.22), rgba(255,80,50,0.07));
-    opacity: 0.75;
-    filter: blur(16px);
-}
-
-/* Week 3 */
+.emblem-weekly-1::before,
+.emblem-weekly-2::before,
 .emblem-weekly-3::before {
-    background: radial-gradient(circle, rgba(255,180,120,0.26), rgba(255,80,40,0.09));
-    opacity: 0.9;
-    filter: blur(22px);
+  background:
+    radial-gradient(circle,
+      var(--aura-soft),
+      transparent 70%);
 }
 
 @keyframes emblem-shimmer {
@@ -622,329 +628,252 @@ nav {
 }
 
 /* Month 1 */
-.emblem-monthly-1::before {
-    background: radial-gradient(circle, rgba(255,200,80,0.32), rgba(255,120,40,0.12));
-    opacity: 1;
-    animation: emblem-shimmer 4s ease-in-out infinite;
-}
-
-/* Month 2 */
-.emblem-monthly-2::before {
-    background: radial-gradient(circle, rgba(255,210,90,0.36), rgba(255,120,30,0.14));
-    opacity: 1;
-    animation: emblem-shimmer 3.4s ease-in-out infinite;
-}
-
-/* Month 3 */
+.emblem-monthly-1::before,
+.emblem-monthly-2::before,
 .emblem-monthly-3::before {
-    background: radial-gradient(circle, rgba(255,220,90,0.40), rgba(255,110,20,0.16));
-    opacity: 1;
-    animation: emblem-shimmer 3s ease-in-out infinite;
+  background:
+    radial-gradient(circle,
+      var(--aura-strong),
+      transparent 70%);
 }
+
 @keyframes emblem-quarter-pulse {
     0%   { filter: blur(20px) brightness(1.1); }
     50%  { filter: blur(26px) brightness(1.55); }
     100% { filter: blur(20px) brightness(1.1); }
 }
 
-/* Quarter 1 */
 .emblem-quarterly-1::before {
-    background: radial-gradient(circle, rgba(255,160,50,0.40), rgba(255,80,20,0.12));
-    opacity: 1;
-    animation: emblem-quarter-pulse 2.4s ease-in-out infinite;
+  background: radial-gradient(circle, var(--streak-quarter-aura-1), transparent 70%);
+  opacity: 1;
+  animation: emblem-quarter-pulse 2.4s ease-in-out infinite;
 }
 
-/* Quarter 2 */
 .emblem-quarterly-2::before {
-    background: radial-gradient(circle, rgba(255,180,70,0.46), rgba(255,80,10,0.16));
-    opacity: 1;
-    animation: emblem-quarter-pulse 2s ease-in-out infinite;
+  background: radial-gradient(circle, var(--streak-quarter-aura-1), transparent 70%);
+  opacity: 1;
+  animation: emblem-quarter-pulse 2s ease-in-out infinite;
 }
 
-/* Quarter 3 */
 .emblem-quarterly-3::before {
-    background: radial-gradient(circle, rgba(255,200,80,0.52), rgba(255,70,0,0.18));
-    opacity: 1;
-    animation: emblem-quarter-pulse 1.7s ease-in-out infinite;
+  background: radial-gradient(circle, var(--streak-quarter-aura-1), transparent 70%);
+  opacity: 1;
+  animation: emblem-quarter-pulse 1.7s ease-in-out infinite;
 }
+
+/* Annual – lava flow, but via tokens */
 @keyframes emblem-annual-burn {
-    0%   { filter: blur(24px) brightness(1); transform: scale(1); }
-    50%  { filter: blur(32px) brightness(1.7); transform: scale(1.03); }
-    100% { filter: blur(24px) brightness(1); transform: scale(1); }
+  0%   { filter: blur(24px) brightness(1);   transform: scale(1); }
+  50%  { filter: blur(32px) brightness(1.7); transform: scale(1.03); }
+  100% { filter: blur(24px) brightness(1);   transform: scale(1); }
 }
 
-.emblem-annual-1::before {
-    background: radial-gradient(circle, rgba(255,220,90,0.65), rgba(255,100,0,0.22));
-    opacity: 1;
-    animation: emblem-annual-burn 1.8s ease-in-out infinite;
-}
-
+.emblem-annual-1::before,
 .emblem-annual-2::before {
-    background: radial-gradient(circle, rgba(255,240,110,0.75), rgba(255,80,0,0.28));
-    opacity: 1;
-    animation: emblem-annual-burn 1.5s ease-in-out infinite;
+  background: radial-gradient(circle, var(--streak-annual-lava-2), transparent 72%);
+  opacity: 1;
+  animation: emblem-annual-burn 1.8s ease-in-out infinite;
 }
+
+/* Legendary – keep “white hot” but drive lava via tokens */
 @keyframes emblem-legendary-flare {
-    0%   { filter: blur(28px) brightness(1) hue-rotate(0deg); }
-    50%  { filter: blur(40px) brightness(2) hue-rotate(25deg); }
-    100% { filter: blur(28px) brightness(1) hue-rotate(0deg); }
+  0%   { filter: blur(28px) brightness(1)   hue-rotate(0deg); }
+  50%  { filter: blur(40px) brightness(2)   hue-rotate(25deg); }
+  100% { filter: blur(28px) brightness(1)   hue-rotate(0deg); }
 }
 
 .emblem-legendary-1::before {
-    background:
-        radial-gradient(circle, rgba(255,255,255,0.85), rgba(255,120,0,0.35)),
-        radial-gradient(circle, rgba(255,80,0,0.45), rgba(120,0,0,0.20));
-    opacity: 1;
-    animation: emblem-legendary-flare 1.2s ease-in-out infinite;
+  background:
+    radial-gradient(circle, rgba(255,255,255,0.85), transparent 55%),
+    radial-gradient(circle, var(--streak-annual-lava-3), transparent 80%);
+  opacity: 1;
+  animation: emblem-legendary-flare 1.2s ease-in-out infinite;
 }
-/* DEBUG: make Legendary impossible to miss */
+
+/* DEBUG Legendary streak background – still fine to be loud */
 .emblem-legendary-1 .streak-bg-layer {
-    background-image:
-        repeating-linear-gradient(
-            45deg,
-            rgba(255, 255, 255, 0.3),
-            rgba(255, 255, 255, 0.3) 4px,
-            rgba(255, 120, 0, 0.9) 4px,
-            rgba(255, 120, 0, 0.9) 8px
-        ),
-        radial-gradient(circle at center,
-            rgba(0, 0, 0, 0.75) 0%,
-            rgba(0, 0, 0, 0.5) 40%,
-            transparent 70%);
-    background-size: 40px 40px, auto;
+  background-image:
+    repeating-linear-gradient(
+      45deg,
+      rgba(255, 255, 255, 0.3),
+      rgba(255, 255, 255, 0.3) 4px,
+      var(--streak-annual-lava-3) 4px,
+      var(--streak-annual-lava-3) 8px
+    ),
+    radial-gradient(circle at center,
+      rgba(0, 0, 0, 0.75) 0%,
+      rgba(0, 0, 0, 0.5) 40%,
+      transparent 70%);
+  background-size: 40px 40px, auto;
 }
 
-/* Power-up shell (scale + glow) */
+/* =========================
+   STREAK POWERUP (BANNER BLAST)
+   ========================= */
+
 @keyframes streakPowerShell {
-    0% {
-        transform: scale(1);
-        box-shadow: 0 0 0 0 rgba(255, 120, 80, 0.0);
-    }
-    40% {
-        transform: scale(1.03);
-        box-shadow: 0 0 42px 0 rgba(255, 120, 80, 0.9);
-    }
-    80% {
-        transform: scale(1.01);
-        box-shadow: 0 0 26px 0 rgba(255, 120, 80, 0.6);
-    }
-    100% {
-        transform: scale(1);
-        box-shadow: 0 0 16px 0 rgba(255, 120, 80, 0.3);
-    }
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+  }
+  40% {
+    transform: scale(1.03);
+    box-shadow:
+      0 0 42px 0 var(--shadow-progress-strong);
+  }
+  80% {
+    transform: scale(1.01);
+    box-shadow:
+      0 0 26px 0 var(--shadow-progress);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 16px 0 var(--shadow-progress);
+  }
 }
 
-/* Radiating energy arcs */
 @keyframes streakPowerRays {
-    0% {
-        transform: scale(0.9) rotate(0deg);
-        opacity: 0;
-    }
-    30% {
-        opacity: 1;
-    }
-    100% {
-        transform: scale(1.18) rotate(40deg);
-        opacity: 0;
-    }
+  0% {
+    transform: scale(0.9) rotate(0deg);
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.18) rotate(40deg);
+    opacity: 0;
+  }
 }
-
 
 .streak-emblem-wrapper {
-    flex-shrink: 0;
+  flex-shrink: 0;
 }
 
 .streak-emblem.rankup-emblem-preview {
-    width: 40px;
-    height: 40px;
-    border-radius: 12px;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.9));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    box-shadow: 0 0 18px rgba(255, 120, 80, 0.7);
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.9));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-shadow: var(--shadow-progress-strong);
 }
-/* Base Iron Plate */
 .streak-emblem {
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    box-shadow: 0 0 12px rgba(0, 0, 0, 0.8);
-    overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.8);
+  overflow: hidden;
 }
 
 /* 1–3 weeks: dull steel plate */
 .streak-emblem.emblem-weekly-1,
 .streak-emblem.emblem-weekly-2,
 .streak-emblem.emblem-weekly-3 {
-    background:
-        radial-gradient(circle at 30% 15%, rgba(255,255,255,0.18), rgba(40,40,48,1)),
-        linear-gradient(145deg, #121319, #050509);
+  background:
+    radial-gradient(circle at 30% 15%, rgba(255,255,255,0.18), rgba(40,40,48,1)),
+    linear-gradient(145deg, #121319, #050509);
 }
 
-/* 1–3 months: reinforced shield, brighter rim */
+/* 1–3 months: reinforced shield, brighter rim (glow now uses streak-hot token) */
 .streak-emblem.emblem-monthly-1,
 .streak-emblem.emblem-monthly-2,
 .streak-emblem.emblem-monthly-3 {
-    background:
-        radial-gradient(circle at 30% 15%, rgba(255,255,255,0.22), rgba(40,40,48,1)),
-        linear-gradient(145deg, #20222e, #0a0b10);
-    box-shadow:
-        0 0 14px rgba(255, 180, 120, 0.6),
-        0 0 24px rgba(0, 0, 0, 0.8);
+  background:
+    radial-gradient(circle at 30% 15%, rgba(255,255,255,0.22), rgba(40,40,48,1)),
+    linear-gradient(145deg, #20222e, #0a0b10);
+  box-shadow:
+    0 0 14px var(--streak-hot-glow),
+    0 0 24px rgba(0, 0, 0, 0.8);
 }
 
 /* 4–9 months: reaper-ish aggressive metal */
 .streak-emblem.emblem-quarterly-1,
 .streak-emblem.emblem-quarterly-2,
 .streak-emblem.emblem-quarterly-3 {
-    background:
-        radial-gradient(circle at 30% 15%, rgba(255,255,255,0.24), rgba(30,30,40,1)),
-        linear-gradient(150deg, #3b1d1f, #060309);
-    box-shadow:
-        0 0 18px rgba(255, 120, 80, 0.8),
-        0 0 30px rgba(0, 0, 0, 0.9);
+  background:
+    radial-gradient(circle at 30% 15%, rgba(255,255,255,0.24), rgba(30,30,40,1)),
+    linear-gradient(150deg, #3b1d1f, #060309);
+  box-shadow:
+    0 0 18px var(--streak-hot-glow),
+    0 0 30px rgba(0, 0, 0, 0.9);
 }
 
 /* 1–2 years: molten skull shield */
 .streak-emblem.emblem-annual-1,
 .streak-emblem.emblem-annual-2 {
-    background:
-        radial-gradient(circle at 25% 20%, rgba(255,255,255,0.3), rgba(40,10,10,1)),
-        linear-gradient(150deg, #5b1b16, #0a0202);
-    box-shadow:
-        0 0 20px rgba(255, 160, 90, 0.9),
-        0 0 36px rgba(0, 0, 0, 1);
+  background:
+    radial-gradient(circle at 25% 20%, rgba(255,255,255,0.3), rgba(40,10,10,1)),
+    linear-gradient(150deg, #5b1b16, #0a0202);
+  box-shadow:
+    0 0 20px var(--streak-hot-glow),
+    0 0 36px rgba(0, 0, 0, 1);
 }
 
 /* 2+ years: legendary – cracked lava skull */
 .streak-emblem.emblem-legendary-1,
 .streak-emblem.emblem-legendary-2,
 .streak-emblem.emblem-legendary-3 {
-    background:
-        radial-gradient(circle at 25% 20%, rgba(255,255,255,0.36), rgba(50,10,0,1)),
-        linear-gradient(140deg, #7a1300, #ff6a00, #f6c343);
-    box-shadow:
-        0 0 26px rgba(255, 200, 120, 1),
-        0 0 50px rgba(255, 80, 0, 0.9);
+  background:
+    radial-gradient(circle at 25% 20%, rgba(255,255,255,0.36), rgba(50,10,0,1)),
+    linear-gradient(140deg, #7a1300, #ff6a00, #f6c343);
+  box-shadow:
+    0 0 26px var(--streak-hot-glow),
+    0 0 50px rgba(0, 0, 0, 0.9);
 }
-
 
 .streak-emblem-icon {
-    font-size: 1.4rem;
-    position: relative;
-    z-index: 1;
+  font-size: 1.4rem;
+  position: relative;
+  z-index: 1;
 }
 
+
+.streak-banner.streak-powerup::after {
+  content: "";
+  position: absolute;
+  inset: -12px;
+  border-radius: 999px;
+  background:
+    conic-gradient(
+      from 0deg,
+      rgba(255, 255, 255, 0.22),
+      var(--streak-reactive-amber-3),
+      rgba(255, 255, 255, 0.0),
+      rgba(255, 255, 255, 0.22)
+    );
+  mix-blend-mode: screen;
+  pointer-events: none;
+  animation: streakPowerRays 0.9s ease-out forwards;
+  z-index: -1;
+}
+
+/* Banner “powerup” shell (when streak jumps tier) */
 .streak-banner.streak-powerup {
-    animation: streakPowerShell 0.8s ease-out;
-    position: relative;
+  animation: streakPowerShell 0.8s ease-out;
+  position: relative;
 }
 
 .streak-banner.streak-powerup::after {
-    content: "";
-    position: absolute;
-    inset: -12px;
-    border-radius: 999px;
-    background:
-        conic-gradient(
-            from 0deg,
-            rgba(255, 255, 255, 0.22),
-            rgba(255, 140, 80, 0.6),
-            rgba(255, 80, 40, 0.0),
-            rgba(255, 255, 255, 0.22)
-        );
-    mix-blend-mode: screen;
-    pointer-events: none;
-    animation: streakPowerRays 0.9s ease-out forwards;
-    z-index: -1;
-}
-@keyframes rankOverlayFadeIn {
-    0% {
-        opacity: 0;
-        transform: translateY(20px) scale(0.96);
-    }
-    100% {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
-@keyframes rankOverlayGlowSweep {
-    0% {
-        transform: translateX(-120%);
-        opacity: 0;
-    }
-    30% {
-        opacity: 0.45;
-    }
-    100% {
-        transform: translateX(120%);
-        opacity: 0;
-    }
-}
-
-.rankup-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 9999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 1.5rem;
-    background:
-        radial-gradient(circle at top, rgba(255, 120, 60, 0.2), transparent),
-        rgba(0, 0, 0, 0.88);
-    backdrop-filter: blur(4px);
-    animation: rankOverlayFadeIn 0.25s ease-out;
-}
-
-.rankup-inner {
-    position: relative;
-    max-width: 380px;
-    width: 100%;
-    padding: 1.75rem 1.5rem 1.5rem;
-    border-radius: 18px;
-    background: linear-gradient(
-        145deg,
-        rgba(15, 15, 20, 0.96),
-        rgba(24, 19, 18, 0.98)
+  content: "";
+  position: absolute;
+  inset: -12px;
+  border-radius: 999px;
+  background:
+    conic-gradient(
+      from 0deg,
+      rgba(255, 255, 255, 0.22),
+      var(--streak-reactive-amber-3),
+      rgba(255, 255, 255, 0.0),
+      rgba(255, 255, 255, 0.22)
     );
-    border: 1px solid rgba(255, 180, 120, 0.2);
-    box-shadow:
-        0 20px 60px rgba(0, 0, 0, 0.85),
-        0 0 40px rgba(255, 120, 80, 0.4);
-    text-align: center;
-    overflow: hidden;
+  mix-blend-mode: screen;
+  pointer-events: none;
+  animation: streakPowerRays 0.9s ease-out forwards;
+  z-index: -1;
 }
 
-/* moving light sweep inside the card */
-.rankup-inner::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-        120deg,
-        transparent,
-        rgba(255, 255, 255, 0.16),
-        transparent
-    );
-    opacity: 0;
-    pointer-events: none;
-    animation: rankOverlayGlowSweep 1.6s ease-out forwards;
-}
-
-.rankup-emblem-preview {
-    width: 88px;
-    height: 88px;
-    margin: 0 auto 1rem;
-    border-radius: 26px;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.9));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    box-shadow: 0 0 32px rgba(255, 120, 80, 0.7);
-}
 
 /* we reuse the emblem aura classes here too */
 .rankup-emblem-preview.emblem-weekly-1::before,
@@ -987,30 +916,39 @@ nav {
     color: var(--text-muted, #cfcfd6);
 }
 
-/* Base streak banner */
+
 /* Base streak banner */
 .streak-banner {
-    position: relative;
-    margin-bottom: 1rem;
-    padding: 0.75rem 1rem;
-    border-radius: 18px;
-    background: linear-gradient(135deg, rgba(255, 81, 47, 0.18), rgba(246, 195, 67, 0.12));
-    border: 1px solid var(--card-border);
-    font-size: 0.85rem;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    flex-wrap: wrap;
-    color: var(--text-primary);
-    overflow: hidden;          /* ✅ keep FX inside card */
-    --emblem-strength: 0;
+  position: relative;
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 18px;
+
+  /* ✅ Now fully theme-driven */
+  background: linear-gradient(
+    135deg,
+    var(--streak-grad-start),
+    var(--streak-grad-end)
+  );
+
+  border: 1px solid var(--card-border);
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  color: var(--text-primary);
+  overflow: hidden;
+  --emblem-strength: 0;
 }
 
-/* 🔥 Make sure all “real” content sits above the FX */
+
+/* keep real content above FX layer */
 .streak-banner > *:not(.streak-bg-layer) {
-    position: relative;
-    z-index: 1;
+  position: relative;
+  z-index: 1;
 }
+
 
 /* One background layer that we re-skin per tier */
 .streak-bg-layer {
@@ -1101,22 +1039,23 @@ nav {
 
 
 .streak-progress {
-    margin-top: 0.35rem;
-    width: 100%;
-    height: 0.4rem;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.08);
-    overflow: hidden;
+  margin-top: 0.35rem;
+  width: 100%;
+  height: 0.4rem;
+  border-radius: 999px;
+  background: var(--streak-progress-bg);
+  overflow: hidden;
 }
 
 .streak-progress-fill {
-    height: 100%;
-    width: 0;
-    border-radius: 999px;
-    background: linear-gradient(90deg, var(--accent), var(--accent-yellow));
-
-    transition: width 0.35s ease-out;
+  height: 100%;
+  width: 0;
+  border-radius: inherit;
+  background: var(--streak-progress-fill);
+  box-shadow: var(--shadow-progress);
+  transition: width 0.35s ease-out;
 }
+
 
 
 
@@ -1403,16 +1342,15 @@ footer {
 
 
 
-/* Inner flash */
 .day-complete-boost::after {
-  background: radial-gradient(
-    circle,
-    var(--accent-progress-soft),
-    transparent 60%
-  );
+  content: "";
+  position: absolute;
+  inset: -22px;
+  border-radius: inherit;
+  border: 3px solid var(--aura-soft);
   opacity: 0;
-  transform: scale(0.7);
-  animation: animeFlash 0.45s ease-out forwards;
+  transform: scale(0.9);
+  animation: animeRing 1.8s ease-out 0.15s forwards;
 }
 
 @keyframes animeRing {
@@ -1443,22 +1381,6 @@ footer {
     opacity: 0;
     transform: scale(1.05);
   }
-}
-
-
-@keyframes animeFlash {
-    0% {
-        opacity: 0.95;
-        transform: scale(0.7);
-    }
-    40% {
-        opacity: 0.8;
-        transform: scale(1);
-    }
-    100% {
-        opacity: 0;
-        transform: scale(1.05);
-    }
 }
 
 
@@ -1575,6 +1497,77 @@ footer {
     100% {
         box-shadow: 0 0 0 16px rgba(246, 195, 67, 0);
     }
+}
+
+/* Weekly focus card base (you already have workout-card) */
+.weekly-focus-card {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Dots row above the title */
+.weekly-goal-dots {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 0.9rem;
+}
+
+/* Individual dot (off state) */
+.weekly-goal-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: var(--weekly-dot-off);
+  border: 1px solid var(--weekly-dot-border);
+  opacity: 0.6;
+  box-shadow: none;
+  transform: translateY(0);
+  transition:
+    background 0.18s ease,
+    opacity 0.18s ease,
+    box-shadow 0.2s ease,
+    transform 0.18s ease;
+}
+
+/* Active / completed dot */
+.weekly-goal-dot--active {
+  background: var(--weekly-dot-on);
+  opacity: 1;
+  box-shadow: 0 0 14px var(--weekly-dot-on-glow);
+  transform: translateY(-1px); /* tiny float for “lit” */
+}
+
+/* Existing header/summary styles you started on */
+.weekly-focus-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.weekly-focus-title {
+  margin: 0;
+}
+
+.weekly-focus-days {
+  color: var(--accent-yellow);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.weekly-focus-summary {
+  color: var(--text-muted);
+  margin: 0.75rem 0 0;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.weekly-progress-text {
+  color: var(--text-muted);
+  margin: 0.35rem 0 0;
+  font-size: 0.9rem;
 }
 
 .streak-body {
@@ -1862,11 +1855,9 @@ footer {
     var(--accent-primary),
     var(--accent-secondary)
   );
-  box-shadow: 0 10px 24px rgba(110, 107, 255, 0.4);
+  box-shadow: var(--shadow-accent-soft);
 }
-
 /* === LOCKED STATE ================================================ */
-
 .finisher-card.locked {
   opacity: 0.9;
 }
@@ -2054,18 +2045,18 @@ footer {
 
 /* Continuous heartbeat aura (always on when streak is active) */
 .streak-banner.streak-active::before {
-    content: "";
-    position: absolute;
-    inset: -4px;
-    border-radius: inherit;
-    background:
-        radial-gradient(circle at 0% 50%, rgba(255, 81, 47, 0.35), transparent 60%),
-        radial-gradient(circle at 100% 50%, rgba(221, 36, 118, 0.35), transparent 60%);
-    opacity: calc(0.25 + 0.6 * var(--emblem-strength));
-    filter: blur(calc(6px + 10px * var(--emblem-strength)));
-    pointer-events: none;
-    z-index: -1;
-    animation: streakAura 3.2s ease-in-out infinite;
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: inherit;
+  background:
+    radial-gradient(circle at 0% 50%, var(--streak-grad-start), transparent 60%),
+    radial-gradient(circle at 100% 50%, var(--streak-grad-end),   transparent 60%);
+  opacity: calc(0.25 + 0.6 * var(--emblem-strength));
+  filter: blur(calc(6px + 10px * var(--emblem-strength)));
+  pointer-events: none;
+  z-index: -1;
+  animation: streakAura 3.2s ease-in-out infinite;
 }
 
 /* Heartbeat-style pulsing */
@@ -2408,13 +2399,13 @@ footer {
 
 
 
-/* Aura when streak is active */
-/* Aura when streak is active */
+/* Aura when streak is active – now uses streak tokens */
 .streak-banner.streak-active {
   box-shadow:
-    0 0 calc(10px + 12px * var(--emblem-strength)) var(--streak-hot-glow),
-    0 0 calc(20px + 22px * var(--emblem-strength)) var(--aura-strong);
+    0 0 calc(10px + 12px * var(--emblem-strength)) var(--streak-aura-soft),
+    0 0 calc(20px + 22px * var(--emblem-strength)) var(--streak-aura-strong);
 }
+
 
 
 /* === Weekly Volume Card === */
@@ -2497,21 +2488,17 @@ footer {
   color: var(--text-muted);
 }
 
-/* === Level-up explosion effect === */
 @keyframes volumeBarExplode {
   0% {
-    transform: scaleX(1);
-    box-shadow: 0 0 10px rgba(255, 160, 90, 0.7);
+    box-shadow: 0 0 10px var(--accent-progress-soft);
   }
   40% {
-    transform: scaleX(1.04);
     box-shadow:
-      0 0 20px rgba(255, 200, 120, 0.9),
-      0 0 40px rgba(255, 120, 60, 0.7);
+      0 0 20px var(--accent-progress-soft2),
+      0 0 40px var(--aura-strong);
   }
   100% {
-    transform: scaleX(1);
-    box-shadow: 0 0 12px rgba(255, 160, 90, 0.6);
+    box-shadow: 0 0 12px var(--accent-progress-soft);
   }
 }
 
@@ -2651,15 +2638,6 @@ footer {
   gap: 0.4rem;
 }
 
-.focus-set-badge {
-  width: 32px;
-  height: 32px;
-  border-radius: 999px;
-  border: none;
-  background: rgba(148, 163, 184, 0.25);
-  color: #f9fafb;
-  font-size: 1rem;
-}
 
 .focus-set-count {
   min-width: 1.75rem;
@@ -2668,18 +2646,8 @@ footer {
 }
 
 
-.focus-subtext {
-  margin: 0;
-  font-size: 0.86rem;
-  color: #9ca3af;
-}
-
 
 /* Weight block */
-
-
-
-
 
 .focus-set-toggle {
   font-size: 0.78rem;
@@ -2767,15 +2735,7 @@ footer {
   gap: 0.35rem;
 }
 
-.focus-set-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 999px;
-  border: none;
-  padding: 0;
-  background: rgba(148, 163, 184, 0.4);
-  box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.5);
-}
+
 
 .focus-set-dot.active {
   box-shadow:
@@ -2830,10 +2790,7 @@ footer {
   box-shadow: 0 0 0 1px var(--accent-progress-soft);
 }
 
-.focus-weight-unit {
-  font-size: 0.9rem;
-  color: var(--text-muted);
-}
+
 
 .focus-weight-hint {
   margin: 0.35rem 0 0;
@@ -2890,18 +2847,6 @@ footer {
   color: #9ca3af;
 }
 
-.focus-reps-btn {
-  border: none;
-  width: 24px;
-  height: 24px;
-  border-radius: 999px;
-  background: rgba(15, 23, 42, 0.95);
-  color: #f9fafb;
-  font-size: 1rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
 
 .focus-reps-count {
   min-width: 1.8rem;
@@ -2964,10 +2909,24 @@ footer {
   font-weight: 700;
 }
 
-.focus-subtext {
-  margin: 0 0 0.9rem;
-  font-size: 0.9rem;
+.focus-subtext,
+.focus-weight-unit {
   color: var(--text-muted);
+}
+
+.focus-set-badge {
+  background: rgba(148, 163, 184, 0.25); /* could make a --neutral-chip-bg later */
+  color: var(--text-primary);
+}
+
+.focus-set-dot {
+  background: rgba(148, 163, 184, 0.4);   /* optional: create --neutral-dot-bg */
+  box-shadow: 0 0 0 1px var(--border-soft-strong);
+}
+
+.focus-reps-btn {
+  background: var(--surface-focus-pill);
+  color: var(--text-primary);
 }
 
 
@@ -3336,9 +3295,10 @@ footer {
 }
 
 .split-skip-btn:hover {
-  background: rgba(255, 81, 47, 0.12);
-  border-color: rgba(255, 81, 47, 0.6);
+  background: rgba(var(--accent-warm-start-rgb), 0.18);
+  border-color: rgba(var(--accent-warm-start-rgb), 0.65);
 }
+
 
 .split-skip-btn:active {
   transform: translateY(1px);
@@ -3394,7 +3354,6 @@ footer {
 .workout-card--skipped .exercise-name-title {
   text-decoration: line-through;
 }
-
 
 /* --- Exercise Completion Bounce --- */
 @keyframes exerciseCompleteBounce {
@@ -3501,6 +3460,7 @@ footer {
             </div>
         </section>
     
+
         <!-- WEEKLY GOAL PREVIEW (VISUAL ONLY) -->
         <section class="section" id="weekly-goal">
             <div class="section-head">
@@ -3560,58 +3520,63 @@ footer {
   
         
 <div id="screen-daily">
-    <div id="streak-banner" class="streak-banner hidden">
+
+    <div id="streak-banner" class="hidden">
+        <div class="streak-banner">
             <div class="streak-bg-layer"></div>
-
-        <div class="streak-emblem-wrapper">
-            <div id="streak-emblem" class="rankup-emblem-preview streak-emblem">
-                <span class="streak-emblem-icon">🔥</span>
-            </div>
-        </div>
     
-        <div class="streak-body">
-            <!-- Top row: week + tokens -->
-            <div class="streak-row streak-row-top">
-                <span id="streak-week-label" class="streak-pill"></span>
-                <span id="streak-token-label" class="streak-pill streak-pill-secondary"></span>
-                <!-- 🔥 NEW: emblem label -->
-                <span id="streak-emblem-label" class="streak-pill streak-pill-emblem hidden"></span>
-            </div>
-
-    
-            <!-- Middle row: short progress text -->
-            <div class="streak-row">
-                <span id="streak-text" class="streak-progress-label"></span>
+            <div class="streak-emblem-wrapper">
+                <div id="streak-emblem" class="rankup-emblem-preview streak-emblem">
+                    <span class="streak-emblem-icon">🔥</span>
+                </div>
             </div>
     
-            <!-- Progress bar -->
-            <div class="streak-progress">
-                <div class="streak-progress-fill" id="streak-progress-fill"></div>
+            <div class="streak-body">
+                <div class="streak-row streak-row-top">
+                    <span id="streak-week-label" class="streak-pill"></span>
+                    <span id="streak-token-label" class="streak-pill streak-pill-secondary"></span>
+                    <span id="streak-emblem-label" class="streak-pill streak-pill-emblem hidden"></span>
+                </div>
+    
+                <div class="streak-row">
+                    <span id="streak-text" class="streak-progress-label"></span>
+                </div>
+    
+                <div class="streak-progress">
+                    <div class="streak-progress-fill" id="streak-progress-fill"></div>
+                </div>
             </div>
         </div>
     </div>
 
 
-        <section class="section" id="weekly-focus-live">
-        
-            <article class="workout-card" id="weekly-focus-card">
-                <div style="display:flex;justify-content:space-between;align-items:center;">
-                    <h3 style="margin:0;">Training Goal</h3>
-                    <span id="weekly-focus-days-label" style="color:var(--accent-yellow);font-weight:600;">
-                        <!-- JS fills this -->
-                        4 days / week
-                    </span>
-                </div>
-                <p id="weekly-focus-summary" style="color:var(--text-muted);margin:0.75rem 0 0;">
-                    <!-- JS fills this -->
-                    Aim to train 4 days this week. Rest is allowed—consistency over perfection.
-                </p>
-                    <p id="weekly-progress-text" style="color:var(--text-muted);margin:0.35rem 0 0;font-size:0.9rem;">
-                        <!-- JS will show: 0 of 4 sessions completed this week -->
-                    </p>
+<section class="section" id="weekly-focus-live">
+    <article class="workout-card weekly-focus-card" id="weekly-focus-card">
 
-            </article>
-        </section>
+        <!-- weekly goal dots row -->
+        <div class="weekly-goal-dots" id="weekly-goal-dots">
+            <!-- JS will inject dot elements here -->
+        </div>
+
+        <div class="weekly-focus-header">
+            <h3 class="weekly-focus-title">Training Goal</h3>
+            <span id="weekly-focus-days-label" class="weekly-focus-days">
+                5 days / week
+            </span>
+        </div>
+
+        <p id="weekly-focus-summary" class="weekly-focus-summary">
+            You’re aiming for 5 days. Higher frequency, slightly smaller sessions so you can show up often without
+            burning out.
+        </p>
+
+        <p id="weekly-progress-text" class="weekly-progress-text">
+            <!-- JS: X of Y sessions completed -->
+        </p>
+    </article>
+</section>
+
+
 
         <section id="weekly-volume" class="section">
             <div class="section-head">

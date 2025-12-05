@@ -1197,37 +1197,97 @@ function updateWeeklyVolumeSummary() {
         }
 
 
+
+
     // =============================
     // 5) WEEKLY FOCUS LIVE CARD
     // =============================
+function renderWeeklyGoalDots() {
+  const dotsContainer = document.getElementById("weekly-goal-dots");
+  if (!dotsContainer) return;
+
+  const goal = getWeeklyGoal();
+  if (!goal || goal < 1) {
+    dotsContainer.innerHTML = "";
+    dotsContainer.style.display = "none";
+    return;
+  }
+
+  dotsContainer.style.display = "flex";
+  dotsContainer.innerHTML = "";
+
+  const completed =
+    typeof getWorkoutsCompletedThisWeek === "function"
+      ? (getWorkoutsCompletedThisWeek() || 0)
+      : 0;
+
+  const clampedCompleted = Math.max(0, Math.min(goal, completed));
+
+  for (let i = 0; i < goal; i++) {
+    const dotEl = document.createElement("span");
+    dotEl.classList.add("weekly-goal-dot");
+    if (i < clampedCompleted) {
+      dotEl.classList.add("weekly-goal-dot--active");
+    }
+    dotsContainer.appendChild(dotEl);
+  }
+}
 
 
-    function renderWeeklyFocusLive() {
-            const daysLabelEl = document.getElementById("weekly-focus-days-label");
-            const summaryEl = document.getElementById("weekly-focus-summary");
-            if (!daysLabelEl || !summaryEl) return;
 
-            const days = getWeeklyGoal();
-            if (!days) {
-                daysLabelEl.textContent = "No weekly goal set";
-                summaryEl.textContent = "Pick a weekly training goal below to lock in how many days you’re committing to this week.";
-                return;
-            }
 
-            daysLabelEl.textContent = `${days} days / week`;
+function renderWeeklyFocusLive() {
+    const daysLabelEl = document.getElementById("weekly-focus-days-label");
+    const summaryEl = document.getElementById("weekly-focus-summary");
+    if (!daysLabelEl || !summaryEl) return;
 
-            const descriptions = {
-                3: "You’re committing to 3 focused sessions this week. Expect heavier full-body or big compound days that earn your rest.",
-                4: "You’re training 4 days this week. A solid balance of work and recovery that fits most busy schedules.",
-                5: "You’re aiming for 5 days. Higher frequency, slightly smaller sessions so you can show up often without burning out.",
-                6: "6 days on. You’re chasing serious momentum. We’ll mix push/pull/legs with built-in lighter work to keep you moving.",
-                7: "Daily movement mode. Training every day with a blend of lifting, lighter days, and recovery work to keep the habit alive."
-            };
+    const days = getWeeklyGoal();
 
-            summaryEl.textContent =
-                descriptions[days] ||
-                "You set your training goal for this week. Show up for it, one session at a time.";
+    // ---------------------------
+    // CASE: No goal set
+    // ---------------------------
+    if (!days) {
+        daysLabelEl.textContent = "No weekly goal set";
+        summaryEl.textContent =
+            "Pick a weekly training goal below to lock in how many days you’re committing to this week.";
+
+        // Clear progress text
+        const progressEl = document.getElementById("weekly-progress-text");
+        if (progressEl) {
+            progressEl.textContent = "";
         }
+
+        // Hide/clear dots
+        renderWeeklyGoalDots();
+
+        return;
+    }
+
+    // ---------------------------
+    // CASE: Goal exists
+    // ---------------------------
+
+    // "5 days / week"
+    daysLabelEl.textContent = `${days} days / week`;
+
+    // Summary line
+    const descriptions = {
+        3: "You’re committing to 3 focused sessions this week. Expect heavier full-body or big compound days that earn your rest.",
+        4: "You’re training 4 days this week. A solid balance of work and recovery that fits most busy schedules.",
+        5: "You’re aiming for 5 days. Higher frequency, slightly smaller sessions so you can show up often without burning out.",
+        6: "6 days on. You’re chasing serious momentum. We’ll mix push/pull/legs with built-in lighter work to keep you moving.",
+        7: "Daily movement mode. Training every day with a blend of lifting, lighter days, and recovery work to keep the habit alive."
+    };
+
+    summaryEl.textContent =
+        descriptions[days] ||
+        "You set your training goal for this week. Show up for it, one session at a time.";
+
+    // NEW: update dots and progress text
+    renderWeeklyProgressText();
+    renderWeeklyGoalDots();
+}
+
 
 
 
