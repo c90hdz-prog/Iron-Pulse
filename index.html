@@ -594,7 +594,48 @@ nav {
                 transform: translateY(0);
             }
         }
-    
+    /* Day-of-week row under progress text */
+.weekly-day-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 0.6rem;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+/* Base pill */
+.weekly-day-pill {
+  flex: 1;
+  text-align: center;
+  padding: 0.15rem 0;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: transparent;
+  opacity: 0.6;
+}
+
+/* Day with a completed workout */
+.weekly-day-pill--worked {
+  background: rgba(var(--accent-warm-start-rgb), 0.22);
+  border-color: rgba(var(--accent-warm-start-rgb), 0.55);
+  color: var(--text-primary);
+  opacity: 1;
+}
+
+/* Today (outline) */
+.weekly-day-pill--today {
+  border-color: rgba(255, 255, 255, 0.45);
+}
+
+/* Today AND worked can have a stronger look */
+.weekly-day-pill--today.weekly-day-pill--worked {
+  box-shadow: 0 0 12px var(--accent-progress-soft2);
+}
+
         /* Title + description inside cards */
 .card-title {
     text-transform: uppercase;
@@ -611,6 +652,108 @@ nav {
     line-height: 1.45;
 }
     
+/* ======================================
+   WEEKLY DAY DETAIL BOTTOM SHEET
+   ====================================== */
+
+.weekly-day-sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(10px);
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  z-index: 999;
+}
+
+.weekly-day-sheet {
+  width: 100%;
+  max-width: 520px;
+  background: radial-gradient(circle at top, rgba(120, 120, 255, 0.18), transparent 65%),
+              var(--surface-main);
+  border-radius: 18px 18px 0 0;
+  border-top: 1px solid var(--card-border);
+  border-left: 1px solid var(--card-border);
+  border-right: 1px solid var(--card-border);
+  box-shadow: var(--shadow-medium);
+  padding: 1rem 1.1rem 1.35rem;
+  animation: weeklyDaySheetSlideUp 0.28s ease-out;
+}
+
+/* little grab handle at the top */
+.weekly-day-sheet-handle {
+  width: 44px;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.45);
+  margin: 0 auto 0.75rem auto;
+}
+
+/* Header "Wednesday" and date line */
+.weekly-day-sheet-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.75rem;
+  margin-bottom: 0.35rem;
+}
+
+.weekly-day-sheet-title {
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--text-accent);
+}
+
+.weekly-day-sheet-date {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.weekly-day-sheet-status {
+  font-size: 0.95rem;
+  margin-top: 0.4rem;
+  color: var(--text-primary);
+}
+
+.weekly-day-sheet-sub {
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+  color: var(--text-muted);
+}
+
+.weekly-day-sheet-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.85rem;
+}
+
+/* Close button that still feels on-theme */
+.weekly-day-sheet-close {
+  border-radius: var(--radius-pill);
+  padding: 0.4rem 0.9rem;
+  border: 1px solid var(--card-border);
+  background: var(--surface-subtle);
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+/* Slide-up animation */
+@keyframes weeklyDaySheetSlideUp {
+  from {
+    transform: translateY(18px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+
+
 /* Week 1 */
 .emblem-weekly-1::before,
 .emblem-weekly-2::before,
@@ -1537,6 +1680,51 @@ footer {
   opacity: 1;
   box-shadow: 0 0 14px var(--weekly-dot-on-glow);
   transform: translateY(-1px); /* tiny float for “lit” */
+}
+/* =========================
+   WEEKLY COMPLETION ANIMATION
+   ========================= */
+
+/* Card aura pulse when week is completed */
+@keyframes weeklyCardPulse {
+  0% {
+    box-shadow: var(--shadow-soft);
+    transform: translateY(0);
+  }
+  40% {
+    box-shadow:
+      0 0 32px var(--aura-glow),
+      var(--shadow-accent-strong);
+    transform: translateY(-1px);
+  }
+  100% {
+    box-shadow: var(--shadow-soft);
+    transform: translateY(0);
+  }
+}
+
+.weekly-focus-card--week-complete {
+  animation: weeklyCardPulse 1.1s ease-out;
+}
+
+/* Dot “celebrate” pop */
+@keyframes weeklyDotCelebrate {
+  0% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  40% {
+    transform: scale(1.45);
+    filter: brightness(1.4);
+  }
+  100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+}
+
+.weekly-goal-dot--celebrate {
+  animation: weeklyDotCelebrate 0.45s ease-out forwards;
 }
 
 /* Existing header/summary styles you started on */
@@ -3566,13 +3754,14 @@ footer {
         </div>
 
         <p id="weekly-focus-summary" class="weekly-focus-summary">
-            You’re aiming for 5 days. Higher frequency, slightly smaller sessions so you can show up often without
+            You're aiming for 5 days. Higher frequency, slightly smaller sessions so you can show up often without
             burning out.
         </p>
 
         <p id="weekly-progress-text" class="weekly-progress-text">
             <!-- JS: X of Y sessions completed -->
         </p>
+        <div class="weekly-day-row" id="weekly-day-row"></div>
     </article>
 </section>
 

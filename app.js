@@ -14,6 +14,9 @@
     const LAST_EMBLEM_KEY = "ironPulseLastEmblem";
     const EMBLEM_TIER_KEY = "ironPulseEmblemTier";
     const VOLUME_TIER_KEY = "ironPulseVolumeTier";
+    const WEEKLY_GOAL_CELEBRATED_KEY = "ironPulse_weeklyGoalCelebrated";
+    const WEEKLY_DAY_LOG_KEY = "ironPulse_weeklyDayLog"
+    const WEEKDAY_LABELS_MON_FIRST = ["M", "T", "W", "T", "F", "S", "S"];
     const VOLUME_OBJECTS = [
   {
     id: "backpack",
@@ -1163,6 +1166,231 @@ function updateWeeklyVolumeSummary() {
         }
 
 
+function renderWeeklyDayMarkers() {
+  const row = document.getElementById("weekly-day-row");
+  if (!row) return;
+
+  const dates = getCurrentWeekDates();   // already defined earlier
+  const log = getWeeklyDayLog();         // { "YYYY-MM-DD": true }
+  const todayIso = getTodayIsoDate();    // "YYYY-MM-DD"
+
+  row.innerHTML = "";
+
+  dates.forEach((dateStr, index) => {
+    const label = WEEKDAY_LABELS_MON_FIRST[index];
+    const pill = document.createElement("button");
+    pill.type = "button";
+    pill.classList.add("weekly-day-pill");
+    pill.textContent = label;
+
+    if (log[dateStr]) {
+      pill.classList.add("weekly-day-pill--worked");
+    }
+    if (dateStr === todayIso) {
+      pill.classList.add("weekly-day-pill--today");
+    }
+
+    // 👇 Tap / click to show bottom sheet
+    pill.addEventListener("click", () => {
+      openWeeklyDaySheet({ dateStr, label, isWorked: !!log[dateStr] });
+    });
+
+    row.appendChild(pill);
+  });
+}
+
+/* Returns an array of 7 ISO dates for the current week (Mon → Sun) */
+function getCurrentWeekDates() {
+  const today = new Date();
+  const jsDay = today.getDay(); // 0=Sun..6=Sat
+  const diffToMonday = (jsDay + 6) % 7; // 0 if Monday
+
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - diffToMonday);
+
+  const dates = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    dates.push(d.toISOString().slice(0, 10));
+  }
+  return dates;
+}
+
+
+ function getTodayIsoDate() {
+  const d = new Date();
+  return d.toISOString().slice(0, 10); // "YYYY-MM-DD"
+}
+
+function getWeeklyDayLog() {
+  const raw = localStorage.getItem(WEEKLY_DAY_LOG_KEY);
+  if (!raw) return {};
+  try {
+    return JSON.parse(raw) || {};
+  } catch {
+    return {};
+  }
+}
+
+function setWeeklyDayLog(log) {
+  localStorage.setItem(WEEKLY_DAY_LOG_KEY, JSON.stringify(log));
+}
+
+/* Mark that today had a completed workout */
+function markWorkoutCompletedToday() {
+  const today = getTodayIsoDate();
+  const log = getWeeklyDayLog();
+  log[today] = true;
+  setWeeklyDayLog(log);
+}
+       
+
+function resetWeeklyGoalCelebrationFlag() {
+  localStorage.removeItem(WEEKLY_GOAL_CELEBRATED_KEY);
+}
+
+function celebrateWeekComplete() {
+  const card = document.getElementById("weekly-focus-card");
+  // Only celebrate active (lit) dots
+  const dots = document.querySelectorAll(
+    "#weekly-goal-dots .weekly-goal-dot.weekly-goal-dot--active"
+  );
+
+  if (!card || !dots.length) return;
+
+  // Card aura pulse
+  card.classList.add("weekly-focus-card--week-complete");
+
+  // Wave the dots with staggered delay
+  dots.forEach((dot, index) => {
+    dot.classList.add("weekly-goal-dot--celebrate");
+    dot.style.animationDelay = `${index * 80}ms`;
+  });
+
+  // Cleanup after animation finishes
+  setTimeout(() => {
+    card.classList.remove("weekly-focus-card--week-complete");
+    dots.forEach(dot => {
+      dot.classList.remove("weekly-goal-dot--celebrate");
+      dot.style.animationDelay = "";
+    });
+  }, 1200); // slightly longer than animation duration
+}
+
+function checkWeeklyCompletion() {
+  const goal = getWeeklyGoal();
+  if (!goal) {
+    // No goal -> no celebration state
+    resetWeeklyGoalCelebrationFlag();
+    return;
+  }
+
+  if (typeof getWorkoutsCompletedThisWeek !== "function") return;
+  const completed = getWorkoutsCompletedThisWeek() || 0;
+
+  // Not done yet: make sure next time we can celebrate
+  if (completed < goal) {
+    resetWeeklyGoalCelebrationFlag();
+    return;
+  }
+
+  // Goal reached or surpassed
+  const alreadyCelebrated =
+    localStorage.getItem(WEEKLY_GOAL_CELEBRATED_KEY) === "true";
+
+  if (alreadyCelebrated) return; // don't spam animation every render
+
+  // Mark as celebrated for this week + fire animation
+  localStorage.setItem(WEEKLY_GOAL_CELEBRATED_KEY, "true");
+  celebrateWeekComplete();
+}
+
+function formatDateNice(isoStr) {
+  const d = new Date(isoStr + "T00:00:00"); // force local date
+  return d.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric"
+  });
+}
+
+function openWeeklyDaySheet({ dateStr, label, isWorked }) {
+  // Remove any existing sheet
+  const existing = document.querySelector(".weekly-day-sheet-backdrop");
+  if (existing) existing.remove();
+
+  const overlay = document.createElement("div");
+  overlay.className = "weekly-day-sheet-backdrop";
+
+  const sheet = document.createElement("div");
+  sheet.className = "weekly-day-sheet";
+
+  const niceDate = formatDateNice(dateStr);
+  const goal = getWeeklyGoal();
+  const todayIso = getTodayIsoDate();
+  const isToday = dateStr === todayIso;
+
+  // Simple status logic for now – can expand later
+  let statusLine = "";
+  let subLine = "";
+
+  if (isWorked) {
+    statusLine = "Workout completed ✅";
+    if (goal) {
+      subLine = `This session counted toward your goal of ${goal} days this week.`;
+    } else {
+      subLine = "Logged as a completed training day.";
+    }
+  } else if (isToday) {
+    statusLine = "No session logged yet.";
+    subLine = "You can still train today and move the dots forward.";
+  } else {
+    statusLine = "Rest day 💤";
+    subLine = "No workout recorded for this day in the current week.";
+  }
+
+  sheet.innerHTML = `
+    <div class="weekly-day-sheet-handle"></div>
+    <div class="weekly-day-sheet-header">
+      <div class="weekly-day-sheet-title">
+        ${label}
+      </div>
+      <div class="weekly-day-sheet-date">
+        ${niceDate}
+      </div>
+    </div>
+    <div class="weekly-day-sheet-status">
+      ${statusLine}
+    </div>
+    <div class="weekly-day-sheet-sub">
+      ${subLine}
+    </div>
+    <div class="weekly-day-sheet-footer">
+      <button class="weekly-day-sheet-close" type="button">
+        Close
+      </button>
+    </div>
+  `;
+
+  overlay.appendChild(sheet);
+  document.body.appendChild(overlay);
+
+  // Close when tapping outside the sheet
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) {
+      overlay.remove();
+    }
+  });
+
+  // Close button
+  const closeBtn = sheet.querySelector(".weekly-day-sheet-close");
+  if (closeBtn) {
+    closeBtn.addEventListener("click", () => overlay.remove());
+  }
+}
+
+
     function setWeeklyGoal(days) {
         localStorage.setItem(WEEKLY_GOAL_KEY, String(days));
     }
@@ -1202,11 +1430,34 @@ function updateWeeklyVolumeSummary() {
     // =============================
     // 5) WEEKLY FOCUS LIVE CARD
     // =============================
+function renderWeeklyProgressText() {
+  const progressEl = document.getElementById("weekly-progress-text");
+  if (!progressEl) return;
+
+  const goal = getWeeklyGoal();
+  const completed =
+    typeof getWorkoutsCompletedThisWeek === "function"
+      ? (getWorkoutsCompletedThisWeek() || 0)
+      : 0;
+
+  if (!goal) {
+    progressEl.textContent =
+      "No sessions tracked yet. Set your weekly goal below to start your streak.";
+    return;
+  }
+
+  const clampedCompleted = Math.max(0, Math.min(goal, completed));
+  progressEl.textContent =
+    `${clampedCompleted} of ${goal} sessions completed this week`;
+}
+
 function renderWeeklyGoalDots() {
   const dotsContainer = document.getElementById("weekly-goal-dots");
   if (!dotsContainer) return;
 
   const goal = getWeeklyGoal();
+  console.log("[WeeklyDots] goal =", goal); // DEBUG
+
   if (!goal || goal < 1) {
     dotsContainer.innerHTML = "";
     dotsContainer.style.display = "none";
@@ -1221,6 +1472,8 @@ function renderWeeklyGoalDots() {
       ? (getWorkoutsCompletedThisWeek() || 0)
       : 0;
 
+  console.log("[WeeklyDots] completed =", completed); // DEBUG
+
   const clampedCompleted = Math.max(0, Math.min(goal, completed));
 
   for (let i = 0; i < goal; i++) {
@@ -1231,61 +1484,52 @@ function renderWeeklyGoalDots() {
     }
     dotsContainer.appendChild(dotEl);
   }
+
+  console.log(
+    "[WeeklyDots] dots rendered:",
+    dotsContainer.querySelectorAll(".weekly-goal-dot").length
+  );
 }
 
-
-
-
 function renderWeeklyFocusLive() {
-    const daysLabelEl = document.getElementById("weekly-focus-days-label");
-    const summaryEl = document.getElementById("weekly-focus-summary");
-    if (!daysLabelEl || !summaryEl) return;
+  const daysLabelEl = document.getElementById("weekly-focus-days-label");
+  const summaryEl = document.getElementById("weekly-focus-summary");
+  if (!daysLabelEl || !summaryEl) return;
 
-    const days = getWeeklyGoal();
+  const days = getWeeklyGoal();
 
-    // ---------------------------
-    // CASE: No goal set
-    // ---------------------------
-    if (!days) {
-        daysLabelEl.textContent = "No weekly goal set";
-        summaryEl.textContent =
-            "Pick a weekly training goal below to lock in how many days you’re committing to this week.";
+  if (!days) {
+    daysLabelEl.textContent = "No weekly goal set";
+    summaryEl.textContent =
+      "Pick a weekly training goal below to lock in how many days you’re committing to this week.";
 
-        // Clear progress text
-        const progressEl = document.getElementById("weekly-progress-text");
-        if (progressEl) {
-            progressEl.textContent = "";
-        }
-
-        // Hide/clear dots
-        renderWeeklyGoalDots();
-
-        return;
+    const progressEl = document.getElementById("weekly-progress-text");
+    if (progressEl) {
+      progressEl.textContent = "";
     }
 
-    // ---------------------------
-    // CASE: Goal exists
-    // ---------------------------
+    renderWeeklyGoalDots(); // will hide the row
+    return;
+  }
 
-    // "5 days / week"
-    daysLabelEl.textContent = `${days} days / week`;
+  daysLabelEl.textContent = `${days} days / week`;
 
-    // Summary line
-    const descriptions = {
-        3: "You’re committing to 3 focused sessions this week. Expect heavier full-body or big compound days that earn your rest.",
-        4: "You’re training 4 days this week. A solid balance of work and recovery that fits most busy schedules.",
-        5: "You’re aiming for 5 days. Higher frequency, slightly smaller sessions so you can show up often without burning out.",
-        6: "6 days on. You’re chasing serious momentum. We’ll mix push/pull/legs with built-in lighter work to keep you moving.",
-        7: "Daily movement mode. Training every day with a blend of lifting, lighter days, and recovery work to keep the habit alive."
-    };
+  const descriptions = {
+    3: "You’re committing to 3 focused sessions this week. Expect heavier full-body or big compound days that earn your rest.",
+    4: "You’re training 4 days this week. A solid balance of work and recovery that fits most busy schedules.",
+    5: "You’re aiming for 5 days. Higher frequency, slightly smaller sessions so you can show up often without burning out.",
+    6: "6 days on. You’re chasing serious momentum. We’ll mix push/pull/legs with built-in lighter work to keep you moving.",
+    7: "Daily movement mode. Training every day with a blend of lifting, lighter days, and recovery work to keep the habit alive."
+  };
 
-    summaryEl.textContent =
-        descriptions[days] ||
-        "You set your training goal for this week. Show up for it, one session at a time.";
+  summaryEl.textContent =
+    descriptions[days] ||
+    "You set your training goal for this week. Show up for it, one session at a time.";
 
-    // NEW: update dots and progress text
-    renderWeeklyProgressText();
-    renderWeeklyGoalDots();
+  // 🔹 Update text + dots
+  renderWeeklyProgressText();
+  renderWeeklyGoalDots();
+  renderWeeklyDayMarkers();
 }
 
 
@@ -2096,63 +2340,55 @@ function renderSessionIntoSplitCard(session, weeklyGoal) {
         }
 
 
+function onWorkoutCompleted() {
+    if (hasRecordedCompletionForCurrentSplit) return;
+    hasRecordedCompletionForCurrentSplit = true;
 
+    // 1) Increment workouts done
+    const current = getWorkoutsCompletedThisWeek();
+    setWorkoutsCompletedThisWeek(current + 1);
+    markWorkoutCompletedToday();
+    renderWeeklyFocusLive();
 
+    // 2) Advance rotation if recommended session
+    if (currentSessionMeta.isRecommended && currentSessionMeta.programId) {
+        advanceRecommendedSession(currentSessionMeta.programId);
+    }
 
+    // 3) Estimate today's training volume
+    const exerciseListEl = document.getElementById("exercise-list");
+    if (exerciseListEl) {
+        const weightInputs = exerciseListEl.querySelectorAll(
+            'input[type="number"][data-exercise]'
+        );
+        let todayVolume = 0;
+        const EST_REPS_PER_EXERCISE = 30;
 
-
-
-
-
-        
-
-    function onWorkoutCompleted() {
-            if (hasRecordedCompletionForCurrentSplit) return;
-            hasRecordedCompletionForCurrentSplit = true;
-
-            // 1) Increment workouts done
-            const current = getWorkoutsCompletedThisWeek();
-            setWorkoutsCompletedThisWeek(current + 1);
-
-            // 2) Advance rotation
-            // 2) Advance recommended rotation (only if this was a recommended session)
-            if (currentSessionMeta.isRecommended && currentSessionMeta.programId) {
-                advanceRecommendedSession(currentSessionMeta.programId);
+        weightInputs.forEach(input => {
+            const w = parseFloat(input.value || "0");
+            if (!Number.isNaN(w) && w > 0) {
+                todayVolume += w * EST_REPS_PER_EXERCISE;
             }
+        });
 
-
-            // 3) Rough volume estimate from avg weights
-            const exerciseListEl = document.getElementById("exercise-list");
-            if (exerciseListEl) {
-                const weightInputs = exerciseListEl.querySelectorAll(
-                    'input[type="number"][data-exercise]'
-                );
-                let todayVolume = 0;
-                const EST_REPS_PER_EXERCISE = 30;
-
-                weightInputs.forEach(input => {
-                    const w = parseFloat(input.value || "0");
-                    if (!Number.isNaN(w) && w > 0) {
-                        todayVolume += w * EST_REPS_PER_EXERCISE;
-                    }
-                });
-
-                if (todayVolume > 0) {
-                    addTodayWeight(todayVolume);
-                }
-            }
-
-            // 4) UI updates
-            updateStreak();
-            updateWeeklyVolumeSummary?.();
-            flashDayComplete();   // 🔥 let the card animation play first
-
-            // 5) After a short delay, show weekly goal overlay + quote
-            setTimeout(() => {
-                celebrateWeeklyGoalHit();      // only shows if you *just* hit the goal
-                showPostWorkoutQuoteOverlay(); // or showDailyQuoteModal() if you kept that one
-            }, 900); // ≈ front half of your 1.6s animeBlast
+        if (todayVolume > 0) {
+            addTodayWeight(todayVolume);
         }
+    }
+
+    // 4) UI updates
+    updateStreak();
+    updateWeeklyVolumeSummary?.();
+    flashDayComplete(); // per-workout animation
+
+    // 5) Weekly goal celebration + overlay + quote
+    setTimeout(() => {
+        checkWeeklyCompletion();       // ✨ card aura + dot wave (once per week)
+        celebrateWeeklyGoalHit();      // 🎉 overlay modal (your existing logic)
+        showPostWorkoutQuoteOverlay(); // 💬 post-workout quote
+    }, 900);
+}
+
 
 
 
