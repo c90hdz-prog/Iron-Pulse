@@ -55,11 +55,239 @@
     threshold: 22000
   }
 ];
+// =============================
+// ENCOUNTER CONFIG
+// =============================
+const ENCOUNTER_THEMES = {
+  gateDefault: {
+    id: "gateDefault",
+    type: "gate",
+    spriteClass: "encounter-gate-default",
+    introAnimationClass: "encounter-intro-gate",
+    hitAnimationClass: "encounter-hit-gate",
+    defeatAnimationClass: "encounter-defeat-gate",
+  },
+  bossPulseGuardian: {
+    id: "bossPulseGuardian",
+    type: "boss",
+    spriteClass: "encounter-boss-pulse-guardian",
+    introAnimationClass: "encounter-intro-boss",
+    hitAnimationClass: "encounter-hit-boss",
+    defeatAnimationClass: "encounter-defeat-boss",
+  },
+};
 
-// --- Skipped workout tracking ---
+// weapon tiers: which "skin" to use based on % of weekly target
+const WEAPON_TIERS = [
+  { id: "raw",         minPercent: 0,   maxPercent: 20,  cssClass: "weapon-tier-raw" },
+  { id: "tempered1",   minPercent: 20,  maxPercent: 50,  cssClass: "weapon-tier-1"   },
+  { id: "tempered2",   minPercent: 50,  maxPercent: 80,  cssClass: "weapon-tier-2"   },
+  { id: "forged",      minPercent: 80,  maxPercent: 100, cssClass: "weapon-tier-3"   },
+  { id: "overcharged", minPercent: 100, maxPercent: 999, cssClass: "weapon-tier-4"   },
+];
+
+function pickWeaponTier(percent) {
+  for (const tier of WEAPON_TIERS) {
+    if (percent >= tier.minPercent && percent < tier.maxPercent) return tier;
+  }
+  return WEAPON_TIERS[0]; // fallback
+}
+// Simple turn-based encounter engine
+function runTurnBasedEncounter({ 
+  totalTurns, 
+  bossMaxHp, 
+  attackPowerPerTurn, 
+  onUpdate, 
+  onEnd 
+}) {
+  let turnsLeft = totalTurns;
+  let bossHp = bossMaxHp;
+
+  function doAttack() {
+    if (turnsLeft <= 0 || bossHp <= 0) return;
+
+    bossHp = Math.max(0, bossHp - attackPowerPerTurn);
+    turnsLeft--;
+
+    if (typeof onUpdate === "function") {
+      onUpdate({ bossHp, bossMaxHp, turnsLeft });
+    }
+
+    if (bossHp <= 0 || turnsLeft === 0) {
+      if (typeof onEnd === "function") {
+        onEnd({ bossHp, bossMaxHp, turnsUsed: totalTurns - turnsLeft });
+      }
+    }
+  }
+
+  return { doAttack };
+}
+function openWeeklyEncounter({
+  theme = ENCOUNTER_THEMES.bossPulseGuardian,
+  weaponPercent = 100,
+  totalTurns = 4,
+  bossMaxHp = 100,
+  attackPowerPerTurn = 30,
+}) {
+  // Remove any existing overlay
+  const existing = document.getElementById("encounter-overlay");
+  if (existing) existing.remove();
+
+  const tier = pickWeaponTier(weaponPercent);
+
+  const overlay = document.createElement("div");
+  overlay.id = "encounter-overlay";
+  overlay.className = "encounter-overlay";
+
+  overlay.innerHTML = `
+    <div class="encounter-stage ${theme.spriteClass}" 
+         data-encounter-type="${theme.type}"
+         data-weapon-tier="${tier.id}">
+      
+      <div class="encounter-weapon" id="encounter-weapon"></div>
+      <div class="encounter-target" id="encounter-target"></div>
+
+      <div class="encounter-ui">
+        <div class="encounter-bars">
+          <div class="encounter-bar-label">Boss HP</div>
+          <div class="encounter-bar-outer">
+            <div class="encounter-bar-inner" id="encounter-boss-bar"></div>
+          </div>
+
+          <div class="encounter-bar-label">Turns Left</div>
+          <div class="encounter-turns" id="encounter-turns"></div>
+        </div>
+
+        <div class="encounter-actions">
+          <button type="button" class="btn btn-primary" id="encounter-strike-btn">
+            Strike
+          </button>
+          <button type="button" class="btn btn-ghost" id="encounter-skip-btn">
+            Skip
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  const bossBarEl = overlay.querySelector("#encounter-boss-bar");
+  const turnsEl = overlay.querySelector("#encounter-turns");
+  const strikeBtn = overlay.querySelector("#encounter-strike-btn");
+  const skipBtn = overlay.querySelector("#encounter-skip-btn");
+  const stageEl = overlay.querySelector(".encounter-stage");
+  const targetEl = overlay.querySelector("#encounter-target");
+  const weaponEl = overlay.querySelector("#encounter-weapon");
 
 
+  // Init engine
+  const encounter = runTurnBasedEncounter({
+    totalTurns,
+    bossMaxHp,
+    attackPowerPerTurn,
+    onUpdate: ({ bossHp, bossMaxHp, turnsLeft }) => {
+  const percent = (bossHp / bossMaxHp) * 100;
+  bossBarEl.style.width = `${percent}%`;
+  turnsEl.textContent = `${turnsLeft} turn${turnsLeft === 1 ? "" : "s"} left`;
 
+  // 🔁 Hit animation
+  if (targetEl && theme.hitAnimationClass) {
+    targetEl.classList.remove(theme.hitAnimationClass);
+    void targetEl.offsetWidth;
+    targetEl.classList.add(theme.hitAnimationClass);
+  }
+
+  // 🔥 Gate crack states (only for gate encounters)
+  if (stageEl.dataset.encounterType === "gate") {
+    stageEl.classList.remove("encounter-gate-damaged", "encounter-gate-critical");
+
+    if (percent <= 35) {
+      stageEl.classList.add("encounter-gate-critical");
+    } else if (percent <= 70) {
+      stageEl.classList.add("encounter-gate-damaged");
+    }
+  }
+},
+
+    onEnd: ({ bossHp }) => {
+      strikeBtn.disabled = true;
+
+      if (bossHp <= 0) {
+        stageEl.classList.add(theme.defeatAnimationClass);
+      }
+
+      // auto-close after a short delay (for now)
+      setTimeout(() => {
+        overlay.remove();
+      }, 1400);
+    }
+  });
+
+  // initial visuals
+  bossBarEl.style.width = "100%";
+  turnsEl.textContent = `${totalTurns} turns left`;
+  stageEl.classList.add(theme.introAnimationClass);
+
+strikeBtn.addEventListener("click", () => {
+  // 🔨 Trigger hammer swing animation
+  if (weaponEl) {
+    weaponEl.classList.remove("encounter-hammer-swing");
+    // force reflow so animation can restart
+    void weaponEl.offsetWidth;
+    weaponEl.classList.add("encounter-hammer-swing");
+  }
+
+  // Run the turn-based attack
+  encounter.doAttack();
+});
+
+
+  skipBtn.addEventListener("click", () => {
+    overlay.remove();
+  });
+
+  // click backdrop to close
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) {
+      overlay.remove();
+    }
+  });
+}
+
+function launchWeeklyEncounterFromStats({ isBossWeek = false } = {}) {
+  const goal = getWeeklyGoal();                 // your existing helper
+  const done = getWorkoutsCompletedThisWeek();  // your existing helper
+  if (!goal || done === 0) return;              // nothing to show
+
+  // Rough volume % for now – you can plug real volume later
+  const percentOfGoal = Math.min(
+    160,
+    Math.round((done / goal) * 100)
+  );
+
+  const daysTrained = done; // or clamp/min/max if you want
+  const totalTurns = Math.max(1, Math.min(daysTrained, 7));
+
+  // Boss HP scaled to goal; attack scaled to progress
+  const bossMaxHp = 100;
+  const attackPowerPerTurn = Math.max(
+    10,
+    Math.round((percentOfGoal / 100) * (bossMaxHp / totalTurns))
+  );
+
+  const theme = isBossWeek
+    ? ENCOUNTER_THEMES.bossPulseGuardian
+    : ENCOUNTER_THEMES.gateDefault;
+
+  openWeeklyEncounter({
+    theme,
+    weaponPercent: percentOfGoal,
+    totalTurns,
+    bossMaxHp,
+    attackPowerPerTurn,
+  });
+}
 
 
 function markTodayAsSkippedInWeeklyState() {
@@ -98,9 +326,7 @@ function advanceSessionRotation(meta) {
   const programId = meta.programId;
   const currentIndex = meta.recommendedIndex ?? 0;
 
-  // bump index (wrap around within the program length)
-  // if you know your program length, you can store it here or
-  // pull it from your PROGRAMS array
+
   const program = PROGRAMS.find(p => p.id === programId);
   const sessionCount = program ? program.sessions.length : 1;
 
@@ -224,15 +450,7 @@ function advanceSessionRotation(meta) {
             "You did enough today to be proud. That’s enough."
         ];
 
-    // Key: "ironpulse.exerciseLog.v1"
-// Shape:
-// {
-//   "2025-12-01": {
-//     "Squat": [ { weight: 135, reps: 8 }, ... ],
-//     "Bench Press": [ ... ]
-//   },
-//   ... more days ...
-// }
+
 
 // ---- Exercise volume log helpers ----
 

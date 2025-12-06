@@ -1641,6 +1641,332 @@ footer {
         box-shadow: 0 0 0 16px rgba(246, 195, 67, 0);
     }
 }
+/* =============================
+   ENCOUNTER OVERLAY BASE
+   ============================= */
+
+#encounter-overlay.encounter-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background: radial-gradient(circle at top, rgba(0, 0, 0, 0.8), #020204);
+  backdrop-filter: blur(12px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.encounter-stage {
+  width: min(480px, 100% - 2.5rem);
+  max-width: 480px;
+  aspect-ratio: 16 / 10;
+  border-radius: 18px;
+  background: radial-gradient(circle at top, rgba(120, 120, 255, 0.22), transparent 65%),
+              var(--surface-main);
+  border: 1px solid var(--card-border);
+  box-shadow: var(--shadow-medium);
+  padding: 1rem 1.25rem;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  gap: 0.75rem;
+  position: relative;
+  overflow: hidden;
+}
+
+/* top area: weapon + target */
+/* Weapon: left side */
+.encounter-weapon {
+  position: absolute;
+  left: 8%;
+  bottom: 18%;
+  width: 28%;
+  height: 64%;
+  pointer-events: none;
+
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center left;
+
+  transform-origin: 20% 80%;
+  transition:
+    filter 0.22s ease-out,
+    transform 0.16s ease-out,
+    box-shadow 0.22s ease-out;
+  background-image: url("icons/assets/encounter/hammer_sci_base.png.png");
+}
+
+
+
+/* UI bottom strip */
+.encounter-ui {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1rem;
+}
+
+.encounter-bars {
+  flex: 1;
+  font-size: 0.8rem;
+}
+
+.encounter-bar-label {
+  color: var(--text-muted);
+  margin-bottom: 0.25rem;
+}
+
+.encounter-bar-outer {
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.35);
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.encounter-bar-inner {
+  height: 100%;
+  width: 100%;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    var(--accent-warm-start),
+    var(--accent-warm-end)
+  );
+  transition: width 0.2s ease-out;
+}
+
+.encounter-turns {
+  color: var(--text-primary);
+  opacity: 0.85;
+}
+
+.encounter-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.encounter-actions .btn {
+  font-size: 0.85rem;
+  padding-inline: 0.8rem;
+  padding-block: 0.4rem;
+}
+
+
+.encounter-boss-pulse-guardian .encounter-target {
+  /* placeholder: later replace with real boss art */
+  background-image: url("boss-pulse-guardian.svg");
+}
+
+/* Weapon tiers – placeholder visuals */
+/* RAW – almost no glow */
+[data-weapon-tier="raw"] .encounter-weapon {
+  filter: grayscale(0.2) brightness(0.7);
+  box-shadow: none;
+}
+
+/* TEMPERED 1 */
+[data-weapon-tier="tempered1"] .encounter-weapon {
+  filter: grayscale(0) brightness(0.9);
+  box-shadow: 0 0 6px rgba(var(--accent-rgb), 0.45);
+}
+
+/* TEMPERED 2 */
+[data-weapon-tier="tempered2"] .encounter-weapon {
+  filter: brightness(1.0);
+  box-shadow: 0 0 10px var(--aura-soft);
+}
+
+/* FORGED */
+[data-weapon-tier="forged"] .encounter-weapon {
+  filter: brightness(1.08);
+  box-shadow: 0 0 14px var(--aura-glow);
+}
+
+/* OVERCHARGED */
+[data-weapon-tier="overcharged"] .encounter-weapon {
+  filter: brightness(1.18);
+  box-shadow: 0 0 20px var(--streak-hot-glow);
+  transform: translateY(-2px);
+}
+
+
+@keyframes encounterHammerSwing {
+  0% {
+    transform: rotate(0deg) translateY(0);
+  }
+  25% {
+    transform: rotate(-18deg) translateY(-2px);
+  }
+  55% {
+    transform: rotate(6deg) translateY(1px);
+  }
+  100% {
+    transform: rotate(0deg) translateY(0);
+  }
+}
+
+/* Class we’ll toggle from JS */
+.encounter-hammer-swing {
+  animation: encounterHammerSwing 0.22s ease-out;
+}
+
+/* Animations (can be refined later) */
+@keyframes encounterIntroGate {
+  from { transform: translateY(12px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+@keyframes encounterIntroBoss {
+  from { transform: scale(0.96); opacity: 0; }
+  to   { transform: scale(1);    opacity: 1; }
+}
+@keyframes encounterHit {
+  0%   { transform: translateX(0); }
+  30%  { transform: translateX(-4px); }
+  60%  { transform: translateX(2px); }
+  100% { transform: translateX(0); }
+}
+@keyframes encounterDefeat {
+  0%   { opacity: 1; transform: scale(1); }
+  60%  { opacity: 0.8; transform: scale(1.05); filter: brightness(1.1); }
+  100% { opacity: 0; transform: scale(0.92); }
+}
+
+.encounter-intro-gate {
+  animation: encounterIntroGate 0.35s ease-out;
+}
+.encounter-intro-boss {
+  animation: encounterIntroBoss 0.42s ease-out;
+}
+.encounter-hit-gate,
+.encounter-hit-boss {
+  animation: encounterHit 0.22s ease-out;
+}
+.encounter-defeat-gate,
+.encounter-defeat-boss {
+  animation: encounterDefeat 0.45s ease-in forwards;
+}
+
+/* Gate: weeks 1–3 */
+.encounter-gate-default .encounter-target {
+  background-image: none;
+  border-radius: 16px;
+  border: 1px solid var(--card-border);
+  background:
+    radial-gradient(circle at top, rgba(var(--accent-rgb), 0.36), transparent 65%),
+    linear-gradient(
+      135deg,
+      #14151f,
+      #0a0b11
+    );
+  box-shadow: 0 0 18px rgba(0, 0, 0, 0.8);
+}
+
+/* Boss: Pulse Guardian – placeholder silhouette */
+.encounter-boss-pulse-guardian .encounter-target {
+  background-image: none;
+  position: absolute;
+  right: 8%;
+  bottom: 8%;
+  width: 40%;
+  height: 80%;
+}
+
+/* Base layout for the target side (gate / boss) */
+.encounter-target {
+  position: absolute;
+  right: 8%;
+  bottom: 16%;
+  width: 40%;
+  height: 68%;
+  pointer-events: none;
+
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center right;
+}
+
+/* GATE SKIN (weeks 1–3) */
+.encounter-gate-default .encounter-target {
+  border-radius: 22px;
+
+  overflow: hidden;
+
+  background:
+    radial-gradient(circle at top,
+      rgba(var(--accent-2-rgb), 0.18),
+      transparent 70%
+    ),
+    linear-gradient(
+      135deg,
+      #10121c,
+      #070811
+    );
+  box-shadow:
+    0 0 24px rgba(0, 0, 0, 0.9),
+    0 0 18px rgba(var(--accent-rgb), 0.45);
+}
+
+/* inner frame + soft glow */
+.encounter-gate-default .encounter-target::before {
+  content: "";
+  position: absolute;
+  inset: 10%;
+  border-radius: inherit;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  box-shadow: 0 0 12px rgba(var(--accent-2-rgb), 0.35) inset;
+  background:
+    radial-gradient(circle at top,
+      rgba(var(--accent-rgb), 0.16),
+      transparent 70%
+    );
+  opacity: 0.9;
+}
+/* small crack overlay */
+.encounter-gate-default .encounter-target::after {
+  content: "";
+  position: absolute;
+  inset: 10%;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      120deg,
+      transparent 30%,
+      rgba(var(--accent-2-rgb), 0.85) 35%,
+      transparent 40%,
+      transparent 55%,
+      rgba(var(--accent-2-rgb), 0.7) 60%,
+      transparent 65%
+    );
+  opacity: 0;               /* start invisible */
+  transform: scale(1.02);
+  transition:
+    opacity 0.22s ease-out,
+    filter 0.22s ease-out;
+}
+
+/* GATE DAMAGED – first cracks show */
+.encounter-gate-damaged .encounter-target::after {
+  opacity: 0.5;
+  filter: brightness(1.05);
+}
+
+/* GATE CRITICAL – strong cracks + brighter core */
+.encounter-gate-critical .encounter-target::after {
+  opacity: 0.9;
+  filter: brightness(1.2);
+}
+
+.encounter-gate-critical .encounter-target::before {
+  box-shadow:
+    0 0 16px rgba(var(--accent-2-rgb), 0.65) inset,
+    0 0 18px rgba(var(--accent-2-rgb), 0.75);
+}
+
 
 /* Weekly focus card base (you already have workout-card) */
 .weekly-focus-card {
@@ -3764,6 +4090,14 @@ footer {
         <div class="weekly-day-row" id="weekly-day-row"></div>
     </article>
 </section>
+
+<div style="padding:1rem; text-align:center; margin-top:2rem;">
+    <button type="button" style="padding:0.8rem 1.2rem; border-radius:10px; background:#444; color:white;"
+        onclick="launchWeeklyEncounterFromStats({ isBossWeek: false })">
+        Test Gate Encounter (from stats)
+    </button>
+</div>
+
 
 
 
