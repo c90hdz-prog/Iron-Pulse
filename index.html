@@ -1659,7 +1659,7 @@ footer {
 .encounter-stage {
   width: min(480px, 100% - 2.5rem);
   max-width: 480px;
-  aspect-ratio: 16 / 10;
+  aspect-ratio: 16/14;
   border-radius: 18px;
   background: radial-gradient(circle at top, rgba(120, 120, 255, 0.22), transparent 65%),
               var(--surface-main);
@@ -1675,25 +1675,7 @@ footer {
 
 /* top area: weapon + target */
 /* Weapon: left side */
-.encounter-weapon {
-  position: absolute;
-  left: 8%;
-  bottom: 18%;
-  width: 28%;
-  height: 64%;
-  pointer-events: none;
 
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center left;
-
-  transform-origin: 20% 80%;
-  transition:
-    filter 0.22s ease-out,
-    transform 0.16s ease-out,
-    box-shadow 0.22s ease-out;
-  background-image: url("icons/assets/encounter/hammer_sci_base.png.png");
-}
 
 
 
@@ -1755,13 +1737,6 @@ footer {
   padding-block: 0.4rem;
 }
 
-
-.encounter-boss-pulse-guardian .encounter-target {
-  /* placeholder: later replace with real boss art */
-  background-image: url("boss-pulse-guardian.svg");
-}
-
-/* Weapon tiers – placeholder visuals */
 /* RAW – almost no glow */
 [data-weapon-tier="raw"] .encounter-weapon {
   filter: grayscale(0.2) brightness(0.7);
@@ -1771,25 +1746,24 @@ footer {
 /* TEMPERED 1 */
 [data-weapon-tier="tempered1"] .encounter-weapon {
   filter: grayscale(0) brightness(0.9);
-  box-shadow: 0 0 6px rgba(var(--accent-rgb), 0.45);
+
 }
 
 /* TEMPERED 2 */
 [data-weapon-tier="tempered2"] .encounter-weapon {
   filter: brightness(1.0);
-  box-shadow: 0 0 10px var(--aura-soft);
+
 }
 
 /* FORGED */
 [data-weapon-tier="forged"] .encounter-weapon {
   filter: brightness(1.08);
-  box-shadow: 0 0 14px var(--aura-glow);
+
 }
 
 /* OVERCHARGED */
 [data-weapon-tier="overcharged"] .encounter-weapon {
   filter: brightness(1.18);
-  box-shadow: 0 0 20px var(--streak-hot-glow);
   transform: translateY(-2px);
 }
 
@@ -1809,31 +1783,7 @@ footer {
   }
 }
 
-/* Class we’ll toggle from JS */
-.encounter-hammer-swing {
-  animation: encounterHammerSwing 0.22s ease-out;
-}
 
-/* Animations (can be refined later) */
-@keyframes encounterIntroGate {
-  from { transform: translateY(12px); opacity: 0; }
-  to   { transform: translateY(0);    opacity: 1; }
-}
-@keyframes encounterIntroBoss {
-  from { transform: scale(0.96); opacity: 0; }
-  to   { transform: scale(1);    opacity: 1; }
-}
-@keyframes encounterHit {
-  0%   { transform: translateX(0); }
-  30%  { transform: translateX(-4px); }
-  60%  { transform: translateX(2px); }
-  100% { transform: translateX(0); }
-}
-@keyframes encounterDefeat {
-  0%   { opacity: 1; transform: scale(1); }
-  60%  { opacity: 0.8; transform: scale(1.05); filter: brightness(1.1); }
-  100% { opacity: 0; transform: scale(0.92); }
-}
 
 .encounter-intro-gate {
   animation: encounterIntroGate 0.35s ease-out;
@@ -1852,28 +1802,14 @@ footer {
 
 /* Gate: weeks 1–3 */
 .encounter-gate-default .encounter-target {
-  background-image: none;
-  border-radius: 16px;
-  border: 1px solid var(--card-border);
-  background:
-    radial-gradient(circle at top, rgba(var(--accent-rgb), 0.36), transparent 65%),
-    linear-gradient(
-      135deg,
-      #14151f,
-      #0a0b11
-    );
-  box-shadow: 0 0 18px rgba(0, 0, 0, 0.8);
+  background-image: url("icons/assets/encounter/Gate1.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
 }
 
-/* Boss: Pulse Guardian – placeholder silhouette */
-.encounter-boss-pulse-guardian .encounter-target {
-  background-image: none;
-  position: absolute;
-  right: 8%;
-  bottom: 8%;
-  width: 40%;
-  height: 80%;
-}
+
+
 
 /* Base layout for the target side (gate / boss) */
 .encounter-target {
@@ -1883,32 +1819,14 @@ footer {
   width: 40%;
   height: 68%;
   pointer-events: none;
-
+  z-index: 0;
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center right;
 }
 
 /* GATE SKIN (weeks 1–3) */
-.encounter-gate-default .encounter-target {
-  border-radius: 22px;
 
-  overflow: hidden;
-
-  background:
-    radial-gradient(circle at top,
-      rgba(var(--accent-2-rgb), 0.18),
-      transparent 70%
-    ),
-    linear-gradient(
-      135deg,
-      #10121c,
-      #070811
-    );
-  box-shadow:
-    0 0 24px rgba(0, 0, 0, 0.9),
-    0 0 18px rgba(var(--accent-rgb), 0.45);
-}
 
 /* inner frame + soft glow */
 .encounter-gate-default .encounter-target::before {
@@ -1967,12 +1885,497 @@ footer {
     0 0 18px rgba(var(--accent-2-rgb), 0.75);
 }
 
+/* =============================
+   BOSS SKIN – "Pulse Guardian" Shadow Knight
+   ============================= */
+
+/* reuse base .encounter-target positioning (right side) */
+
+/* Boss: Pulse Guardian – placeholder silhouette */
+.encounter-boss-pulse-guardian .encounter-target {
+  background-image: none;
+  position: absolute;
+  right: 8%;
+  bottom: 8%;
+  width: 40%;
+  height: 80%;
+
+  border-radius: 26px;
+  overflow: visible;
+}
+
+
+/* Boss body (torso + shoulders) */
+.encounter-boss-pulse-guardian .encounter-target::before {
+  content: "";
+  position: absolute;
+  inset: 6% 16% 22% 4%; /* left / right / bottom / top-ish */
+  border-radius: 45% 45% 32% 32%;
+  background:
+    radial-gradient(circle at 50% 20%, rgba(255, 255, 255, 0.22), transparent 55%),
+    radial-gradient(circle at 50% 40%, rgba(var(--accent-2-rgb), 0.88), transparent 60%),
+    radial-gradient(circle at 50% 100%, rgba(var(--accent-rgb), 0.96), transparent 65%);
+  box-shadow:
+    0 0 22px rgba(0, 0, 0, 0.95),
+    0 0 18px rgba(var(--accent-2-rgb), 0.65);
+  opacity: 0.95;
+  animation: bossIdleFloat 2.2s ease-in-out infinite alternate;
+}
+
+/* Boss "sword" silhouette down the right side */
+.encounter-boss-pulse-guardian .encounter-target::after {
+  content: "";
+  position: absolute;
+  right: -6%;
+  bottom: 4%;
+  width: 24%;
+  height: 72%;
+  border-radius: 999px;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(var(--accent-2-rgb), 0.95),
+      rgba(var(--accent-rgb), 0.75),
+      rgba(10, 10, 25, 0.9)
+    );
+  box-shadow:
+    0 0 18px rgba(var(--accent-2-rgb), 0.75),
+    0 0 30px rgba(0, 0, 0, 0.95);
+  opacity: 0.9;
+}
+
+/* Idle floating / breathing effect */
+@keyframes bossIdleFloat {
+  0% {
+    transform: translateY(0);
+    filter: brightness(1);
+  }
+  100% {
+    transform: translateY(-4px);
+    filter: brightness(1.05);
+  }
+}
+/* Boss damaged / critical visual states */
+.encounter-boss-damaged .encounter-target::before {
+  box-shadow:
+    0 0 26px rgba(0, 0, 0, 0.96),
+    0 0 26px rgba(var(--accent-2-rgb), 0.85);
+  filter: brightness(1.1);
+}
+
+.encounter-boss-critical .encounter-target::before {
+  box-shadow:
+    0 0 30px rgba(0, 0, 0, 0.98),
+    0 0 34px rgba(var(--accent-2-rgb), 0.95);
+  filter: brightness(1.18);
+}
+
+.encounter-boss-critical .encounter-target::after {
+  box-shadow:
+    0 0 26px rgba(var(--accent-2-rgb), 0.95),
+    0 0 40px rgba(var(--accent-2-rgb), 0.9);
+}
 
 /* Weekly focus card base (you already have workout-card) */
 .weekly-focus-card {
   position: relative;
   overflow: hidden;
 }
+/* =============================
+   ENCOUNTER CUT-IN (RPG STYLE)
+   ============================= */
+/* ================================
+   WEEKLY TRIAL CUT-IN (intro card)
+   ================================ */
+
+.encounter-cutin-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.75rem;
+  background:
+    radial-gradient(circle at top, rgba(var(--accent-rgb), 0.22), rgba(0, 0, 0, 0.96));
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  animation: cutin-backdrop-in 280ms ease-out forwards;
+}
+
+/* Core card – “battle intro” panel */
+.encounter-cutin-card {
+  position: relative;
+  max-width: 460px;
+  width: 100%;
+  border-radius: var(--radius-card);
+  padding: 1.5rem 1.6rem 1.35rem;
+  background:
+    radial-gradient(circle at top left, rgba(var(--accent-2-rgb), 0.16), transparent 55%),
+    radial-gradient(circle at bottom right, rgba(var(--accent-rgb), 0.24), transparent 60%),
+    var(--surface-main);
+  box-shadow:
+    0 22px 55px rgba(0, 0, 0, 0.9),
+    0 0 40px rgba(var(--accent-rgb), 0.35);
+  border: 1px solid rgba(162, 156, 255, 0.28);
+  overflow: hidden;
+
+  transform-origin: bottom center;
+  transform: translateY(32px) scale(0.96);
+  opacity: 0;
+  animation: cutin-card-pop-in 380ms cubic-bezier(0.23, 0.9, 0.25, 1.2) forwards;
+}
+
+/* Slightly different tint for boss vs gate */
+.cutin-gate {
+  background:
+    radial-gradient(circle at top left, rgba(var(--accent-rgb), 0.18), transparent 55%),
+    radial-gradient(circle at bottom right, rgba(10, 200, 255, 0.20), transparent 60%),
+    var(--surface-main);
+}
+
+.cutin-boss {
+  background:
+    radial-gradient(circle at top left, rgba(255, 77, 169, 0.26), transparent 55%),
+    radial-gradient(circle at bottom right, rgba(var(--accent-rgb), 0.32), transparent 60%),
+    var(--surface-main);
+}
+
+/* Glow band behind the header – Pokemon style swipe */
+.encounter-cutin-card::before {
+  content: "";
+  position: absolute;
+  inset: -40%;
+  background:
+    linear-gradient(
+      120deg,
+      rgba(var(--accent-rgb), 0.0) 0%,
+      rgba(var(--accent-rgb), 0.55) 45%,
+      rgba(255, 255, 255, 0.25) 52%,
+      rgba(var(--accent-2-rgb), 0.6) 60%,
+      rgba(var(--accent-rgb), 0.0) 100%
+    );
+  opacity: 0.0;
+  transform: translateX(-40%);
+  pointer-events: none;
+  mix-blend-mode: screen;
+  animation: cutin-swipe 700ms 220ms ease-out forwards;
+}
+
+/* Header section */
+.cutin-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+}
+
+.cutin-pill {
+  align-self: flex-start;
+  padding: 0.25rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #f9f9ff;
+  background:
+    linear-gradient(135deg, rgba(var(--accent-rgb), 0.9), rgba(var(--accent-2-rgb), 0.9));
+  box-shadow: 0 0 16px rgba(var(--accent-2-rgb), 0.8);
+}
+
+.cutin-title {
+  margin: 0;
+  font-size: 1.4rem;
+  letter-spacing: 0.02em;
+  color: var(--text-primary);
+}
+
+/* Subtitle copy */
+.cutin-subtitle {
+  margin: 0;
+  margin-bottom: 1.1rem;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* Actions row */
+.cutin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 0.25rem;
+}
+
+.cutin-actions .btn {
+  flex-shrink: 0;
+}
+
+.cutin-actions .btn.btn-primary {
+  min-width: 9rem;
+}
+
+.cutin-actions .btn.btn-outline {
+  border-color: rgba(162, 156, 255, 0.6);
+}
+
+/* “Skip this week” tiny link */
+.cutin-skip {
+  border: none;
+  background: transparent;
+  color: rgba(200, 200, 220, 0.6);
+  font-size: 0.8rem;
+  margin-left: auto;
+  padding: 0.1rem 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Small screens: full width card */
+@media (max-width: 480px) {
+  .encounter-cutin-card {
+    max-width: 100%;
+    padding: 1.25rem 1.2rem 1.1rem;
+  }
+
+  .cutin-title {
+    font-size: 1.25rem;
+  }
+
+  .cutin-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .cutin-skip {
+    align-self: center;
+    margin-left: 0;
+  }
+}
+
+/* == Animations == */
+
+@keyframes cutin-backdrop-in {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+  to {
+    opacity: 1;
+    backdrop-filter: blur(18px);
+  }
+}
+
+@keyframes cutin-card-pop-in {
+  0% {
+    opacity: 0;
+    transform: translateY(36px) scale(0.92);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(0px) scale(1.01);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0px) scale(1.0);
+  }
+}
+
+@keyframes cutin-swipe {
+  0% {
+    opacity: 0;
+    transform: translateX(-60%);
+  }
+  30% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 0.85;
+    transform: translateX(8%);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(25%);
+  }
+}
+
+/* ==========================================================
+   1) ENEMY / TARGET INTRO ANIMATION
+   ========================================================== */
+
+/* Start state — enemy is offscreen + transparent */
+.encounter-target {
+  opacity: 0;
+  transform: translateY(-40px) scale(0.85);
+}
+
+/* This class gets added when encounter opens */
+.encounter-target-intro {
+  animation: encounterTargetIntro 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes encounterTargetIntro {
+  0% {
+    opacity: 0;
+    transform: translateY(-40px) scale(0.85);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(4px) scale(1.03); /* slight overshoot */
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+/* ============================================
+   WEAPON + ANIMATIONS (CLEAN VERSION)
+   ============================================ */
+
+/* Make the stage a positioning context */
+.encounter-stage {
+  position: relative;
+}
+
+/* Stage art (hammer + gate/boss) */
+.encounter-weapon,
+.encounter-target {
+  z-index: 1;
+}
+
+/* UI (HP bar, text, buttons) always on top */
+.encounter-ui {
+  position: relative;
+  z-index: 2;
+}
+
+/* Hammer visual: base state = visible, neutral */
+.encounter-weapon {
+  opacity: 1;
+  position: absolute;
+  left: 8%;
+  bottom: 18%;
+  width: 28%;
+  height: 64%;
+  pointer-events: none;
+  transform: translateY(0) scale(1) rotate(0deg);
+  filter: brightness(1);
+  transform-origin: center bottom;
+
+  /* OLD image path that definitely worked */
+  background-image: url("icons/assets/encounter/Hammer1.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center left;
+
+  transition:
+    filter 0.22s ease-out,
+    transform 0.16s ease-out,
+    box-shadow 0.22s ease-out;
+}
+
+
+/* Heavy Forge Slam intro */
+.encounter-weapon-materialize {
+  animation: weaponForgeSlam 1.15s cubic-bezier(0.22, 0.68, 0.14, 1.3) forwards;
+  transform-origin: center bottom;
+}
+
+/* Idle breathing */
+.encounter-weapon-idle {
+  animation: weaponIdlePulse 3.2s ease-in-out infinite;
+}
+
+/* Class we toggle on click for the swing */
+.encounter-hammer-swing {
+  animation: encounterHammerSwing 0.22s ease-out;
+}
+
+/* --- Animations --- */
+
+@keyframes weaponForgeSlam {
+  0% {
+    opacity: 0;
+    transform: translateY(60px) scale(0.6) rotate(-12deg);
+    filter: brightness(0.6);
+  }
+  35% {
+    opacity: 1;
+    transform: translateY(-6px) scale(1.08) rotate(-4deg);
+    filter: brightness(1.4);
+  }
+  55% {
+    transform: translateY(-12px) scale(1.14) rotate(2deg);
+    filter: brightness(1.7);
+  }
+  68% {
+    transform: translateY(0) scale(0.92) rotate(0deg);
+    filter: brightness(1.2);
+  }
+  82% {
+    transform: translateY(2px) scale(1.02);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    filter: brightness(1);
+  }
+}
+
+@keyframes weaponIdlePulse {
+  0%   { transform: translateY(0) scale(1);    filter: brightness(1); }
+  50%  { transform: translateY(-1px) scale(1.02); filter: brightness(1.15); }
+  100% { transform: translateY(0) scale(1);    filter: brightness(1); }
+}
+
+@keyframes encounterHammerSwing {
+  0%   { transform: rotate(0deg) translateY(0); }
+  25%  { transform: rotate(-18deg) translateY(-2px); }
+  55%  { transform: rotate(6deg) translateY(1px); }
+  100% { transform: rotate(0deg) translateY(0); }
+}
+
+/* Make sure hammer has no extra card / panel behind it */
+.encounter-weapon::before,
+.encounter-weapon::after {
+  content: none !important;
+  background: none !important;
+  box-shadow: none !important;
+}
+/* =========================================
+   ENCOUNTER LAYERING + SPACING FIX
+   ========================================= */
+
+/* Make sure the stage is a positioning context */
+#encounter-overlay .encounter-stage {
+  position: relative;
+}
+
+/* Hammer + boss/gate: sit ABOVE the HP bar, but ignore clicks */
+#encounter-overlay .encounter-weapon,
+#encounter-overlay .encounter-target {
+  position: absolute;
+  z-index: 0;          /* above UI visuals */
+  pointer-events: none;/* clicks go to buttons underneath */
+}
+
+/* UI row (HP bar + text + buttons) just below the art in stacking order */
+#encounter-overlay .encounter-ui {
+  position: relative;
+  z-index: 2;
+}
+
+/* Optional: tweak positions a bit so they don’t feel crowded by the bar */
+#encounter-overlay .encounter-weapon {
+  left: 6%;
+  bottom: 28%;   /* slightly higher so it clears the bar more */
+}
+
+#encounter-overlay .encounter-target {
+  right: 6%;
+  bottom: 24%;   /* small lift for better balance */
+}
+
+
 
 /* Dots row above the title */
 .weekly-goal-dots {
@@ -3889,6 +4292,7 @@ footer {
 }
 
 
+
     </style>
 
 </head>
@@ -4092,12 +4496,21 @@ footer {
 </section>
 
 <div style="padding:1rem; text-align:center; margin-top:2rem;">
-    <button type="button" style="padding:0.8rem 1.2rem; border-radius:10px; background:#444; color:white;"
-        onclick="launchWeeklyEncounterFromStats({ isBossWeek: false })">
+    <button type="button" id="dev-gate-btn"
+        style="padding:0.8rem 1.2rem; border-radius:10px; background:#444; color:white;">
         Test Gate Encounter (from stats)
     </button>
 </div>
 
+<button type="button" id="dev-boss-btn"
+    style="padding:0.8rem 1.2rem; border-radius:10px; background:#444; color:white;">
+    Test Boss Encounter
+</button>
+
+<button type="button" id="dev-complete-weekly-btn"
+    style="padding:0.8rem 1.2rem; border-radius:10px; background:#333; color:white; margin-top:10px;">
+    Test: Complete Weekly Goal
+</button>
 
 
 

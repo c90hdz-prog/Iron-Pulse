@@ -63,19 +63,39 @@ const ENCOUNTER_THEMES = {
     id: "gateDefault",
     type: "gate",
     spriteClass: "encounter-gate-default",
-    introAnimationClass: "encounter-intro-gate",
-    hitAnimationClass: "encounter-hit-gate",
-    defeatAnimationClass: "encounter-defeat-gate",
+    introAnimationClass: "encounter-target-intro",
+    hitAnimationClass: "encounter-gate-hit",
   },
-  bossPulseGuardian: {
-    id: "bossPulseGuardian",
-    type: "boss",
-    spriteClass: "encounter-boss-pulse-guardian",
-    introAnimationClass: "encounter-intro-boss",
-    hitAnimationClass: "encounter-hit-boss",
-    defeatAnimationClass: "encounter-defeat-boss",
+  gateDamaged: {
+    id: "gateDamaged",
+    type: "gate",
+    spriteClass: "encounter-gate-damaged",
+    introAnimationClass: "encounter-target-intro",
+    hitAnimationClass: "encounter-gate-hit",
+  },
+  gateCritical: {
+    id: "gateCritical",
+    type: "gate",
+    spriteClass: "encounter-gate-critical",
+    introAnimationClass: "encounter-target-intro",
+    hitAnimationClass: "encounter-gate-hit",
+  },
+  gateElite: {
+    id: "gateElite",
+    type: "gate",
+    spriteClass: "encounter-gate-elite",
+    introAnimationClass: "encounter-target-intro",
+    hitAnimationClass: "encounter-gate-hit",
+  },
+  gateBoss: {
+    id: "gateBoss",
+    type: "gate",
+    spriteClass: "encounter-gate-boss",
+    introAnimationClass: "encounter-target-intro",
+    hitAnimationClass: "encounter-target-hit",
   },
 };
+
 
 // weapon tiers: which "skin" to use based on % of weekly target
 const WEAPON_TIERS = [
@@ -129,6 +149,14 @@ function openWeeklyEncounter({
   bossMaxHp = 100,
   attackPowerPerTurn = 30,
 }) {
+
+      console.log("[Encounter] openWeeklyEncounter()", {
+    themeId: theme.id,
+    weaponPercent,
+    totalTurns,
+    bossMaxHp,
+    attackPowerPerTurn
+  });
   // Remove any existing overlay
   const existing = document.getElementById("encounter-overlay");
   if (existing) existing.remove();
@@ -179,7 +207,9 @@ function openWeeklyEncounter({
   const stageEl = overlay.querySelector(".encounter-stage");
   const targetEl = overlay.querySelector("#encounter-target");
   const weaponEl = overlay.querySelector("#encounter-weapon");
-
+    if (targetEl && theme.spriteClass) {
+    targetEl.classList.add(theme.spriteClass);
+    }
 
   // Init engine
   const encounter = runTurnBasedEncounter({
@@ -199,16 +229,28 @@ function openWeeklyEncounter({
   }
 
   // 🔥 Gate crack states (only for gate encounters)
-  if (stageEl.dataset.encounterType === "gate") {
-    stageEl.classList.remove("encounter-gate-damaged", "encounter-gate-critical");
+if (stageEl.dataset.encounterType === "gate") {
+  stageEl.classList.remove("encounter-gate-damaged", "encounter-gate-critical");
 
-    if (percent <= 35) {
-      stageEl.classList.add("encounter-gate-critical");
-    } else if (percent <= 70) {
-      stageEl.classList.add("encounter-gate-damaged");
-    }
+  if (percent <= 35) {
+    stageEl.classList.add("encounter-gate-critical");
+  } else if (percent <= 70) {
+    stageEl.classList.add("encounter-gate-damaged");
   }
+} else if (stageEl.dataset.encounterType === "boss") {
+  stageEl.classList.remove("encounter-boss-damaged", "encounter-boss-critical");
+
+  if (percent <= 35) {
+    stageEl.classList.add("encounter-boss-critical");
+  } else if (percent <= 70) {
+    stageEl.classList.add("encounter-boss-damaged");
+  }
+}
+
 },
+
+
+
 
     onEnd: ({ bossHp }) => {
       strikeBtn.disabled = true;
@@ -224,23 +266,45 @@ function openWeeklyEncounter({
     }
   });
 
-  // initial visuals
   bossBarEl.style.width = "100%";
   turnsEl.textContent = `${totalTurns} turns left`;
   stageEl.classList.add(theme.introAnimationClass);
 
-strikeBtn.addEventListener("click", () => {
-  // 🔨 Trigger hammer swing animation
+  // NEW: enemy / gate intro
+  setTimeout(() => {
+    if (targetEl) {
+      targetEl.classList.add("encounter-target-intro");
+    }
+  }, 50);
+
+  // 🔥 NEW: weapon forge + idle pulse
   if (weaponEl) {
-    weaponEl.classList.remove("encounter-hammer-swing");
-    // force reflow so animation can restart
-    void weaponEl.offsetWidth;
-    weaponEl.classList.add("encounter-hammer-swing");
+    // Delay so the enemy starts sliding in first
+    setTimeout(() => {
+      weaponEl.classList.add("encounter-weapon-materialize");
+
+      setTimeout(() => {
+        weaponEl.classList.remove("encounter-weapon-materialize");
+        weaponEl.classList.add("encounter-weapon-idle");
+      }, 1150);
+    }, 220); // tweak this value to taste (150–300ms feels good)
   }
 
-  // Run the turn-based attack
-  encounter.doAttack();
-});
+
+
+
+  strikeBtn.addEventListener("click", () => {
+    // 🔨 Trigger hammer swing animation
+    if (weaponEl) {
+      weaponEl.classList.remove("encounter-hammer-swing");
+      // force reflow so animation can restart
+      void weaponEl.offsetWidth;
+      weaponEl.classList.add("encounter-hammer-swing");
+    }
+
+    // Run the turn-based attack
+    encounter.doAttack();
+  });
 
 
   skipBtn.addEventListener("click", () => {
@@ -255,10 +319,128 @@ strikeBtn.addEventListener("click", () => {
   });
 }
 
+function offerWeeklyEncounterCutIn({ isBossWeek = false } = {}) {
+  // One key per type so gate and boss can be tracked separately
+  const storageKey = isBossWeek
+    ? "weeklyBossEncounterState"
+    : "weeklyGateEncounterState";
+
+  const existingState = localStorage.getItem(storageKey);
+  console.log("[Cut-in] existing state =", existingState);
+
+  // 🔎 IMPORTANT: for now, DO NOT early-return.
+  // Once we confirm visuals work, we can re-enable this:
+  // if (existingState === "skipped" || existingState === "seen") {
+  //   console.log("[Cut-in] Skipping, state is", existingState);
+  //   return;
+  // }
+
+  // Remove any previous instance
+  const existing = document.getElementById("encounter-cutin");
+  if (existing) existing.remove();
+
+  const overlay = document.createElement("div");
+  overlay.id = "encounter-cutin";
+  overlay.className = "encounter-cutin-overlay";
+
+  const title = isBossWeek ? "Boss Week Trial" : "Weekly Trial Unlocked";
+  const subtitle = isBossWeek
+    ? "You’ve forged your strength all month. The Pulse Guardian stands in your way."
+    : "Your training opened a new trial this week. Break the gate and mark this week in your favor.";
+
+  const primaryLabel = isBossWeek ? "Face the Guardian" : "Enter Trial";
+  const pillText = isBossWeek ? "BOSS WEEK" : "TRIAL READY";
+
+  overlay.innerHTML = `
+    <div class="encounter-cutin-card ${isBossWeek ? "cutin-boss" : "cutin-gate"}">
+      <div class="cutin-header">
+        <span class="cutin-pill">${pillText}</span>
+        <h2 class="cutin-title">${title}</h2>
+      </div>
+
+      <p class="cutin-subtitle">
+        ${subtitle}
+      </p>
+
+      <div class="cutin-actions">
+        <button type="button" class="btn btn-primary" id="cutin-start-btn">
+          ${primaryLabel}
+        </button>
+        <button type="button" class="btn btn-outline" id="cutin-later-btn">
+          Later
+        </button>
+        <button type="button" class="cutin-skip" id="cutin-skip-btn">
+          Skip this week
+        </button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  const startBtn = overlay.querySelector("#cutin-start-btn");
+  const laterBtn = overlay.querySelector("#cutin-later-btn");
+  const skipBtn  = overlay.querySelector("#cutin-skip-btn");
+
+  const setState = (state) => {
+    localStorage.setItem(storageKey, state);
+  };
+
+  // Enter trial immediately
+  if (startBtn) {
+  startBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    console.log("[Cut-in] Enter Trial clicked. isBossWeek =", isBossWeek);
+    setState("seen");
+    overlay.remove();
+    launchWeeklyEncounterFromStats({ isBossWeek });
+  });
+}
+
+
+  // “Later” – mark pending so we can show a small CTA elsewhere later
+  if (laterBtn) {
+    laterBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      setState("pending");
+      overlay.remove();
+    });
+  }
+
+  // “Skip this week”
+  if (skipBtn) {
+    skipBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      setState("skipped");
+      overlay.remove();
+    });
+  }
+
+  // Tap outside card = treat as "Later"
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) {
+      setState("pending");
+      overlay.remove();
+    }
+  });
+}
+
+
+
 function launchWeeklyEncounterFromStats({ isBossWeek = false } = {}) {
-  const goal = getWeeklyGoal();                 // your existing helper
-  const done = getWorkoutsCompletedThisWeek();  // your existing helper
-  if (!goal || done === 0) return;              // nothing to show
+  // Log so we know this is being hit
+  console.log("[Encounter] launchWeeklyEncounterFromStats called. isBossWeek =", isBossWeek);
+
+  const goalRaw = typeof getWeeklyGoal === "function" ? getWeeklyGoal() : null;
+  const doneRaw = typeof getWorkoutsCompletedThisWeek === "function"
+    ? getWorkoutsCompletedThisWeek()
+    : 0;
+
+  // Fallbacks so dev testing always shows *something*
+  const goal = goalRaw || 4;
+  const done = doneRaw || goal;  // if 0, pretend they hit the goal
+
+  console.log("[Encounter] goal =", goal, "done =", done);
 
   // Rough volume % for now – you can plug real volume later
   const percentOfGoal = Math.min(
@@ -266,7 +448,7 @@ function launchWeeklyEncounterFromStats({ isBossWeek = false } = {}) {
     Math.round((done / goal) * 100)
   );
 
-  const daysTrained = done; // or clamp/min/max if you want
+  const daysTrained = Math.max(1, done);
   const totalTurns = Math.max(1, Math.min(daysTrained, 7));
 
   // Boss HP scaled to goal; attack scaled to progress
@@ -276,18 +458,27 @@ function launchWeeklyEncounterFromStats({ isBossWeek = false } = {}) {
     Math.round((percentOfGoal / 100) * (bossMaxHp / totalTurns))
   );
 
+  console.log(
+    "[Encounter] percentOfGoal =", percentOfGoal,
+    "totalTurns =", totalTurns,
+    "attackPowerPerTurn =", attackPowerPerTurn
+  );
+
   const theme = isBossWeek
     ? ENCOUNTER_THEMES.bossPulseGuardian
     : ENCOUNTER_THEMES.gateDefault;
 
   openWeeklyEncounter({
-    theme,
+    theme: ENCOUNTER_THEMES.gateDefault,
     weaponPercent: percentOfGoal,
     totalTurns,
     bossMaxHp,
     attackPowerPerTurn,
   });
 }
+
+
+
 
 
 function markTodayAsSkippedInWeeklyState() {
@@ -3119,46 +3310,93 @@ function checkSplitCompletion() {
                     });
                 }
 
-    function celebrateWeeklyGoalHit() {
-        const goal = getWeeklyGoal();
-        const done = getWorkoutsCompletedThisWeek();
+function celebrateWeeklyGoalHit() {
+    const goal = getWeeklyGoal();
+    const done = getWorkoutsCompletedThisWeek();
 
-        // Only fire the moment you *hit* the goal, not on extra sessions
-        if (!goal || done !== goal) return;
+    // Only fire the moment you *hit* the goal, not on extra sessions
+    if (!goal || done !== goal) return;
 
-        // If one is already open, don’t stack them
-        if (document.querySelector(".weekly-overlay")) return;
+    // If one is already open, don’t stack them
+    if (document.querySelector(".weekly-overlay")) return;
 
-        const overlay = document.createElement("div");
-        overlay.className = "weekly-overlay";
-        overlay.innerHTML = `
-        <div class="weekly-overlay-card">
-            <h2>Weekly goal hit 🎉</h2>
-            <p>You showed up for all ${goal} planned sessions. That's how streaks are built.</p>
-            <button class="btn btn-primary" id="weekly-overlay-continue">Continue</button>
-        </div>
+    const overlay = document.createElement("div");
+    overlay.className = "weekly-overlay";
+    overlay.innerHTML = `
+      <div class="weekly-overlay-card">
+          <h2>Weekly goal hit 🎉</h2>
+          <p>You showed up for all ${goal} planned sessions. That's how streaks are built.</p>
+          <button class="btn btn-primary" id="weekly-overlay-continue">Continue</button>
+      </div>
     `;
 
-        document.body.appendChild(overlay);
+    document.body.appendChild(overlay);
 
-        // 🔹 Button closes the overlay
-        const continueBtn = overlay.querySelector("#weekly-overlay-continue");
-        if (continueBtn) {
-            continueBtn.addEventListener("click", (e) => {
-                e.stopPropagation(); // don’t trigger the background click
-                overlay.remove();
-            });
-        }
+    // 🔹 Button closes the overlay
+    const continueBtn = overlay.querySelector("#weekly-overlay-continue");
+    if (continueBtn) {
+        continueBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            overlay.remove();
 
-        // 🔹 Click outside the card also closes it
-        overlay.addEventListener("click", (e) => {
-            if (e.target === overlay) {
-                overlay.remove();
-            }
+            // 🔥 After closing celebration, offer the RPG cut-in
+            const isBossWeek = false; // TODO: hook real logic later
+            offerWeeklyEncounterCutIn({ isBossWeek });
         });
     }
 
+    // 🔹 Click outside the card also closes it
+    overlay.addEventListener("click", (e) => {
+        if (e.target === overlay) {
+            overlay.remove();
+        }
+    });
+}
 
+
+
+function devForceWeeklyGoalCompletion() {
+  const goal = getWeeklyGoal?.();
+  if (!goal) {
+    alert("No weekly goal set!");
+    return;
+  }
+
+  // Force workouts = goal
+  if (typeof setWorkoutsCompletedThisWeek === "function") {
+    setWorkoutsCompletedThisWeek(goal);
+  } else {
+    console.warn("setWorkoutsCompletedThisWeek is not defined");
+  }
+
+  // Optional: play your day-complete card animation if you have it
+  try {
+    flashDayComplete?.();
+  } catch (err) {
+    console.warn("flashDayComplete error or not defined:", err);
+  }
+
+  // Refresh UI bits that depend on weekly stats
+  try {
+    updateWeeklyVolumeSummary?.();
+  } catch (err) {
+    console.warn("updateWeeklyVolumeSummary not defined or failed:", err);
+  }
+
+  try {
+    updateStreak?.();
+  } catch (err) {
+    console.warn("updateStreak not defined or failed:", err);
+  }
+
+  // Then trigger the celebration overlay
+  try {
+    celebrateWeeklyGoalHit();
+  } catch (err) {
+    console.error("celebrateWeeklyGoalHit is not defined or failed:", err);
+    alert("celebrateWeeklyGoalHit failed — check console for details.");
+  }
+}
 
 
 
@@ -3417,18 +3655,46 @@ focusCompleteBtn.addEventListener('click', () => {
     // =============================
     // 9) INIT
     // =============================
-    window.addEventListener("DOMContentLoaded", () => {
-        ensureWeeklyState();
-        //resetWeeklyWeightByDay();
-        updateStreak();
-        initScreens();
-        initTodaysSplit();
-        initWeeklyGoalControls();
-        initFinisherControls();
-        initServiceWorker();
-        updateStreak();
-        updateWeeklyVolumeSummaryFromLog();
+// =============================
+// 9) INIT
+// =============================
+window.addEventListener("DOMContentLoaded", () => {
+  ensureWeeklyState();
+  //resetWeeklyWeightByDay();
+  updateStreak();
+  initScreens();
+  initTodaysSplit();
+  initWeeklyGoalControls();
+  initFinisherControls();
+  initServiceWorker();
+  updateStreak();
+  updateWeeklyVolumeSummaryFromLog();
 
-        initDebugStreakButton(); // 🔧 DEV ONLY – remove later
+  // 🔧 Dev buttons
+  const gateBtn = document.getElementById("dev-gate-btn");
+  const bossBtn = document.getElementById("dev-boss-btn");
+  const completeBtn = document.getElementById("dev-complete-weekly-btn");
 
+  if (gateBtn) {
+    gateBtn.addEventListener("click", () => {
+      console.log("[DEV] Gate encounter test");
+      launchWeeklyEncounterFromStats({ isBossWeek: false });
     });
+  }
+
+  if (bossBtn) {
+    bossBtn.addEventListener("click", () => {
+      console.log("[DEV] Boss encounter test");
+      launchWeeklyEncounterFromStats({ isBossWeek: true });
+    });
+  }
+
+  if (completeBtn) {
+    completeBtn.addEventListener("click", () => {
+      console.log("[DEV] Force weekly goal completion");
+      devForceWeeklyGoalCompletion();
+    });
+  }
+
+  initDebugStreakButton(); // 🔧 DEV ONLY – remove later
+});
