@@ -17,47 +17,9 @@
     const WEEKLY_GOAL_CELEBRATED_KEY = "ironPulse_weeklyGoalCelebrated";
     const WEEKLY_DAY_LOG_KEY = "ironPulse_weeklyDayLog"
     const WEEKDAY_LABELS_MON_FIRST = ["M", "T", "W", "T", "F", "S", "S"];
-    const VOLUME_OBJECTS = [
-  {
-    id: "backpack",
-    label: "Small backpack",
-    emoji: "🎒",
-    threshold: 0
-  },
-  {
-    id: "car",
-    label: "Small car",
-    emoji: "🚗",
-    threshold: 800      // hit this pretty early
-  },
-  {
-    id: "suv",
-    label: "Pickup truck",
-    emoji: "🚙",
-    threshold: 2500
-  },
-  {
-    id: "truck",
-    label: "Delivery truck",
-    emoji: "🚚",
-    threshold: 6000
-  },
-  {
-    id: "tank",
-    label: "Battle tank",
-    emoji: "🛡️",
-    threshold: 12000
-  },
-  {
-    id: "jet",
-    label: "Fighter jet",
-    emoji: "✈️",
-    threshold: 22000
-  }
-];
-// =============================
-// ENCOUNTER CONFIG
-// =============================
+    const VOLUME_BAND_STATE_KEY = "ironPulseVolumeBandState"; 
+    const FOCUS_VOLUME_SANITY_THRESHOLD = 60000; // lbs in ONE exercise before we double-check
+
 const ENCOUNTER_THEMES = {
   gateDefault: {
     id: "gateDefault",
@@ -105,6 +67,10 @@ const WEAPON_TIERS = [
   { id: "forged",      minPercent: 80,  maxPercent: 100, cssClass: "weapon-tier-3"   },
   { id: "overcharged", minPercent: 100, maxPercent: 999, cssClass: "weapon-tier-4"   },
 ];
+
+
+
+
 
 function pickWeaponTier(percent) {
   for (const tier of WEAPON_TIERS) {
@@ -499,170 +465,167 @@ function markTodayAsSkippedInWeeklyState() {
 
   localStorage.setItem(key, JSON.stringify(state));
 }
-
-// Moves the program cursor forward by 1 day
-function advanceSessionRotation(meta) {
-  if (!meta || !meta.programId) return;
-
-  // however you're storing program cursor – adjust key if needed
-  const KEY = "ironpulse.programCursor.v1";
-
-  let state;
-  try {
-    state = JSON.parse(localStorage.getItem(KEY)) || {};
-  } catch {
-    state = {};
+const volumeTiers = {
+  backpack: {
+    iconClass: "volume-icon-backpack",
+    label: "Backpack"
+  },
+  car: {
+    iconClass: "volume-icon-car",
+    label: "Small car"
+  },
+  suv: {
+    iconClass: "volume-icon-suv",
+    label: "SUV"
+  },
+  truck: {
+    iconClass: "volume-icon-truck",
+    label: "Pickup truck"
+  },
+  tank: {
+    iconClass: "volume-icon-tank",
+    label: "Tank"
+  },
+  jet: {
+    iconClass: "volume-icon-jet",
+    label: "Fighter jet"
+  },
+  cargo: {
+    iconClass: "volume-icon-cargo",
+    label: "Cargo plane"
+  },
+  orbital: {
+    iconClass: "volume-icon-orbital",
+    label: "Orbital station"
   }
+};
+function setWeeklyVolumeTier(tierKey) {
+  const tier = volumeTiers[tierKey];
+  if (!tier) return;
 
-  const programId = meta.programId;
-  const currentIndex = meta.recommendedIndex ?? 0;
+  const iconEl = document.getElementById("volume-object-icon");
+  const labelEl = document.getElementById("volume-object-label");
 
+  // Reset classes so we don't accumulate old ones
+  iconEl.className = "volume-object-icon " + tier.iconClass + " volume-icon-enter";
 
-  const program = PROGRAMS.find(p => p.id === programId);
-  const sessionCount = program ? program.sessions.length : 1;
+  // Optional: remove any leftover emoji attribute
+  iconEl.removeAttribute("data-emoji");
 
-  const nextIndex = (currentIndex + 1) % sessionCount;
-
-  state[programId] = {
-    index: nextIndex,
-    lastUpdated: new Date().toISOString()
-  };
-
-  localStorage.setItem(KEY, JSON.stringify(state));
+  // Update label text
+  labelEl.textContent = tier.label;
 }
 
-        const POST_WORKOUT_QUOTES = [
-            "Small steps stack faster than you think.",
-            "Every rep leaves a mark. Today’s is a good one.",
-            "Progress doesn’t shout. It whispers — until it doesn’t.",
-            "You’re closer than yesterday. That’s the whole point.",
-            "Momentum earned, not given.",
-            "Consistency beats intensity over time.",
-            "You showed up today. That’s the hardest rep.",
-            "You didn’t wait to feel ready. You started.",
-            "Strong days are built on days like this.",
-            "Today’s work will quietly show up later.",
-            "You’re building someone you can rely on.",
-            "Discipline is a skill. You’re sharpening it.",
-            "You kept a promise to yourself today.",
-            "This session is one more vote for the person you want to be.",
-            "Tired but done is still done.",
-            "You didn’t need perfect. You just needed effort.",
-            "Progress is built on days just like this one.",
-            "You finished. Most people never started.",
-            "You turned intention into action.",
-            "Your future self notices days like today.",
-            "You moved your body. Your mind will thank you.",
-            "Strong body, clearer head, better day.",
-            "You traded comfort for progress. That adds up.",
-            "Slow progress is still real progress.",
-            "You proved you can show up when it’s easier not to.",
-            "Not every workout is loud. This one still counts.",
-            "You didn’t quit when it got boring. That matters.",
-            "You handled the hard part. The rest of the day is lighter.",
-            "You trained the muscle and the habit.",
-            "You just raised your baseline a tiny bit.",
-            "You stacked another brick on the wall.",
-            "You’re quietly getting harder to stop.",
-            "You pushed when no one was watching.",
-            "Today’s effort is tomorrow’s normal.",
-            "Your body will remember this work.",
-            "You moved more than your mood.",
-            "You finished what you started. That’s rare.",
-            "You turned a plan into a result.",
-            "You’ve got one more data point that says: I can do hard things.",
-            "You just made the next workout easier to start.",
-            "You didn’t need perfect energy — just enough.",
-            "You kept the streak of effort alive.",
-            "You showed yourself you can follow through.",
-            "You’re teaching your brain that you’re serious.",
-            "Your comfort zone shifted a little today.",
-            "You chose long-term over short-term. Again.",
-            "You did something for yourself that no one can take away.",
-            "You turned pressure into progress.",
-            "You used your time instead of losing it.",
-            "You converted fatigue into confidence.",
-            "You did the work. The results will catch up.",
-            "You chose effort instead of excuses.",
-            "You invested in strength you haven’t even needed yet.",
-            "You showed up for your goals, not your feelings.",
-            "You pushed through the part where most people stop.",
-            "You did something future you can be proud of.",
-            "You traded 1 hour for a better week.",
-            "You turned a regular day into a win.",
-            "You didn’t wait for motivation. You built it.",
-            "You treated your health like a priority, not a slogan.",
-            "You proved that low energy doesn’t mean zero effort.",
-            "You made progress that only you needed to understand.",
-            "You added one more rep to your story.",
-            "You fought the urge to skip. That’s real strength.",
-            "You showed up for yourself. Again.",
-            "You picked effort over comfort. That’s how things change.",
-            "You finished the session. The hardest part is over.",
-            "You chose growth when nobody asked you to.",
-            "You practiced doing what you said you would do.",
-            "You gave your future self a better starting point.",
-            "You built proof that you’re capable, not just hopeful.",
-            "You didn’t let the day decide for you.",
-            "You chose discipline, not default.",
-            "You created momentum that only you can feel.",
-            "You made it through the reps your mind wanted to skip.",
-            "You pushed a little past your comfort zone.",
-            "You trained even if today wasn’t perfect. That’s power.",
-            "You gave yourself one less reason to doubt tomorrow.",
-            "You turned resistance into resilience.",
-            "You added another quiet win to your week.",
-            "You didn’t coast. You contributed.",
-            "You moved the needle, even if just a notch.",
-            "You showed your limits they don’t get the final say.",
-            "You made the hard thing look normal.",
-            "You turned “I should” into “I did.”",
-            "You invested in strength you’ll use outside the gym.",
-            "You ended the session stronger than you started.",
-            "You made today count in a way most people won’t.",
-            "You took control of at least one part of your day.",
-            "You proved that effort is always available.",
-            "You made your next choice easier by finishing this one.",
-            "You added weight to your confidence, not just the bar.",
-            "You didn’t wait for the right mood. You created it.",
-            "You practiced being the type of person you respect.",
-            "You kept your word when no one was checking.",
-            "You made progress in private that will show in public.",
-            "You turned doubt into data: you can do more than you think.",
-            "You finished tired, not empty. That’s a good line to live on.",
-            "You repped out discipline one set at a time.",
-            "You went from “maybe” to “done.”",
-            "You added a chapter to your streak, not a footnote.",
-            "You treated your goals like a job, not a wish.",
-            "You gave yourself a win that can’t be scrolled away.",
-            "You walked out stronger than you walked in.",
-            "You pushed through the voice that said “skip it.”",
-            "You made effort a habit, not an event.",
-            "You did enough today to be proud. That’s enough."
-        ];
+const POST_WORKOUT_QUOTES = [
+    "Small steps stack faster than you think.",
+    "Every rep leaves a mark. Today’s is a good one.",
+    "Progress doesn’t shout. It whispers — until it doesn’t.",
+    "You’re closer than yesterday. That’s the whole point.",
+    "Momentum earned, not given.",
+    "Consistency beats intensity over time.",
+    "You showed up today. That’s the hardest rep.",
+    "You didn’t wait to feel ready. You started.",
+    "Strong days are built on days like this.",
+    "Today’s work will quietly show up later.",
+    "You’re building someone you can rely on.",
+    "Discipline is a skill. You’re sharpening it.",
+    "You kept a promise to yourself today.",
+    "This session is one more vote for the person you want to be.",
+    "Tired but done is still done.",
+    "You didn’t need perfect. You just needed effort.",
+    "Progress is built on days just like this one.",
+    "You finished. Most people never started.",
+    "You turned intention into action.",
+    "Your future self notices days like today.",
+    "You moved your body. Your mind will thank you.",
+    "Strong body, clearer head, better day.",
+    "You traded comfort for progress. That adds up.",
+    "Slow progress is still real progress.",
+    "You proved you can show up when it’s easier not to.",
+    "Not every workout is loud. This one still counts.",
+    "You didn’t quit when it got boring. That matters.",
+    "You handled the hard part. The rest of the day is lighter.",
+    "You trained the muscle and the habit.",
+    "You just raised your baseline a tiny bit.",
+    "You stacked another brick on the wall.",
+    "You’re quietly getting harder to stop.",
+    "You pushed when no one was watching.",
+    "Today’s effort is tomorrow’s normal.",
+    "Your body will remember this work.",
+    "You moved more than your mood.",
+    "You finished what you started. That’s rare.",
+    "You turned a plan into a result.",
+    "You’ve got one more data point that says: I can do hard things.",
+    "You just made the next workout easier to start.",
+    "You didn’t need perfect energy — just enough.",
+    "You kept the streak of effort alive.",
+    "You showed yourself you can follow through.",
+    "You’re teaching your brain that you’re serious.",
+    "Your comfort zone shifted a little today.",
+    "You chose long-term over short-term. Again.",
+    "You did something for yourself that no one can take away.",
+    "You turned pressure into progress.",
+    "You used your time instead of losing it.",
+    "You converted fatigue into confidence.",
+    "You did the work. The results will catch up.",
+    "You chose effort instead of excuses.",
+    "You invested in strength you haven’t even needed yet.",
+    "You showed up for your goals, not your feelings.",
+    "You pushed through the part where most people stop.",
+    "You did something future you can be proud of.",
+    "You traded 1 hour for a better week.",
+    "You turned a regular day into a win.",
+    "You didn’t wait for motivation. You built it.",
+    "You treated your health like a priority, not a slogan.",
+    "You proved that low energy doesn’t mean zero effort.",
+    "You made progress that only you needed to understand.",
+    "You added one more rep to your story.",
+    "You fought the urge to skip. That’s real strength.",
+    "You showed up for yourself. Again.",
+    "You picked effort over comfort. That’s how things change.",
+    "You finished the session. The hardest part is over.",
+    "You chose growth when nobody asked you to.",
+    "You practiced doing what you said you would do.",
+    "You gave your future self a better starting point.",
+    "You built proof that you’re capable, not just hopeful.",
+    "You didn’t let the day decide for you.",
+    "You chose discipline, not default.",
+    "You created momentum that only you can feel.",
+    "You made it through the reps your mind wanted to skip.",
+    "You pushed a little past your comfort zone.",
+    "You trained even if today wasn’t perfect. That’s power.",
+    "You gave yourself one less reason to doubt tomorrow.",
+    "You turned resistance into resilience.",
+    "You added another quiet win to your week.",
+    "You didn’t coast. You contributed.",
+    "You moved the needle, even if just a notch.",
+    "You showed your limits they don’t get the final say.",
+    "You made the hard thing look normal.",
+    "You turned “I should” into “I did.”",
+    "You invested in strength you’ll use outside the gym.",
+    "You ended the session stronger than you started.",
+    "You made today count in a way most people won’t.",
+    "You took control of at least one part of your day.",
+    "You proved that effort is always available.",
+    "You made your next choice easier by finishing this one.",
+    "You added weight to your confidence, not just the bar.",
+    "You didn’t wait for the right mood. You created it.",
+    "You practiced being the type of person you respect.",
+    "You kept your word when no one was checking.",
+    "You made progress in private that will show in public.",
+    "You turned doubt into data: you can do more than you think.",
+    "You finished tired, not empty. That’s a good line to live on.",
+    "You repped out discipline one set at a time.",
+    "You went from “maybe” to “done.”",
+    "You added a chapter to your streak, not a footnote.",
+    "You treated your goals like a job, not a wish.",
+    "You gave yourself a win that can’t be scrolled away.",
+    "You walked out stronger than you walked in.",
+    "You pushed through the voice that said “skip it.”",
+    "You made effort a habit, not an event.",
+    "You did enough today to be proud. That’s enough."
+];
 
-
-
-// ---- Exercise volume log helpers ----
-
-const EXERCISE_LOG_KEY = "ironpulse.exerciseLog.v1";
-
-// Optional: map each exercise to a muscle group
-const EXERCISE_MUSCLE_MAP = {
-  "Squat": "Legs",
-  "Bench Press": "Chest",
-  "Row": "Back",
-  "Plank": "Core"
-  // add more as you add exercises
-};
-
-const MUSCLE_EMOJI_MAP = {
-  "Legs": "🦵",
-  "Chest": "💪",
-  "Back": "🏹",
-  "Core": "🛡️",
-  "Full Body": "🔥"
-};
 
 function getTodayKey() {
   const d = new Date();
@@ -672,166 +635,6 @@ function getTodayKey() {
   return `${y}-${m}-${day}`;
 }
 
-function getExerciseLog() {
-  try {
-    const raw = localStorage.getItem(EXERCISE_LOG_KEY);
-    return raw ? JSON.parse(raw) : {};
-  } catch (e) {
-    console.warn("Bad exercise log, resetting", e);
-    return {};
-  }
-}
-
-function saveExerciseLog(log) {
-  localStorage.setItem(EXERCISE_LOG_KEY, JSON.stringify(log));
-}
-
-/**
- * Save the sets for a single exercise for *today*.
- * cleanedSets = [{ weight: number, reps: number }, ...]
- */
-function recordExerciseSetsForToday(exerciseName, cleanedSets) {
-  const log = getExerciseLog();
-  const todayKey = getTodayKey();
-
-  if (!log[todayKey]) {
-    log[todayKey] = {};
-  }
-
-  // Overwrite today's sets for this exercise with the latest completed ones
-  log[todayKey][exerciseName] = cleanedSets;
-
-  saveExerciseLog(log);
-
-  // Recompute weekly volume + refresh UI
-  updateWeeklyVolumeSummaryFromLog();
-}
-    
-// ---- Weekly volume aggregation ----
-
-/**
- * Get the Date object for the start of this week.
- * Here I'm treating Monday as the start. Change if you prefer Sunday.
- */
-function getStartOfWeek(date = new Date()) {
-  const d = new Date(date);
-  const day = d.getDay(); // 0 = Sun, 1 = Mon, ...
-  const diff = (day === 0 ? -6 : 1) - day; // shift to Monday
-  d.setDate(d.getDate() + diff);
-  d.setHours(0, 0, 0, 0);
-  return d;
-}
-
-function dateToKey(date) {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
-}
-
-/**
- * Compute weekly totals:
- * - totalVolume: sum of (weight * reps)
- * - perMuscle: { "Legs": xxx, "Chest": yyy, ... }
- * - perExercise: { "Squat": xxx, ... }
- */
-function computeWeeklyVolumeSummary() {
-  const log = getExerciseLog();
-  const startOfWeek = getStartOfWeek();
-  const now = new Date();
-
-  let totalVolume = 0;
-  const perMuscle = {};
-  const perExercise = {};
-
-  // Walk each day of the week up to today
-  const cursor = new Date(startOfWeek);
-  while (cursor <= now) {
-    const key = dateToKey(cursor);
-    const dayLog = log[key];
-    if (dayLog) {
-      Object.entries(dayLog).forEach(([exerciseName, sets]) => {
-        const muscle =
-          EXERCISE_MUSCLE_MAP[exerciseName] || "Full Body";
-
-        const exerciseVolume = (sets || []).reduce((sum, set) => {
-          const w = Number(set.weight) || 0;
-          const r = Number(set.reps) || 0;
-          return sum + w * r;
-        }, 0);
-
-        totalVolume += exerciseVolume;
-        perExercise[exerciseName] =
-          (perExercise[exerciseName] || 0) + exerciseVolume;
-        perMuscle[muscle] =
-          (perMuscle[muscle] || 0) + exerciseVolume;
-      });
-    }
-
-    cursor.setDate(cursor.getDate() + 1);
-  }
-
-  return { totalVolume, perMuscle, perExercise };
-}
-
-/**
- * Update the weekly volume card UI.
- * Adjust element IDs if your HTML uses different ones.
- */
-function updateWeeklyVolumeSummaryFromLog() {
-  const { totalVolume } = computeWeeklyVolumeSummary();
-
-  // DOM hooks – these IDs match your HTML snippet
-  const emojiEl   = document.getElementById("volume-object-emoji");
-  const labelEl   = document.getElementById("volume-object-label");
-  const barFillEl = document.getElementById("volume-bar-fill");
-  const captionEl = document.getElementById("volume-bar-caption");
-
-  // If card isn't on this screen, bail quietly
-  if (!emojiEl || !labelEl || !barFillEl || !captionEl) return;
-
-  // Use your tier system instead of muscles
-  const { current, next, progress } = getVolumeTierInfo(totalVolume);
-
-  // Emoji + label from the current vehicle tier
-  emojiEl.textContent = current.emoji;
-  labelEl.textContent = current.label;
-
-  // Fill the bar based on progress within this tier
-  barFillEl.style.width = `${Math.round(progress * 100)}%`;
-
-  const roundedTotal = Math.round(totalVolume).toLocaleString();
-
-  if (!next) {
-    // Last tier reached (e.g. tank / jet)
-    captionEl.textContent =
-      `You’ve moved ${roundedTotal} lbs so far — you’ve maxed out this week’s ${current.label.toLowerCase()} tier.`;
-  } else {
-    const remaining = Math.max(0, next.threshold - totalVolume);
-    captionEl.textContent =
-      `You’ve moved ${roundedTotal} lbs so far — ` +
-      `${Math.round(remaining).toLocaleString()} lbs to upgrade into a ${next.label.toLowerCase()}.`;
-  }
-}
-
-
-
-    function getRandomPostWorkoutQuote() {
-            if (!POST_WORKOUT_QUOTES || POST_WORKOUT_QUOTES.length === 0) return "";
-            const idx = Math.floor(Math.random() * POST_WORKOUT_QUOTES.length);
-            return POST_WORKOUT_QUOTES[idx];
-        }
-
-    function getExerciseWeights() {
-        try {
-            const raw = localStorage.getItem(EXERCISE_WEIGHT_KEY);
-            if (!raw) return {};
-            const parsed = JSON.parse(raw);
-            return parsed && typeof parsed === "object" ? parsed : {};
-        } catch {
-            return {};
-        }
-    }
 
     function saveExerciseWeights(map) {
         try {
@@ -858,6 +661,380 @@ function updateWeeklyVolumeSummaryFromLog() {
 
     // === Weekly weight (by day, 0 = Sunday ... 6 = Saturday) ===
     const WEEKLY_WEIGHT_BY_DAY_KEY = "ironPulseWeeklyWeightByDay";
+// =============================
+// 4) VOLUME & WEEKLY CHALLENGE
+// =============================
+
+// ---- Volume tiers (objects you are "moving") ----
+const VOLUME_OBJECTS = [
+  { id: "backpack", label: "Small backpack", emoji: "🎒", threshold: 0 },
+  { id: "car",      label: "Small car",      emoji: "🚗", threshold: 4000 },
+  { id: "suv",      label: "Pickup truck",   emoji: "🚙", threshold: 10000 },
+  { id: "truck",    label: "Delivery truck", emoji: "🚚", threshold: 20000 },
+  { id: "tank",     label: "Battle tank",    emoji: "🛡️", threshold: 35000 },
+  { id: "jet",      label: "Fighter jet",    emoji: "✈️", threshold: 50000 },
+  { id: "cargo",    label: "Cargo plane",    emoji: "🛩️", threshold: 75000 },
+  { id: "orbital",  label: "Orbital station",emoji: "🛰️", threshold: 100000 }
+];
+
+// Optional CSS-based icon skins (for PNGs later)
+const VOLUME_ICON_CLASS_PREFIX = "volume-icon-";
+
+function applyVolumeIconTier(tierId) {
+  const iconEl = document.getElementById("volume-object-emoji");
+  if (!iconEl) return;
+
+  // Remove any previous volume-icon-* classes
+  const toRemove = [];
+  iconEl.classList.forEach(cls => {
+    if (cls.startsWith(VOLUME_ICON_CLASS_PREFIX)) {
+      toRemove.push(cls);
+    }
+  });
+  toRemove.forEach(cls => iconEl.classList.remove(cls));
+
+  // Add new tier class
+  if (tierId) {
+    iconEl.classList.add(`${VOLUME_ICON_CLASS_PREFIX}${tierId}`);
+  }
+}
+
+// ---- Simple difficulty “bands” just for copy tone ----
+const VOLUME_DIFFICULTY_BANDS = {
+  novice:       { id: "novice",       label: "Finding your base" },
+  intermediate: { id: "intermediate", label: "Dialed in" },
+  advanced:     { id: "advanced",     label: "Heavy hitter" }
+};
+
+function getVolumeDifficultyBand(totalLbs) {
+  const total = Math.max(0, totalLbs || 0);
+
+  if (total < 2500) return VOLUME_DIFFICULTY_BANDS.novice;
+  if (total < 6000) return VOLUME_DIFFICULTY_BANDS.intermediate;
+  return VOLUME_DIFFICULTY_BANDS.advanced;
+}
+
+// ---- Exercise volume log (per day, per exercise) ----
+const EXERCISE_LOG_KEY = "ironpulse.exerciseLog.v1";
+
+// Optional: which muscle group each exercise hits
+const EXERCISE_MUSCLE_MAP = {
+  "Squat":        "Legs",
+  "Bench Press":  "Chest",
+  "Row":          "Back",
+  "Plank":        "Core"
+  // add more as needed
+};
+
+const MUSCLE_EMOJI_MAP = {
+  "Legs":      "🦵",
+  "Chest":     "💪",
+  "Back":      "🏹",
+  "Core":      "🛡️",
+  "Full Body": "🔥"
+};
+
+function getTodayKey() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`; // "YYYY-MM-DD"
+}
+
+function getExerciseLog() {
+  try {
+    const raw = localStorage.getItem(EXERCISE_LOG_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch (e) {
+    console.warn("Bad exercise log, resetting", e);
+    return {};
+  }
+}
+
+function saveExerciseLog(log) {
+  localStorage.setItem(EXERCISE_LOG_KEY, JSON.stringify(log));
+}
+
+/**
+ * Save the sets for a single exercise for *today*.
+ * cleanedSets = [{ weight: number, reps: number }, ...]
+ * Also recomputes and redraws the weekly challenge card.
+ */
+function recordExerciseSetsForToday(exerciseName, cleanedSets) {
+  const log = getExerciseLog();
+  const todayKey = getTodayKey();
+
+  if (!log[todayKey]) {
+    log[todayKey] = {};
+  }
+
+  // Overwrite today's sets for this exercise with the latest completed ones
+  log[todayKey][exerciseName] = cleanedSets;
+  saveExerciseLog(log);
+
+  // Recompute weekly volume + refresh Weekly Challenge UI
+  updateWeeklyVolumeSummaryFromLog();
+}
+// ======================================
+// WEEKLY VOLUME – READ FROM EXERCISE LOG
+// ======================================
+
+function computeWeeklyVolumeSummary() {
+  const log = getExerciseLog();
+  const startOfWeek = getStartOfWeek();
+  const now = new Date();
+
+  let totalVolume = 0;
+
+  const cursor = new Date(startOfWeek);
+  while (cursor <= now) {
+    const key = dateToKey(cursor);
+    const dayLog = log[key];
+
+    if (dayLog) {
+      Object.values(dayLog).forEach((sets) => {
+        (sets || []).forEach((set) => {
+          const w = Number(set.weight) || 0;
+          const r = Number(set.reps) || 0;
+          totalVolume += w * r;
+        });
+      });
+    }
+
+    cursor.setDate(cursor.getDate() + 1);
+  }
+
+  return { totalVolume };
+}
+
+function updateWeeklyVolumeSummaryFromLog() {
+  const { totalVolume } = computeWeeklyVolumeSummary();
+  console.log("[WeeklyVolume] total lbs this week =", totalVolume);
+  renderWeeklyVolumeChallenge(totalVolume);
+}
+
+function applyVolumeIconTier(tierId) {
+  const iconEl = document.getElementById("volume-object-icon");
+
+  // reset to base class
+  iconEl.className = "volume-object-icon";
+
+  switch (tierId) {
+    case "backpack":
+      iconEl.classList.add("volume-icon-backpack");
+      break;
+    case "car":
+      iconEl.classList.add("volume-icon-car");
+      break;
+    case "suv":
+      iconEl.classList.add("volume-icon-suv");
+      break;
+    case "truck":
+      iconEl.classList.add("volume-icon-truck");
+      break;
+    case "tank":
+      iconEl.classList.add("volume-icon-tank");
+      break;
+    case "jet":
+      iconEl.classList.add("volume-icon-jet");
+      break;
+    case "cargo":
+      iconEl.classList.add("volume-icon-cargo");
+      break;
+    case "orbital":
+      iconEl.classList.add("volume-icon-orbital");
+      break;
+  }
+}
+
+
+function renderWeeklyVolumeChallenge(totalVolume) {
+  const iconEl    = document.getElementById("volume-object-icon");
+  const labelEl   = document.getElementById("volume-object-label");
+  const barFillEl = document.getElementById("volume-bar-fill");
+  const captionEl = document.getElementById("volume-bar-caption");
+  const cardEl    = document.querySelector(".weekly-volume-card");
+
+  if (!iconEl || !labelEl || !barFillEl || !captionEl) {
+    console.warn("[WeeklyVolume] Card elements not found");
+    return;
+  }
+
+  const safeTotal = Math.max(0, totalVolume || 0);
+
+  // Which object are we at?
+  const { current, next, progress } = getVolumeTierInfo(safeTotal);
+
+
+
+  /* ----------------------------------------------------
+     🔹 ICON + LABEL (PNG + animation)
+     ---------------------------------------------------- */
+  applyVolumeIconTier(current.id);     // sets PNG tier class
+ 
+  iconEl.removeAttribute("data-emoji");
+  iconEl.textContent = "";             // we no longer show emojis
+
+  labelEl.textContent = current.label;
+
+  // Entrance animation reset
+  iconEl.classList.remove("volume-icon-enter");
+  void iconEl.offsetWidth;
+  iconEl.classList.add("volume-icon-enter");
+
+  /* ----------------------------------------------------
+     🔹 Progress bar
+     ---------------------------------------------------- */
+  const pct = Math.round(progress * 100);
+  barFillEl.style.width = `${pct}%`;
+
+  /* ----------------------------------------------------
+     🔹 Caption
+     ---------------------------------------------------- */
+  const totalRounded = Math.round(safeTotal).toLocaleString();
+
+  if (next) {
+    const remaining = Math.max(0, next.threshold - safeTotal);
+    const remainingRounded = Math.round(remaining).toLocaleString();
+
+    captionEl.textContent =
+      `You’ve moved ${totalRounded} lbs so far — ` +
+      `${remainingRounded} lbs to see if you can reach a ${next.label.toLowerCase()} this week.`;
+  } else {
+    captionEl.textContent =
+      `You’ve moved ${totalRounded} lbs this week — you’ve outlifted the final tier. Everything now is bonus payload.`;
+  }
+
+  // ✨ Card pulse animation
+  if (cardEl) {
+    cardEl.classList.remove("volume-levelup");
+    void cardEl.offsetWidth;
+    cardEl.classList.add("volume-levelup");
+  }
+}
+
+/**
+ * Get today's actual logged volume (weight × reps) for a specific exercise.
+ */
+function getTodaysVolumeForExercise(exerciseName) {
+  const log = getExerciseLog();
+  const todayKey = getTodayKey();
+  const dayLog = log[todayKey];
+
+  if (!dayLog || !dayLog[exerciseName]) return 0;
+
+  return dayLog[exerciseName].reduce((sum, set) => {
+    const w = Number(set.weight) || 0;
+    const r = Number(set.reps) || 0;
+    return sum + w * r;
+  }, 0);
+}
+
+// ---- Weekly aggregation helpers ----
+
+/**
+ * Monday as start of week (Mon–Sun).
+ */
+function getStartOfWeek(date = new Date()) {
+  const d = new Date(date);
+  const day = d.getDay(); // 0=Sun, 1=Mon, ...
+  const diff = (day === 0 ? -6 : 1) - day; // shift to Monday
+  d.setDate(d.getDate() + diff);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+function dateToKey(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+/**
+ * Walks from Monday → today, sums all (weight × reps).
+ * Returns:
+ *  - totalVolume: number
+ *  - perMuscle: { "Chest": lbs, ... }
+ *  - perExercise: { "Bench Press": lbs, ... }
+ */
+function computeWeeklyVolumeSummary() {
+  const log = getExerciseLog();
+  const startOfWeek = getStartOfWeek();
+  const now = new Date();
+
+  let totalVolume = 0;
+  const perMuscle = {};
+  const perExercise = {};
+
+  const cursor = new Date(startOfWeek);
+  while (cursor <= now) {
+    const key = dateToKey(cursor);
+    const dayLog = log[key];
+    if (dayLog) {
+      Object.entries(dayLog).forEach(([exerciseName, sets]) => {
+        const muscle = EXERCISE_MUSCLE_MAP[exerciseName] || "Full Body";
+
+        const exerciseVolume = (sets || []).reduce((sum, set) => {
+          const w = Number(set.weight) || 0;
+          const r = Number(set.reps) || 0;
+          return sum + w * r;
+        }, 0);
+
+        totalVolume += exerciseVolume;
+        perExercise[exerciseName] =
+          (perExercise[exerciseName] || 0) + exerciseVolume;
+        perMuscle[muscle] =
+          (perMuscle[muscle] || 0) + exerciseVolume;
+      });
+    }
+
+    cursor.setDate(cursor.getDate() + 1);
+  }
+
+  return { totalVolume, perMuscle, perExercise };
+}
+
+// ---- Tier lookup for current + next object ----
+
+/**
+ * Given total lbs, returns:
+ *  - current: tier the user is currently in
+ *  - next:    next tier object (or null if at top)
+ *  - progress: 0–1 progress *within* the current tier
+ */
+function getVolumeTierInfo(totalLbs) {
+  const total = Math.max(0, totalLbs || 0);
+
+  let current = VOLUME_OBJECTS[0];
+  let next = null;
+
+  for (let i = 0; i < VOLUME_OBJECTS.length; i++) {
+    const tier = VOLUME_OBJECTS[i];
+    if (total >= tier.threshold) {
+      current = tier;
+      next = VOLUME_OBJECTS[i + 1] || null;
+    } else {
+      // first tier whose threshold we haven’t reached yet
+      next = tier;
+      break;
+    }
+  }
+
+  let progress = 1;
+  if (next) {
+    const span = Math.max(next.threshold - current.threshold, 1);
+    const base = total - current.threshold;
+    progress = Math.min(Math.max(base / span, 0), 1);
+  } else {
+    progress = 1; // at or beyond the last object
+  }
+
+  return { current, next, progress };
+}
+
+
 
 
     // Splits by day (you already had this)
@@ -1486,85 +1663,174 @@ function advanceRecommendedSession(programId) {
         }
 
 
-
-
-    function getVolumeTierInfo(totalLbs) {
-            // Make sure total is non-negative
-            const total = Math.max(0, totalLbs || 0);
-
-            let current = VOLUME_OBJECTS[0];
-            let next = null;
-
-            for (let i = 0; i < VOLUME_OBJECTS.length; i++) {
-                const tier = VOLUME_OBJECTS[i];
-                if (total >= tier.threshold) {
-                    current = tier;
-                    next = VOLUME_OBJECTS[i + 1] || null;
-                } else {
-                    // first tier whose threshold we haven't reached yet
-                    next = tier;
-                    break;
-                }
-            }
-
-            let progress = 1;
-            if (next) {
-                const span = Math.max(next.threshold - current.threshold, 1);
-                const base = total - current.threshold;
-                progress = Math.min(Math.max(base / span, 0), 1);
-            } else {
-                progress = 1; // at or beyond the last object
-            }
-
-            return { current, next, progress };
-        }
-
-
-function updateWeeklyVolumeSummary() {
-  // 1) Get weekly total (weight × reps)
-  const { totalVolume } = computeWeeklyVolumeSummary();
-
-  // 2) Figure out which vehicle we’re on + progress within that tier
-  const { current, next, progress } = getVolumeTierInfo(totalVolume);
-
-  // 3) Grab DOM elements
-  const emojiEl   = document.getElementById("volume-object-emoji");
-  const labelEl   = document.getElementById("volume-object-label");
-  const barFillEl = document.getElementById("volume-bar-fill");
-  const captionEl = document.getElementById("volume-bar-caption");
-
-  if (!emojiEl || !labelEl || !barFillEl || !captionEl) return;
-
-  // 4) Set emoji + label for current object
-  emojiEl.textContent = current.emoji;
-  labelEl.textContent = current.label;
-
-  // 5) Set bar width based on progress in current tier (0–1)
-  const pct = Math.round(progress * 100);
-  barFillEl.style.width = pct + "%";
-
-  // Optional little “pop” animation
-  barFillEl.classList.add("volume-levelup");
-  setTimeout(() => barFillEl.classList.remove("volume-levelup"), 700);
-
-  // 6) Caption text (current total + tease next object)
-  const totalRounded = Math.round(totalVolume).toLocaleString();
-
-  if (next) {
-    captionEl.textContent =
-      `You’ve moved ${totalRounded} lbs so far — next up: ${next.label.toLowerCase()}.`;
-  } else {
-    captionEl.textContent =
-      `You’ve moved ${totalRounded} lbs — you’ve outlifted the final tier. Monster work.`;
+function getVolumeBandState() {
+  try {
+    const raw = localStorage.getItem(VOLUME_BAND_STATE_KEY);
+    if (!raw) {
+      // Default starting point
+      return {
+        band: "novice",
+        weeksInBand: 0,
+        lastAvgPerSession: 0,
+        lastWeekTotalVolume: 0,
+        lastWeekSessions: 0,
+      };
+    }
+    const parsed = JSON.parse(raw);
+    return {
+      band: parsed.band || "novice",
+      weeksInBand: parsed.weeksInBand ?? 0,
+      lastAvgPerSession: parsed.lastAvgPerSession ?? 0,
+      lastWeekTotalVolume: parsed.lastWeekTotalVolume ?? 0,
+      lastWeekSessions: parsed.lastWeekSessions ?? 0,
+    };
+  } catch {
+    return {
+      band: "novice",
+      weeksInBand: 0,
+      lastAvgPerSession: 0,
+      lastWeekTotalVolume: 0,
+      lastWeekSessions: 0,
+    };
   }
 }
 
+function setVolumeBandState(state) {
+  try {
+    localStorage.setItem(VOLUME_BAND_STATE_KEY, JSON.stringify(state));
+  } catch {
+    // swallow
+  }
+}
 
+function classifyVolumeBand(avgPerSession) {
+  const v = Math.max(0, avgPerSession || 0);
 
+  // Rough ranges – tweak later if you want
+  if (v < 3000) {
+    return "novice";
+  } else if (v < 8000) {
+    return "intermediate";
+  } else {
+    return "advanced";
+  }
+}
 
-    // =============================
-    // 2) STORAGE HELPERS
-    // =============================
+function computeVolumeSummaryForWeek(weekStartDate) {
+  const log = getExerciseLog();
+  const start = new Date(weekStartDate);
+  start.setHours(0, 0, 0, 0);
+
+  const end = new Date(start);
+  end.setDate(start.getDate() + 6); // 7 days total (Mon-Sun)
+  end.setHours(23, 59, 59, 999);
+
+  let totalVolume = 0;
+  let daysWithAnyVolume = 0;
+
+  const cursor = new Date(start);
+  while (cursor <= end) {
+    const key = dateToKey(cursor);
+    const dayLog = log[key];
+    let dayVolume = 0;
+
+    if (dayLog) {
+      Object.entries(dayLog).forEach(([exerciseName, sets]) => {
+        const exerciseVolume = (sets || []).reduce((sum, set) => {
+          const w = Number(set.weight) || 0;
+          const r = Number(set.reps) || 0;
+          return sum + w * r;
+        }, 0);
+        dayVolume += exerciseVolume;
+      });
+    }
+
+    if (dayVolume > 0) {
+      daysWithAnyVolume += 1;
+      totalVolume += dayVolume;
+    }
+
+    cursor.setDate(cursor.getDate() + 1);
+  }
+
+  return {
+    totalVolume,
+    daysWithAnyVolume
+  };
+}
+
+/**
+ * Called when we detect a new week (inside ensureWeeklyState).
+ * Looks at last week's total volume + sessions completed and quietly
+ * updates the current volume band (novice / intermediate / advanced).
+ */
+function evaluateLastWeekForVolumeBand() {
+  const storedWeekId = localStorage.getItem(WEEK_ID_KEY);
+  if (!storedWeekId) return;
+
+  // WEEK_ID_KEY is the Monday "YYYY-MM-DD" string for the *previous* week
+  const weekStart = new Date(storedWeekId + "T00:00:00");
+  if (Number.isNaN(weekStart.getTime())) return;
+
+  const { totalVolume } = computeVolumeSummaryForWeek(weekStart);
+
+  // Use your existing weekly workout counter as "sessions"
+  const lastWeekSessions = getWorkoutsCompletedThisWeek?.() ?? 0;
+
+  if (lastWeekSessions <= 0 || totalVolume <= 0) {
+    // No real training logged last week → don't change band, just store stats
+    const current = getVolumeBandState();
+    setVolumeBandState({
+      ...current,
+      lastAvgPerSession: 0,
+      lastWeekTotalVolume: totalVolume,
+      lastWeekSessions: lastWeekSessions,
+    });
+    return;
+  }
+
+  const avgPerSession = totalVolume / lastWeekSessions;
+  const newBand = classifyVolumeBand(avgPerSession);
+  const current = getVolumeBandState();
+
+  let band = current.band || newBand;
+  let weeksInBand = current.weeksInBand ?? 0;
+
+  if (!current.band) {
+    // First time classification
+    band = newBand;
+    weeksInBand = 1;
+  } else if (newBand === current.band) {
+    // Same band → strengthen confidence
+    weeksInBand += 1;
+  } else {
+    // Different band than before – only move if we've been in the old band
+    // at least 1 full week. This adds a little inertia so it doesn't flip-flop.
+    if (weeksInBand >= 1) {
+      band = newBand;
+      weeksInBand = 1;
+    } else {
+      // Not enough history in old band → hold it steady for now
+      // (you can tweak this behavior later)
+      band = current.band;
+    }
+  }
+
+  setVolumeBandState({
+    band,
+    weeksInBand,
+    lastAvgPerSession: avgPerSession,
+    lastWeekTotalVolume: totalVolume,
+    lastWeekSessions: lastWeekSessions,
+  });
+}
+
+/** Convenience: just return "novice" | "intermediate" | "advanced" */
+function getCurrentVolumeBand() {
+  const state = getVolumeBandState();
+  return state.band || "novice";
+}
+
     function getWeeklyGoal() {
             const stored = localStorage.getItem(WEEKLY_GOAL_KEY);
             if (!stored) {
@@ -2201,52 +2467,39 @@ function renderWeeklyFocusLive() {
         }
 
 
-        function ensureWeeklyState() {
-            const currentWeekId = getCurrentWeekId();
-            const storedWeekId = localStorage.getItem(WEEK_ID_KEY);
+function ensureWeeklyState() {
+  const currentWeekId = getCurrentWeekId();
+  const storedWeekId = localStorage.getItem(WEEK_ID_KEY);
 
-            // First time using the app: initialize week ID and bail
-            if (!storedWeekId) {
-                localStorage.setItem(WEEK_ID_KEY, currentWeekId);
-                return;
-            }
+  // First time using the app: initialize week ID and bail
+  if (!storedWeekId) {
+    localStorage.setItem(WEEK_ID_KEY, currentWeekId);
+    return;
+  }
 
-            // Same week → nothing to do
-            if (storedWeekId === currentWeekId) {
-                return;
-            }
+  // Same week → nothing to do
+  if (storedWeekId === currentWeekId) {
+    return;
+  }
 
-            // 🚀 New week detected:
-            // 1) Evaluate last week for streak
-            evaluateLastWeekForStreak();
+  // 🚀 New week detected:
+  // 1) Evaluate last week for streak (attendance/commitment)
+  evaluateLastWeekForStreak();
 
-            // 2) Reset weekly counters for the new week
-            setWorkoutsCompletedThisWeek(0);
-            setRotationIndex(0);
-            resetWeeklyWeightByDay();
-            // After resetting + evaluating streak
-            updateStreak();
+  // 2) Evaluate last week for volume band (strength/effort)
+  evaluateLastWeekForVolumeBand();
 
+  // 3) Reset weekly counters for the new week
+  setWorkoutsCompletedThisWeek(0);
+  setRotationIndex(0);
+  resetWeeklyWeightByDay();
 
-            // 3) Store the new week ID
-            localStorage.setItem(WEEK_ID_KEY, currentWeekId);
-        }
-   
-function getTodaysVolumeForExercise(exerciseName) {
-  const log = getExerciseLog();   // uses EXERCISE_LOG_KEY
-  const todayKey = getTodayKey(); // you already have this helper
-  const dayLog = log[todayKey];
+  // 4) After resetting + evaluating streak, refresh streak UI
+  updateStreak();
 
-  if (!dayLog || !dayLog[exerciseName]) return 0;
-
-  return dayLog[exerciseName].reduce((sum, set) => {
-    const w = Number(set.weight) || 0;
-    const r = Number(set.reps) || 0;
-    return sum + w * r;
-  }, 0);
+  // 5) Store the new week ID
+  localStorage.setItem(WEEK_ID_KEY, currentWeekId);
 }
-
-
 
 let hasRecordedCompletionForCurrentSplit = false;
 
@@ -2555,37 +2808,7 @@ function renderSessionIntoSplitCard(session, weeklyGoal) {
             return map[tier] || "New Emblem Unlocked";
         }
 
-        // Full-screen rank-up overlay
-        function showRankUpOverlay(tier) {
-            const label = getEmblemLabelForTier(tier);
-
-            const overlay = document.createElement("div");
-            overlay.className = "rankup-overlay";
-
-            overlay.innerHTML = `
-        <div class="rankup-inner">
-            <div class="rankup-emblem-preview ${tier}">
-                <span class="rankup-icon">🔥</span>
-            </div>
-            <h2>New Emblem Unlocked</h2>
-            <p>${label}</p>
-            <button type="button" class="btn btn-primary rankup-close">Continue</button>
-        </div>
-    `;
-
-            document.body.appendChild(overlay);
-
-            const close = () => overlay.remove();
-
-            overlay.addEventListener("click", (e) => {
-                if (e.target === overlay) close();
-            });
-
-            const btn = overlay.querySelector(".rankup-close");
-            if (btn) {
-                btn.addEventListener("click", close);
-            }
-        }
+   
 
         function triggerEmblemRankUp(tier, visuals) {
                 const overlay = document.createElement("div");
@@ -2787,7 +3010,8 @@ function onWorkoutCompleted() {
 
     // 4) UI updates
     updateStreak();
-    updateWeeklyVolumeSummary?.();
+    updateWeeklyVolumeSummaryFromLog();
+
     flashDayComplete(); // per-workout animation
 
     // 5) Weekly goal celebration + overlay + quote
@@ -3088,7 +3312,7 @@ function checkSplitCompletion() {
       "You skipped the Afterburn sesssion today. Main work still counts — come back stronger tomorrow.";
     tagEl.textContent = "SKIPPED";
 
-    finisherCard.classList.add("Locked");
+    finisherCard.classList.add("locked");
     doBtn.disabled   = true;
     skipBtn.disabled = true;
   });
@@ -3378,7 +3602,8 @@ function devForceWeeklyGoalCompletion() {
 
   // Refresh UI bits that depend on weekly stats
   try {
-    updateWeeklyVolumeSummary?.();
+    updateWeeklyVolumeSummaryFromLog();
+
   } catch (err) {
     console.warn("updateWeeklyVolumeSummary not defined or failed:", err);
   }
@@ -3454,6 +3679,83 @@ const focusCloseBtn = document.getElementById('focus-close-btn');
 const MAX_FOCUS_SETS = 5;
 
 let currentFocusExercise = null;
+
+function getCurrentFocusTotalVolume() {
+  if (!currentFocusExercise) return 0;
+
+  return currentFocusExercise.sets.reduce((sum, s) => {
+    const w = Number(s.weight) || 0;
+    const r = Number(s.reps) || 0;
+    return sum + w * r;
+  }, 0);
+}
+function maybeConfirmInsaneFocusVolume(totalVolume, onConfirm) {
+  // If it's not crazy, just proceed
+  if (totalVolume < FOCUS_VOLUME_SANITY_THRESHOLD) {
+    onConfirm();
+    return;
+  }
+
+  // If one is already open, don't stack
+  if (document.querySelector(".weekly-overlay.focus-volume-sanity")) {
+    return;
+  }
+
+  const overlay = document.createElement("div");
+  overlay.className = "weekly-overlay focus-volume-sanity";
+
+  overlay.innerHTML = `
+    <div class="weekly-overlay-card">
+      <h2>That is… a LOT of weight 😅</h2>
+      <p>
+        You’re about to log
+        <strong>${Math.round(totalVolume).toLocaleString()} lbs</strong>
+        on this one exercise.
+      </p>
+      <p style="margin-top:0.5rem; font-size:0.9rem; opacity:0.9;">
+        If that’s real, you’re a monster. If a zero slipped in, you might want
+        to fix it before we lock it in.
+      </p>
+      <div style="display:flex; gap:0.5rem; margin-top:1rem; flex-wrap:wrap;">
+        <button class="btn btn-primary" id="focus-volume-keep">
+          Looks right 💪
+        </button>
+        <button class="btn btn-outline" id="focus-volume-fix">
+          Oops, let me edit
+        </button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  const close = () => overlay.remove();
+
+  const keepBtn = overlay.querySelector("#focus-volume-keep");
+  const fixBtn  = overlay.querySelector("#focus-volume-fix");
+
+  if (keepBtn) {
+    keepBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      close();
+      onConfirm(); // actually log the sets
+    });
+  }
+
+  if (fixBtn) {
+    fixBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      close();
+      showToast?.("No worries — adjust the sets, then hit Complete again.");
+    });
+  }
+
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) {
+      close();
+    }
+  });
+}
 
 // Render all set rows
 function renderFocusSets() {
@@ -3589,7 +3891,19 @@ focusCancelBtn.addEventListener('click', closeFocusCard);
 focusCloseBtn.addEventListener('click', closeFocusCard);
 
 // Complete – for now just log + close; you can hook this into your volume logic
+// Complete
+// Complete – log with sanity check first
 focusCompleteBtn.addEventListener('click', () => {
+  if (!currentFocusExercise) return;
+
+  const totalVolume = getCurrentFocusTotalVolume();
+
+  // Show the “are you sure?” overlay only if it’s insane,
+  // otherwise just commit immediately.
+  maybeConfirmInsaneFocusVolume(totalVolume, finalizeFocusExerciseCompletion);
+});
+
+function finalizeFocusExerciseCompletion() {
   if (!currentFocusExercise) return;
 
   // 1) Clean the sets (only keep ones with weight + reps)
@@ -3628,27 +3942,24 @@ focusCompleteBtn.addEventListener('click', () => {
     }
 
     // c) Update that row's "X lbs logged" text from today's log
-   const metaValueEl = targetRow.querySelector('.exercise-meta-value');
-        if (metaValueEl) {
-        const todaysVolume = getTodaysVolumeForExercise(currentFocusExercise.name);
-        metaValueEl.textContent =
-            todaysVolume > 0
-            ? `${todaysVolume.toLocaleString()} lbs logged`
-            : "0 lbs logged";
-        }
-
+    const metaValueEl = targetRow.querySelector('.exercise-meta-value');
+    if (metaValueEl) {
+      const todaysVolume = getTodaysVolumeForExercise(currentFocusExercise.name);
+      metaValueEl.textContent =
+        todaysVolume > 0
+          ? `${todaysVolume.toLocaleString()} lbs logged`
+          : '0 lbs logged';
+    }
   }
 
-  // 4) Re-run your split completion logic (unlock finisher, streak, etc.)
+  // 4) Re-run your split completion logic (unlock finisher, etc.)
   if (typeof checkSplitCompletion === 'function') {
     checkSplitCompletion();
   }
 
   // 5) Close the focus card
   closeFocusCard();
-});
-
-
+}
 
 
 

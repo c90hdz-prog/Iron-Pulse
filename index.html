@@ -1585,6 +1585,9 @@ footer {
 
 
 /* Weekly goal celebration overlay */
+.weekly-overlay.focus-volume-sanity {
+  z-index: 9999;
+}
 .weekly-overlay {
     position: fixed;
     inset: 0;
@@ -1594,7 +1597,7 @@ footer {
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 50;
+    z-index: 9500;
     animation: overlay-in 0.35s ease-out forwards;
 }
 
@@ -1867,23 +1870,16 @@ footer {
     filter 0.22s ease-out;
 }
 
-/* GATE DAMAGED – first cracks show */
-.encounter-gate-damaged .encounter-target::after {
-  opacity: 0.5;
-  filter: brightness(1.05);
+/* Damaged gate art */
+.encounter-gate-damaged .encounter-target {
+  background-image: url("icons/assets/encounter/Gate1_damaged.png");
 }
 
-/* GATE CRITICAL – strong cracks + brighter core */
-.encounter-gate-critical .encounter-target::after {
-  opacity: 0.9;
-  filter: brightness(1.2);
+/* Critical gate art */
+.encounter-gate-critical .encounter-target {
+  background-image: url("icons/assets/encounter/Gate1_critical.png");
 }
 
-.encounter-gate-critical .encounter-target::before {
-  box-shadow:
-    0 0 16px rgba(var(--accent-2-rgb), 0.65) inset,
-    0 0 18px rgba(var(--accent-2-rgb), 0.75);
-}
 
 /* =============================
    BOSS SKIN – "Pulse Guardian" Shadow Knight
@@ -3348,6 +3344,7 @@ footer {
 }
 
 /* Object side */
+/* Object side */
 .volume-object {
   display: flex;
   flex-direction: column;
@@ -3356,18 +3353,41 @@ footer {
   min-width: 110px;
 }
 
-.volume-object-emoji {
-  font-size: 2.3rem;
-  line-height: 1;
+/* ICON CONTAINER – ready for PNGs */
+.volume-object-icon {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  border-radius: 999px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  /* Glow + motion base */
   filter: drop-shadow(0 0 10px var(--aura-soft));
-  transition: transform 0.25s ease, filter 0.25s ease;
+  transition:
+    transform 0.25s ease,
+    filter 0.25s ease;
 }
 
+/* Emoji fallback (uses data-emoji attribute) */
+.volume-object-icon::before {
+  content: attr(data-emoji);
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.3rem;
+  line-height: 1;
+}
+
+/* Label under icon */
 .volume-object-label {
   font-size: 0.85rem;
   text-align: center;
   color: var(--text-muted);
 }
+
 
 /* Bar side */
 .volume-bar-block {
@@ -3438,9 +3458,172 @@ footer {
   animation: volumeBarExplode 0.7s ease-out;
 }
 
-.volume-object-emoji.levelup-pop {
+.volume-object-icon.levelup-pop {
   animation: volumeEmojiPop 0.6s ease-out;
 }
+
+/* --- Volume Icon PNGs --- */
+.volume-object-icon.volume-icon-backpack { 
+  background-image: url("icons/assets/volume_objects/backpack.png");
+}
+
+.volume-object-icon.volume-icon-car { 
+  background-image: url("icons/assets/volume_objects/car.png");
+}
+
+.volume-object-icon.volume-icon-suv { 
+  background-image: url("icons/assets/volume_objects/suv.png");
+}
+
+.volume-object-icon.volume-icon-truck { 
+  background-image: url("icons/assets/volume_objects/delivery.png");
+}
+
+.volume-object-icon.volume-icon-tank { 
+  background-image: url("icons/assets/volume_objects/tank.png");
+}
+
+.volume-object-icon.volume-icon-jet { 
+  background-image: url("icons/assets/volume_objects/jet.png");
+}
+
+.volume-object-icon.volume-icon-cargo { 
+  background-image: url("icons/assets/volume_objects/cargo.png");
+}
+
+.volume-object-icon.volume-icon-orbital { 
+  background-image: url("icons/assets/volume_objects/satellite.png");
+}
+/* --- Base entrance animation (used for all icons) --- */
+.volume-icon-enter {
+  animation: volumeIconEnter 0.7s cubic-bezier(0.22, 0.9, 0.3, 1.1) forwards;
+}
+
+@keyframes volumeIconEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(14px) scale(0.9);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(-2px) scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.volume-icon-car.volume-icon-enter {
+  animation: volumeIconDriveIn 0.8s cubic-bezier(0.22, 0.9, 0.3, 1.1) forwards;
+}
+
+@keyframes volumeIconDriveIn {
+  0% {
+    opacity: 0;
+    transform: translateX(-22px) rotate(-8deg);
+  }
+  60% {
+    opacity: 1;
+    transform: translateX(3px) rotate(3deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) rotate(0deg);
+  }
+}
+.volume-icon-suv.volume-icon-enter,
+.volume-icon-truck.volume-icon-enter {
+  animation: volumeIconDrop 0.75s cubic-bezier(0.22, 0.9, 0.3, 1.3) forwards;
+}
+
+@keyframes volumeIconDrop {
+  0% {
+    opacity: 0;
+    transform: translateY(-24px) scale(1.15) rotate(-4deg);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(3px) scale(0.97);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+  }
+}
+.volume-icon-tank.volume-icon-enter {
+  animation: volumeIconRise 0.85s cubic-bezier(0.22, 0.9, 0.3, 1.1) forwards;
+}
+
+@keyframes volumeIconRise {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.85);
+  }
+  70% {
+    opacity: 1;
+    transform: translateY(-3px) scale(1.05);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+  }
+}
+.volume-icon-jet.volume-icon-enter {
+  animation: volumeIconJet 0.55s ease-out forwards;
+}
+
+@keyframes volumeIconJet {
+  0% {
+    opacity: 0;
+    transform: translateX(40px) rotate(8deg) scale(0.9);
+    filter: brightness(1.4);
+  }
+  60% {
+    opacity: 1;
+    transform: translateX(-6px) rotate(-3deg) scale(1.05);
+  }
+  100% {
+    transform: translateX(0) rotate(0deg) scale(1);
+  }
+}
+.volume-icon-cargo.volume-icon-enter {
+  animation: volumeIconFloat 1.1s ease-out forwards;
+}
+
+@keyframes volumeIconFloat {
+  0% {
+    opacity: 0;
+    transform: translateY(18px) scale(0.92);
+  }
+  70% {
+    opacity: 1;
+    transform: translateY(-4px) scale(1.04);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+  }
+}
+.volume-icon-orbital.volume-icon-enter {
+  animation: volumeIconOrbit 1.2s ease-out forwards;
+}
+
+@keyframes volumeIconOrbit {
+  0% {
+    opacity: 0;
+    transform: scale(0.85) rotate(-10deg);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.06) rotate(3deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+
+
+
+
+
 
 
 
@@ -3458,35 +3641,24 @@ footer {
 /* Card */
 
 /* Card base state */
-.exercise-focus-card {
-  position: relative;
-  width: min(380px, 92vw);
-  max-height: 80vh;
-  padding: 1.3rem 1.4rem 1.4rem;
-  border-radius: 22px;
+/* Overlay container: full-screen & centered */
+.exercise-focus-overlay,
+#focus-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
   display: flex;
-  flex-direction: column;
-  gap: 1.1rem;
-
-  background:
-    radial-gradient(circle at top left,
-      rgba(255, 255, 255, 0.04),
-      transparent 60%),
-    var(--surface-main);
-  box-shadow:
-    0 18px 50px rgba(0, 0, 0, 0.85),
-    0 0 26px rgba(0, 0, 0, 0.9);
-
-  /* 👇 start slightly down + smaller + invisible */
-  opacity: 0;
-  transform: translateY(18px) scale(0.97);
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem; /* small margin from edges on small screens */
 }
 
 /* When overlay is active → animate card in */
 .exercise-focus-overlay.active .exercise-focus-card,
 #focus-overlay.active .exercise-focus-card {
-  animation: focusCardIn .5s cubic-bezier(0.22, 0.9, 0.3, 1.1) forwards;
+  animation: focusCardIn 0.5s cubic-bezier(0.22, 0.9, 0.3, 1.1) forwards;
 }
+
 
 @keyframes focusCardIn {
   0% {
@@ -4516,14 +4688,15 @@ footer {
 
         <section id="weekly-volume" class="section">
             <div class="section-head">
-                <h2>This Week’s Volume</h2>
+                <h2>This Week's Challenge</h2>
             </div>
         
             <div class="workout-card weekly-volume-card">
                 <div class="volume-main">
                     <!-- Left side: object icon + label -->
                     <div class="volume-object">
-                        <div id="volume-object-emoji" class="volume-object-emoji">🚗</div>
+                        <div id="volume-object-icon" class="volume-object-icon volume-icon-backpack"></div>
+
                         <div id="volume-object-label" class="volume-object-label">
                             Small car
                         </div>
@@ -4535,7 +4708,7 @@ footer {
                             <div id="volume-bar-fill" class="volume-bar-fill"></div>
                         </div>
                         <div id="volume-bar-caption" class="volume-bar-caption">
-                            You’ve moved 0 lbs so far — let’s get that bar moving.
+                            You've moved 0 lbs so far — let's get that bar moving.
                         </div>
                     </div>
                 </div>
@@ -4718,7 +4891,7 @@ footer {
         Get Started
     </button>
 </div>
-<!-- Focus Card Overlay -->
+
 <!-- Focus Card Overlay -->
 <div id="focus-overlay" class="exercise-focus-overlay hidden">
     <div class="exercise-focus-backdrop"></div>
