@@ -18,7 +18,17 @@
     const WEEKLY_DAY_LOG_KEY = "ironPulse_weeklyDayLog"
     const WEEKDAY_LABELS_MON_FIRST = ["M", "T", "W", "T", "F", "S", "S"];
     const VOLUME_BAND_STATE_KEY = "ironPulseVolumeBandState"; 
-    const FOCUS_VOLUME_SANITY_THRESHOLD = 60000; // lbs in ONE exercise before we double-check
+    const FOCUS_VOLUME_SANITY_THRESHOLD = 60000; 
+    const VOLUME_ICON_CLASS_BY_LABEL = {
+    "Small backpack": "volume-icon-backpack",
+    "Small car": "volume-icon-car",
+    "SUV": "volume-icon-suv",
+    "Pickup truck": "volume-icon-truck",
+    "Tank": "volume-icon-tank",
+    "Fighter jet": "volume-icon-jet",
+    "Cargo plane": "volume-icon-cargo",
+    "Orbital station": "volume-icon-orbital"
+    };
 
 const ENCOUNTER_THEMES = {
   gateDefault: {
@@ -667,37 +677,67 @@ function getTodayKey() {
 
 // ---- Volume tiers (objects you are "moving") ----
 const VOLUME_OBJECTS = [
-  { id: "backpack", label: "Small backpack", emoji: "🎒", threshold: 0 },
-  { id: "car",      label: "Small car",      emoji: "🚗", threshold: 4000 },
-  { id: "suv",      label: "Pickup truck",   emoji: "🚙", threshold: 10000 },
-  { id: "truck",    label: "Delivery truck", emoji: "🚚", threshold: 20000 },
-  { id: "tank",     label: "Battle tank",    emoji: "🛡️", threshold: 35000 },
-  { id: "jet",      label: "Fighter jet",    emoji: "✈️", threshold: 50000 },
-  { id: "cargo",    label: "Cargo plane",    emoji: "🛩️", threshold: 75000 },
-  { id: "orbital",  label: "Orbital station",emoji: "🛰️", threshold: 100000 }
+  { id: "backpack", label: "Small Backpack",  emoji: "🎒", threshold: 0 },
+  { id: "car",      label: "Small Car",       emoji: "🚗", threshold: 4000 },
+  { id: "pickup",   label: "Pickup Truck",    emoji: "🛻", threshold: 10000 },
+  { id: "suv",      label: "SUV",             emoji: "🚙", threshold: 20000 },
+  { id: "truck",    label: "Delivery Truck",  emoji: "🚚", threshold: 35000 },
+  { id: "tank",     label: "Battle Tank",     emoji: "🛡️", threshold: 50000 },
+  { id: "jet",      label: "Fighter Jet",     emoji: "✈️", threshold: 75000 },
+  { id: "cargo",    label: "Cargo Plane",     emoji: "🛩️", threshold: 100000 },
+  { id: "orbital",  label: "Orbital Station", emoji: "🛰️", threshold: 150000 }
 ];
 
 // Optional CSS-based icon skins (for PNGs later)
 const VOLUME_ICON_CLASS_PREFIX = "volume-icon-";
-
 function applyVolumeIconTier(tierId) {
-  const iconEl = document.getElementById("volume-object-emoji");
+  const iconEl = document.getElementById("volume-object-icon");
   if (!iconEl) return;
 
-  // Remove any previous volume-icon-* classes
-  const toRemove = [];
-  iconEl.classList.forEach(cls => {
-    if (cls.startsWith(VOLUME_ICON_CLASS_PREFIX)) {
-      toRemove.push(cls);
-    }
-  });
-  toRemove.forEach(cls => iconEl.classList.remove(cls));
+  // Remove any old tier classes, but keep base + animation classes
+  iconEl.classList.remove(
+    "volume-icon-backpack",
+    "volume-icon-car",
+    "volume-icon-pickup",
+    "volume-icon-suv",
+    "volume-icon-truck",
+    "volume-icon-tank",
+    "volume-icon-jet",
+    "volume-icon-cargo",
+    "volume-icon-orbital"
+  );
 
-  // Add new tier class
-  if (tierId) {
-    iconEl.classList.add(`${VOLUME_ICON_CLASS_PREFIX}${tierId}`);
+  switch (tierId) {
+    case "backpack":
+      iconEl.classList.add("volume-icon-backpack");
+      break;
+    case "car":
+      iconEl.classList.add("volume-icon-car");
+      break;
+    case "pickup":
+      iconEl.classList.add("volume-icon-pickup");
+      break;
+    case "suv":
+      iconEl.classList.add("volume-icon-suv");
+      break;
+    case "truck":
+      iconEl.classList.add("volume-icon-truck");
+      break;
+    case "tank":
+      iconEl.classList.add("volume-icon-tank");
+      break;
+    case "jet":
+      iconEl.classList.add("volume-icon-jet");
+      break;
+    case "cargo":
+      iconEl.classList.add("volume-icon-cargo");
+      break;
+    case "orbital":
+      iconEl.classList.add("volume-icon-orbital");
+      break;
   }
 }
+
 
 // ---- Simple difficulty “bands” just for copy tone ----
 const VOLUME_DIFFICULTY_BANDS = {
@@ -814,47 +854,16 @@ function updateWeeklyVolumeSummaryFromLog() {
   renderWeeklyVolumeChallenge(totalVolume);
 }
 
-function applyVolumeIconTier(tierId) {
-  const iconEl = document.getElementById("volume-object-icon");
-
-  // reset to base class
-  iconEl.className = "volume-object-icon";
-
-  switch (tierId) {
-    case "backpack":
-      iconEl.classList.add("volume-icon-backpack");
-      break;
-    case "car":
-      iconEl.classList.add("volume-icon-car");
-      break;
-    case "suv":
-      iconEl.classList.add("volume-icon-suv");
-      break;
-    case "truck":
-      iconEl.classList.add("volume-icon-truck");
-      break;
-    case "tank":
-      iconEl.classList.add("volume-icon-tank");
-      break;
-    case "jet":
-      iconEl.classList.add("volume-icon-jet");
-      break;
-    case "cargo":
-      iconEl.classList.add("volume-icon-cargo");
-      break;
-    case "orbital":
-      iconEl.classList.add("volume-icon-orbital");
-      break;
-  }
-}
-
-
 function renderWeeklyVolumeChallenge(totalVolume) {
   const iconEl    = document.getElementById("volume-object-icon");
   const labelEl   = document.getElementById("volume-object-label");
   const barFillEl = document.getElementById("volume-bar-fill");
   const captionEl = document.getElementById("volume-bar-caption");
   const cardEl    = document.querySelector(".weekly-volume-card");
+
+  const nextWrapper = document.getElementById("volume-next");
+  const nextIconEl  = document.getElementById("volume-object-next");
+  const nextLabelEl = document.getElementById("volume-object-next-label");
 
   if (!iconEl || !labelEl || !barFillEl || !captionEl) {
     console.warn("[WeeklyVolume] Card elements not found");
@@ -866,33 +875,48 @@ function renderWeeklyVolumeChallenge(totalVolume) {
   // Which object are we at?
   const { current, next, progress } = getVolumeTierInfo(safeTotal);
 
+  // 🔹 Apply PNG tier class based on current.id
+  applyVolumeIconTier(current.id);
 
-
-  /* ----------------------------------------------------
-     🔹 ICON + LABEL (PNG + animation)
-     ---------------------------------------------------- */
-  applyVolumeIconTier(current.id);     // sets PNG tier class
- 
-  iconEl.removeAttribute("data-emoji");
-  iconEl.textContent = "";             // we no longer show emojis
-
+  // 🔹 Friendly label
   labelEl.textContent = current.label;
 
-  // Entrance animation reset
-  iconEl.classList.remove("volume-icon-enter");
-  void iconEl.offsetWidth;
-  iconEl.classList.add("volume-icon-enter");
+  // --- Next tier silhouette (still just label for now) ---
+  if (next && nextWrapper && nextLabelEl) {
+    nextWrapper.style.display = "flex";
+    nextLabelEl.textContent = next.label;
 
-  /* ----------------------------------------------------
-     🔹 Progress bar
-     ---------------------------------------------------- */
+    // optional: if you later want a PNG here, we can mirror the same idea
+    // using classes on nextIconEl + extra CSS
+  } else if (nextWrapper) {
+    // final tier – hide the “next” column
+    nextWrapper.style.display = "none";
+  }
+
+  // --- Progress within current tier ---
   const pct = Math.round(progress * 100);
   barFillEl.style.width = `${pct}%`;
+  // --- Animate bar on tier shift ---
+    if (cardEl) {
+    cardEl.classList.add("tier-shift");
+    setTimeout(() => cardEl.classList.remove("tier-shift"), 900);
+    }
 
-  /* ----------------------------------------------------
-     🔹 Caption
-     ---------------------------------------------------- */
+
   const totalRounded = Math.round(safeTotal).toLocaleString();
+
+
+  // --- Tooltip hint for next tier ---
+    if (next) {
+    const remaining = Math.max(0, next.threshold - safeTotal);
+    const remainingRounded = Math.round(remaining).toLocaleString();
+    iconEl.setAttribute(
+        "data-next-tier",
+        `Next: ${next.label} (${remainingRounded} lbs to go)`
+    );
+    } else {
+    iconEl.removeAttribute("data-next-tier");
+    }
 
   if (next) {
     const remaining = Math.max(0, next.threshold - safeTotal);
@@ -906,17 +930,19 @@ function renderWeeklyVolumeChallenge(totalVolume) {
       `You’ve moved ${totalRounded} lbs this week — you’ve outlifted the final tier. Everything now is bonus payload.`;
   }
 
-  // ✨ Card pulse animation
+  // --- Little bar + icon pulse on update ---
   if (cardEl) {
     cardEl.classList.remove("volume-levelup");
     void cardEl.offsetWidth;
     cardEl.classList.add("volume-levelup");
   }
+
+  iconEl.classList.remove("levelup-pop", "volume-icon-enter");
+  void iconEl.offsetWidth;
+  iconEl.classList.add("volume-icon-enter"); // tier-specific entrance animation
 }
 
-/**
- * Get today's actual logged volume (weight × reps) for a specific exercise.
- */
+
 function getTodaysVolumeForExercise(exerciseName) {
   const log = getExerciseLog();
   const todayKey = getTodayKey();
@@ -952,13 +978,8 @@ function dateToKey(date) {
   return `${y}-${m}-${d}`;
 }
 
-/**
- * Walks from Monday → today, sums all (weight × reps).
- * Returns:
- *  - totalVolume: number
- *  - perMuscle: { "Chest": lbs, ... }
- *  - perExercise: { "Bench Press": lbs, ... }
- */
+let lastVolumeTierId = null;
+
 function computeWeeklyVolumeSummary() {
   const log = getExerciseLog();
   const startOfWeek = getStartOfWeek();
@@ -1430,11 +1451,6 @@ function getVolumeTierInfo(totalLbs) {
 };
 
 
-    function scrollToFinisherSection() {
-        const section = document.getElementById("finisher");
-        if (!section) return;
-        section.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
 
 
 
@@ -3017,67 +3033,70 @@ function onWorkoutCompleted() {
     // 5) Weekly goal celebration + overlay + quote
     setTimeout(() => {
         checkWeeklyCompletion();       // ✨ card aura + dot wave (once per week)
-        celebrateWeeklyGoalHit();      // 🎉 overlay modal (your existing logic)
-        showPostWorkoutQuoteOverlay(); // 💬 post-workout quote
+        celebrateWeeklyGoalHit();      // 🎉 weekly overlay (when goal is hit)
+        showAfterburnPromptOverlay();  // 🔥 bring back the "Do Afterburn?" card
     }, 900);
+
 }
-
-
-
-
-
-
-
 
 function checkSplitCompletion() {
-    const exerciseListEl = document.getElementById("exercise-list");
-    const finisherCard = document.querySelector(".finisher-card");
-    const doBtn = document.getElementById("finisher-do-btn");
-    const skipBtn = document.getElementById("finisher-skip-btn");
+  const exerciseListEl = document.getElementById("exercise-list");
+  const finisherCard   = document.getElementById("finisher-card");
+  const doBtn          = document.getElementById("finisher-do-btn");
+  const skipBtn        = document.getElementById("finisher-skip-btn");
 
-    if (!exerciseListEl || !finisherCard || !doBtn || !skipBtn) return;
+  if (!exerciseListEl || !finisherCard || !doBtn || !skipBtn) return;
 
-    const checkboxes = exerciseListEl.querySelectorAll('input[type="checkbox"]');
-    const allChecked = checkboxes.length > 0 && Array.from(checkboxes).every(cb => cb.checked);
+  const checkboxes = exerciseListEl.querySelectorAll('input[type="checkbox"]');
+  const allChecked =
+    checkboxes.length > 0 &&
+    Array.from(checkboxes).every(cb => cb.checked);
 
-    const titleEl  = document.getElementById("finisher-title");
-    const tagEl    = document.getElementById("finisher-tag");
-    const descEl   = document.getElementById("finisher-description");
-    const statusEl = document.getElementById("finisher-status");
+  const titleEl  = document.getElementById("finisher-title");
+  const tagEl    = document.getElementById("finisher-tag");
+  const descEl   = document.getElementById("finisher-description");
+  const statusEl = document.getElementById("finisher-status");
 
-    if (allChecked) {
-        // unlocked
-        finisherCard.classList.remove("locked");
+  // Was it locked before this check?
+  const wasLocked = finisherCard.classList.contains("locked");
 
-        // Control button states
-        doBtn.disabled = true;   // still disabled until user picks category/diff
-        skipBtn.disabled = false;
+  if (allChecked) {
+    // 🔓 Unlock card
+    finisherCard.classList.remove("locked");
 
-        // === 🔓 Unlocked text ===
-        titleEl.textContent  = "Choose Your Afterburn";
-        tagEl.textContent    = "UNLOCKED";            // <— HERE
-        descEl.textContent   = "Pick a category below to customize your Afterburn.";
-        statusEl.textContent = "Select conditioning, bodyweight, pump, or recovery.";
+    // Control button states
+    doBtn.disabled   = true;   // still disabled until user picks category/diff
+    skipBtn.disabled = false;
 
-        onWorkoutCompleted();
+    // Text content for "unlocked" state
+    if (titleEl)  titleEl.textContent  = "Choose Your Afterburn";
+    if (tagEl)    tagEl.textContent    = "UNLOCKED";
+    if (descEl)   descEl.textContent   = "Pick a category below to customize your Afterburn.";
+    if (statusEl) statusEl.textContent = "Select conditioning, bodyweight, pump, or recovery.";
+
+    // ⭐ Only fire this the moment it unlocks (not on every change)
+    if (wasLocked) {
+      showToast?.("Afterburn unlocked – pick your finisher for extra rewards. 🔥");
+      // ⛔️ removed scrollIntoView + finisher-focus here
     }
-    else {
-        // locked
-        finisherCard.classList.add("locked");
 
-        // Lock buttons
-        doBtn.disabled = true;
-        skipBtn.disabled = true;
+    // This is where your day pulse + weekly logic happens
+    onWorkoutCompleted();
+  } else {
+    // 🔒 Keep / return to locked state
+    finisherCard.classList.add("locked");
 
-    const tagEl = document.getElementById("finisher-tag");
-    if (tagEl) tagEl.textContent = "Locked";
-    }
+    doBtn.disabled   = true;
+    skipBtn.disabled = true;
+
+    const lockedTagEl = document.getElementById("finisher-tag");
+    if (lockedTagEl) lockedTagEl.textContent = "Locked";
+  }
 }
-
 
 
     // If you have extra finisher-specific controls, they can live here:
-   function initFinisherControls() {
+function initFinisherControls() {
   const finisherCard = document.getElementById("finisher-card");
   if (!finisherCard) return;
 
@@ -3106,6 +3125,7 @@ function checkSplitCompletion() {
   function clearCatSelection() {
     catButtons.forEach(btn => btn.classList.remove("btn-primary"));
   }
+
 
   // 🔹 Central place to keep button labels + disabled state in sync
   function updateFinisherButtons() {
@@ -3320,7 +3340,98 @@ function checkSplitCompletion() {
   // Initial button state on load
   updateFinisherButtons();
 }
+function scrollToFinisherSection() {
+  const finisherSection =
+    document.getElementById("finisher-card") ||
+    document.getElementById("finisher-section");
 
+  if (!finisherSection) {
+    console.warn("[Afterburn] finisher section not found");
+    return;
+  }
+
+  try {
+    finisherSection.scrollIntoView({
+      behavior: "smooth",
+      block: "center"
+    });
+  } catch (e) {
+    // scrollIntoView might not exist on very old browsers
+    console.warn("[Afterburn] scrollIntoView failed:", e);
+  }
+
+  // quick highlight so it feels “summoned”
+  finisherSection.classList.add("finisher-focus");
+  setTimeout(() => {
+    finisherSection.classList.remove("finisher-focus");
+  }, 900);
+}
+
+
+
+
+function showAfterburnPromptOverlay() {
+  // avoid stacking multiple overlays
+  const existing = document.querySelector(".postworkout-overlay.afterburn-prompt");
+  if (existing) {
+    console.log("[Afterburn] overlay already open");
+    return;
+  }
+
+  console.log("[Afterburn] opening overlay");
+
+  const overlay = document.createElement("div");
+  overlay.className = "postworkout-overlay afterburn-prompt";
+
+  overlay.innerHTML = `
+    <div class="postworkout-card">
+      <h2>Afterburn unlocked 🔥</h2>
+      <p class="postworkout-quote">
+        You finished today's main work. Want to push a little extra and earn rest token progress?
+      </p>
+      <p class="postworkout-hint">
+        Afterburn is optional — treat it like bonus XP, not punishment.
+      </p>
+      <div class="postworkout-actions">
+        <button class="btn btn-primary" id="afterburn-do-btn">
+          Fire it up
+        </button>
+        <button class="btn btn-outline" id="afterburn-skip-btn">
+          Not today
+        </button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  const closeOverlay = () => overlay.remove();
+
+  const doBtn  = overlay.querySelector("#afterburn-do-btn");
+  const skipBtn = overlay.querySelector("#afterburn-skip-btn");
+
+  if (doBtn) {
+    doBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      closeOverlay();
+      scrollToFinisherSection();   // 👈 this is the only scroll now
+    });
+  }
+
+  if (skipBtn) {
+    skipBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      closeOverlay();
+    });
+  }
+
+  // tap outside the card to close
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) {
+      closeOverlay();
+    }
+  });
+}
 
 
 
@@ -3470,69 +3581,7 @@ function checkSplitCompletion() {
 
                 showToast("Finisher complete. That’s extra work in the bank. 💪");
             }
-            function showPostWorkoutQuoteOverlay() {
-                    const overlay = document.createElement("div");
-                    overlay.className = "postworkout-overlay";
 
-                    const quote = getRandomPostWorkoutQuote();
-
-                    overlay.innerHTML = `
-                        <div class="postworkout-card">
-                            <h2>Workout complete 🔥</h2>
-                            <p class="postworkout-quote">${quote}</p>
-                            <p class="postworkout-hint">
-                                Feeling good? Ignite your Afterburn and push past the finish line.
-                            </p>
-                            <div class="postworkout-actions">
-                                <button class="btn btn-primary" id="postworkout-do-finisher">
-                                    Fire It Up
-                                </button>
-                                <button class="btn btn-outline" id="postworkout-close">
-                                    Close
-                                </button>
-                            </div>
-                        </div>
-                    `;
-
-
-                    document.body.appendChild(overlay);
-
-                    const closeBtn = document.getElementById("postworkout-close");
-                    const finisherBtn = document.getElementById("postworkout-do-finisher");
-
-                    if (closeBtn) {
-                        closeBtn.addEventListener("click", () => {
-                            overlay.remove(); // no scroll, no locking — they can change their mind later
-                        });
-                    }
-
-                    if (finisherBtn) {
-                        finisherBtn.addEventListener("click", () => {
-                            overlay.remove();
-
-                            scrollToFinisherSection();
-
-                            const finisherSection =
-                                document.getElementById("finisher-card") ||
-                                document.getElementById("finisher-section");
-
-                            if (finisherSection) {
-                                finisherSection.classList.add("finisher-focus");
-                                setTimeout(() => {
-                                    finisherSection.classList.remove("finisher-focus");
-                                }, 1000);
-                            }
-                        });
-                    }
-
-
-                    // Close by tapping outside the card
-                    overlay.addEventListener("click", (e) => {
-                        if (e.target === overlay) {
-                            overlay.remove();
-                        }
-                    });
-                }
 
 function celebrateWeeklyGoalHit() {
     const goal = getWeeklyGoal();
@@ -3643,6 +3692,45 @@ function devForceWeeklyGoalCompletion() {
             });
         }
     }
+
+function initWeeklyVolumeScrollTrigger() {
+  const sectionEl = document.getElementById("weekly-volume");
+  const iconEl    = document.getElementById("volume-object-icon");
+
+  if (!sectionEl || !iconEl) return;
+
+  // Fallback: old browsers → just animate immediately
+  if (!("IntersectionObserver" in window)) {
+    iconEl.classList.add("volume-icon-enter");
+    return;
+  }
+
+  let hasPlayed = false; // only play once per page load
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting || hasPlayed) return;
+        hasPlayed = true;
+
+        // 🔥 Trigger the entrance animation
+        iconEl.classList.remove("volume-icon-enter"); // reset if somehow present
+        void iconEl.offsetWidth;                      // force reflow
+        iconEl.classList.add("volume-icon-enter");
+
+        observer.disconnect(); // we’re done
+      });
+    },
+    {
+      root: null,
+      threshold: 0.35, // ~35% of the section visible
+    }
+  );
+
+  observer.observe(sectionEl);
+}
+
+
     function initDebugStreakButton() {
         const btn = document.getElementById("debug-streak-plus");
         if (!btn) return;
@@ -3677,6 +3765,17 @@ const focusCompleteBtn = document.getElementById('focus-complete-btn');
 const focusCloseBtn = document.getElementById('focus-close-btn');
 
 const MAX_FOCUS_SETS = 5;
+
+// 🕒 Rest timer
+const focusRestTimerBtn  = document.getElementById("focus-rest-timer-btn");
+const focusRestTimerText = document.getElementById("focus-rest-timer-text");
+
+let focusRestTimerId = null;
+let focusRestSecondsLeft = 0;
+
+const REST_TIMER_DEFAULT_SECONDS = 120; // 2 minutes
+const REST_TIMER_MAX_SECONDS = 600; // max 10 minutes
+
 
 let currentFocusExercise = null;
 
@@ -3960,6 +4059,20 @@ function finalizeFocusExerciseCompletion() {
   // 5) Close the focus card
   closeFocusCard();
 }
+/* Dev tools!!!!!!!!!!!! */
+function devClearVolume() {
+  localStorage.removeItem(EXERCISE_LOG_KEY);        // "ironpulse.exerciseLog.v1"
+  resetWeeklyWeightByDay?.();
+
+  updateWeeklyVolumeSummaryFromLog?.();
+  showToast?.("Dev: Weekly volume reset to 0 lbs.");
+}
+
+function devResetStreak() {
+  setWeeklyStreak(0);
+  updateStreak();
+  showToast?.("Dev: Weekly streak reset to 0.");
+}
 
 
 
@@ -3982,6 +4095,18 @@ window.addEventListener("DOMContentLoaded", () => {
   updateWeeklyVolumeSummaryFromLog();
 
   // 🔧 Dev buttons
+initWeeklyVolumeScrollTrigger();
+const devClearVolumeBtn = document.getElementById("dev-clear-volume-btn");
+if (devClearVolumeBtn) {
+  devClearVolumeBtn.addEventListener("click", devClearVolume);
+}
+
+const devResetStreakBtn = document.getElementById("dev-reset-streak-btn");
+if (devResetStreakBtn) {
+  devResetStreakBtn.addEventListener("click", devResetStreak);
+}
+
+
   const gateBtn = document.getElementById("dev-gate-btn");
   const bossBtn = document.getElementById("dev-boss-btn");
   const completeBtn = document.getElementById("dev-complete-weekly-btn");

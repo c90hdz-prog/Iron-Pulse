@@ -2953,6 +2953,12 @@ footer {
   margin-bottom: 0.8rem;   /* brings the card closer to the title */
 }
 
+#finisher-card.finisher-focus {
+  box-shadow:
+    0 0 0 1px rgba(255, 198, 92, 0.35),
+    0 0 22px rgba(255, 198, 92, 0.7);
+  transition: box-shadow 0.3s ease;
+}
 
 
 
@@ -3202,13 +3208,12 @@ footer {
 }
 
 
-/* Post-workout motivational overlay */
-/* Post-workout motivational overlay */
+
 /* === Post-workout overlay – uses theme accents === */
 .postworkout-overlay {
   position: fixed;
   inset: 0;
-  z-index: 60;
+  z-index: 600;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3328,66 +3333,100 @@ footer {
   gap: 1rem;
 }
 
-/* Layout: object on left, bar on right on desktop */
+/* Stack main content vertically: icons row on top, bar below */
 .volume-main {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 1.25rem;
 }
 
-/* Stack nicely on mobile */
+/* Top row: current hero + next silhouette */
+.volume-icon-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.75rem;
+}
+
+/* On small screens, let them hug a bit closer */
 @media (max-width: 768px) {
-  .volume-main {
-    flex-direction: column;
-    align-items: flex-start;
+  .volume-icon-row {
+    gap: 1.1rem;
   }
 }
 
-/* Object side */
-/* Object side */
+/* Current object (hero) */
 .volume-object {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.35rem;
-  min-width: 110px;
+  gap: 0.45rem;
 }
 
-/* ICON CONTAINER – ready for PNGs */
+/* HERO ICON – bigger, no circle frame, aura + idle float */
 .volume-object-icon {
   position: relative;
-  width: 64px;
-  height: 64px;
-  border-radius: 999px;
+  width: 96px;
+  height: 96px;
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
-  /* Glow + motion base */
-  filter: drop-shadow(0 0 10px var(--aura-soft));
-  transition:
-    transform 0.25s ease,
-    filter 0.25s ease;
+  filter: drop-shadow(0 0 18px var(--aura-soft));
+  animation: idleFloat 3.4s ease-in-out infinite;
 }
 
-/* Emoji fallback (uses data-emoji attribute) */
-.volume-object-icon::before {
-  content: attr(data-emoji);
+/* Aura glow behind hero */
+.volume-object-icon::after {
+  content: "";
   position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2.3rem;
-  line-height: 1;
+  inset: -6px;
+  border-radius: 999px;
+  background: radial-gradient(circle,
+    rgba(140, 120, 255, 0.55),
+    transparent 70%);
+  filter: blur(10px);
+  opacity: 0.9;
+  z-index: -1;
+  pointer-events: none;
 }
 
 /* Label under icon */
 .volume-object-label {
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   text-align: center;
   color: var(--text-muted);
 }
 
+/* --- NEXT TIER SILHOUETTE --- */
+.volume-next {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  opacity: 0.24;
+  filter: grayscale(1) blur(1px);
+  transform: scale(0.9);
+  pointer-events: none; /* locked vibe */
+}
+
+.volume-object-next {
+  width: 72px;
+  height: 72px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.volume-object-next-label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* A very subtle idle motion for the locked icon too */
+.volume-object-next {
+  animation: idleFloatLocked 4.6s ease-in-out infinite;
+}
 
 /* Bar side */
 .volume-bar-block {
@@ -3415,7 +3454,7 @@ footer {
     90deg,
     var(--accent-warm-start),
     var(--accent-warm-end)
-  ); /* was #ff512f → #f6c343 */
+  );
   box-shadow: var(--shadow-accent-soft);
   transition: width 0.45s ease-out;
 }
@@ -3425,35 +3464,7 @@ footer {
   color: var(--text-muted);
 }
 
-@keyframes volumeBarExplode {
-  0% {
-    box-shadow: 0 0 10px var(--accent-progress-soft);
-  }
-  40% {
-    box-shadow:
-      0 0 20px var(--accent-progress-soft2),
-      0 0 40px var(--aura-strong);
-  }
-  100% {
-    box-shadow: 0 0 12px var(--accent-progress-soft);
-  }
-}
-
-@keyframes volumeEmojiPop {
-  0% {
-    transform: scale(1) translateY(0);
-    filter: drop-shadow(0 0 8px rgba(255, 140, 90, 0.5));
-  }
-  30% {
-    transform: scale(1.18) translateY(-2px);
-    filter: drop-shadow(0 0 20px rgba(255, 220, 150, 0.9));
-  }
-  100% {
-    transform: scale(1) translateY(0);
-    filter: drop-shadow(0 0 10px rgba(255, 140, 90, 0.6));
-  }
-}
-
+/* Existing “level up” anims stay the same – we still use these classes */
 .volume-levelup .volume-bar-fill {
   animation: volumeBarExplode 0.7s ease-out;
 }
@@ -3461,6 +3472,18 @@ footer {
 .volume-object-icon.levelup-pop {
   animation: volumeEmojiPop 0.6s ease-out;
 }
+
+/* Idle float animations */
+@keyframes idleFloat {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-4px); }
+}
+
+@keyframes idleFloatLocked {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-2px); }
+}
+
 
 /* --- Volume Icon PNGs --- */
 .volume-object-icon.volume-icon-backpack { 
@@ -3471,6 +3494,9 @@ footer {
   background-image: url("icons/assets/volume_objects/car.png");
 }
 
+.volume-object-icon.volume-icon-pickup{
+    background-image: url("icons/assets/volume_objects/pickup.png");
+}
 .volume-object-icon.volume-icon-suv { 
   background-image: url("icons/assets/volume_objects/suv.png");
 }
@@ -3618,9 +3644,63 @@ footer {
     transform: scale(1) rotate(0deg);
   }
 }
+/* --- Exit animation when switching tiers --- */
+.volume-icon-exit {
+  animation: volumeIconExit 0.5s ease-in forwards;
+}
+
+@keyframes volumeIconExit {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: drop-shadow(0 0 10px var(--aura-soft));
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-14px) scale(0.9);
+    filter: drop-shadow(0 0 0 rgba(0, 0, 0, 0));
+  }
+}
+
+/* Slow down all weekly challenge icon entrance animations */
+.volume-icon-enter {
+  animation-duration: 1.4s !important; /* adjust speed here */
+}
 
 
+.volume-icon-backpack { filter: drop-shadow(0 0 6px rgba(255,255,255,0.15)); }
+.volume-icon-car      { filter: drop-shadow(0 0 10px rgba(255,200,150,0.3)); }
+.volume-icon-pickup   { filter: drop-shadow(0 0 12px rgba(255,180,130,0.35)); }
+.volume-icon-suv      { filter: drop-shadow(0 0 14px rgba(255,150,100,0.45)); }
+.volume-icon-truck    { filter: drop-shadow(0 0 18px rgba(255,120,80,0.55)); }
+.volume-icon-tank     { filter: drop-shadow(0 0 22px rgba(255,90,70,0.65)); }
+.volume-icon-jet      { filter: drop-shadow(0 0 26px rgba(255,70,50,0.8)); }
+.volume-icon-cargo    { filter: drop-shadow(0 0 30px rgba(255,60,40,0.9)); }
+.volume-icon-orbital  { filter: drop-shadow(0 0 40px rgba(255,50,30,1)); }
 
+.weekly-volume-card.tier-shift .volume-bar-fill {
+  animation: tierShiftPulse 0.9s ease-out;
+}
+
+@keyframes tierShiftPulse {
+  0%   { box-shadow: 0 0 8px var(--accent-warm-start); }
+  50%  { box-shadow: 0 0 26px var(--accent-warm-end); }
+  100% { box-shadow: 0 0 12px var(--accent-warm-start); }
+}
+
+.volume-object:hover::after {
+  content: attr(data-next-tier);
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 10px;
+  background: rgba(0,0,0,0.85);
+  border-radius: 6px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  color: white;
+}
 
 
 
@@ -4053,6 +4133,45 @@ footer {
     justify-content: flex-end;
   }
 }
+
+/* === Focus footer layout === */
+.focus-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+
+.focus-footer-left,
+.focus-footer-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.focus-rest-btn {
+  font-size: 0.85rem;
+}
+
+.focus-rest-timer-text {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  min-width: 3.2rem;
+  text-align: right;
+}
+
+.focus-rest-btn.focus-rest-active {
+  border-color: var(--accent-warm-start);
+  color: var(--accent-warm-start);
+}
+
+.focus-rest-timer-active .focus-rest-timer-text {
+  color: var(--accent-warm-end);
+}
+
+
 
 /* Split card container */
 /* Split card container – Today’s Split */
@@ -4683,37 +4802,51 @@ footer {
     style="padding:0.8rem 1.2rem; border-radius:10px; background:#333; color:white; margin-top:10px;">
     Test: Complete Weekly Goal
 </button>
+<button id="dev-clear-volume-btn" class="btn btn-outline">Reset Volume (DEV)</button>
+<button id="dev-reset-streak-btn" class="btn btn-outline">Reset Weekly Streak (DEV)</button>
 
 
 
-        <section id="weekly-volume" class="section">
-            <div class="section-head">
-                <h2>This Week's Challenge</h2>
-            </div>
-        
-            <div class="workout-card weekly-volume-card">
-                <div class="volume-main">
-                    <!-- Left side: object icon + label -->
-                    <div class="volume-object">
-                        <div id="volume-object-icon" class="volume-object-icon volume-icon-backpack"></div>
+<section id="weekly-volume" class="section">
+    <div class="section-head">
+        <h2>This Week's Volume</h2>
+    </div>
 
-                        <div id="volume-object-label" class="volume-object-label">
-                            Small car
-                        </div>
+    <div class="workout-card weekly-volume-card">
+        <div class="volume-main">
+            <!-- NEW: icon row (current + next) -->
+            <div class="volume-icon-row">
+                <!-- Current tier -->
+                <div class="volume-object">
+                    <div id="volume-object-icon" class="volume-object-icon" data-emoji="🚗">
                     </div>
-        
-                    <!-- Right side: bar + caption -->
-                    <div class="volume-bar-block">
-                        <div class="volume-bar">
-                            <div id="volume-bar-fill" class="volume-bar-fill"></div>
-                        </div>
-                        <div id="volume-bar-caption" class="volume-bar-caption">
-                            You've moved 0 lbs so far — let's get that bar moving.
-                        </div>
+                    <div id="volume-object-label" class="volume-object-label">
+                        Small backpack
+                    </div>
+                </div>
+
+                <!-- Next tier silhouette -->
+                <div class="volume-next" id="volume-next">
+                    <div id="volume-object-next" class="volume-object-next"></div>
+                    <div id="volume-object-next-label" class="volume-object-next-label">
+                        Next tier
                     </div>
                 </div>
             </div>
-        </section>
+
+            <!-- Progress bar + caption -->
+            <div class="volume-bar-block">
+                <div class="volume-bar">
+                    <div id="volume-bar-fill" class="volume-bar-fill"></div>
+                </div>
+                <div id="volume-bar-caption" class="volume-bar-caption">
+                    You've moved 0 lbs so far — let's get that bar moving.
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
 
     <div id="daily-main-content">
 
@@ -4900,7 +5033,7 @@ footer {
         <!-- Header -->
         <header class="exercise-focus-header">
             <!-- we’ll hide this chip in CSS, title does the job now -->
-            <div class="focus-chip">Today’s split</div>
+            <div class="focus-chip">Today's split</div>
             <button type="button" id="focus-close-btn" class="focus-close-btn" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
             </button>
@@ -4922,13 +5055,23 @@ footer {
             <!-- JS fills in Set 1 / Set 2 / Set 3 rows -->
         </div>
 
-        <!-- Add Set -->
-        <button type="button" id="focus-add-set-btn" class="btn focus-add-set-btn">
-            + Add Set
-        </button>
-
-        <!-- Actions -->
-        <div class="focus-actions">
+    <!-- Footer (Add Set + Rest Timer + Cancel/Complete) -->
+    <div class="focus-footer">
+        <div class="focus-footer-left">
+            <button type="button" id="focus-add-set-btn" class="btn focus-add-set-btn">
+                + Add Set
+            </button>
+    
+            <!-- 🕒 Rest Timer -->
+            <button type="button" id="focus-rest-timer-btn" class="btn focus-rest-btn">
+                Rest Timer
+            </button>
+    
+            <!-- Countdown text -->
+            <span id="focus-rest-timer-text" class="focus-rest-timer-text"></span>
+        </div>
+    
+        <div class="focus-footer-right">
             <button type="button" id="focus-cancel-btn" class="btn btn-outline">
                 Cancel
             </button>
@@ -4936,6 +5079,8 @@ footer {
                 Complete
             </button>
         </div>
+    </div>
+
     </div>
 </div>
 
