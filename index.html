@@ -117,6 +117,16 @@
   --weekly-dot-on:        var(--accent-progress);     /* your warm accent */
   --weekly-dot-on-glow:   var(--accent-progress-soft2);
 
+/* === VEHICLE GLOW TOKENS (theme aware) === */
+--glow-tier-1: rgba(var(--accent-warm-start-rgb), 0.15);
+--glow-tier-2: rgba(var(--accent-warm-start-rgb), 0.25);
+--glow-tier-3: rgba(var(--accent-warm-start-rgb), 0.32);
+--glow-tier-4: rgba(var(--accent-warm-start-rgb), 0.40);
+--glow-tier-5: rgba(var(--accent-warm-start-rgb), 0.50);
+--glow-tier-6: rgba(var(--accent-warm-start-rgb), 0.60);
+--glow-tier-7: rgba(var(--accent-warm-start-rgb), 0.75);
+--glow-tier-8: rgba(var(--accent-warm-start-rgb), 0.85);
+--glow-tier-9: rgba(var(--accent-warm-start-rgb), 1.00);
 
 
   /* Back-compat gradient aliases */
@@ -3668,15 +3678,42 @@ footer {
 }
 
 
-.volume-icon-backpack { filter: drop-shadow(0 0 6px rgba(255,255,255,0.15)); }
-.volume-icon-car      { filter: drop-shadow(0 0 10px rgba(255,200,150,0.3)); }
-.volume-icon-pickup   { filter: drop-shadow(0 0 12px rgba(255,180,130,0.35)); }
-.volume-icon-suv      { filter: drop-shadow(0 0 14px rgba(255,150,100,0.45)); }
-.volume-icon-truck    { filter: drop-shadow(0 0 18px rgba(255,120,80,0.55)); }
-.volume-icon-tank     { filter: drop-shadow(0 0 22px rgba(255,90,70,0.65)); }
-.volume-icon-jet      { filter: drop-shadow(0 0 26px rgba(255,70,50,0.8)); }
-.volume-icon-cargo    { filter: drop-shadow(0 0 30px rgba(255,60,40,0.9)); }
-.volume-icon-orbital  { filter: drop-shadow(0 0 40px rgba(255,50,30,1)); }
+.volume-object-icon.volume-icon-backpack { 
+  filter: drop-shadow(0 0 6px var(--glow-tier-1)); 
+}
+
+.volume-object-icon.volume-icon-car      { 
+  filter: drop-shadow(0 0 10px var(--glow-tier-2)); 
+}
+
+.volume-object-icon.volume-icon-pickup   { 
+  filter: drop-shadow(0 0 12px var(--glow-tier-3)); 
+}
+
+.volume-object-icon.volume-icon-suv      { 
+  filter: drop-shadow(0 0 14px var(--glow-tier-4)); 
+}
+
+.volume-object-icon.volume-icon-truck    { 
+  filter: drop-shadow(0 0 18px var(--glow-tier-5)); 
+}
+
+.volume-object-icon.volume-icon-tank     { 
+  filter: drop-shadow(0 0 22px var(--glow-tier-6)); 
+}
+
+.volume-object-icon.volume-icon-jet      { 
+  filter: drop-shadow(0 0 26px var(--glow-tier-7)); 
+}
+
+.volume-object-icon.volume-icon-cargo    { 
+  filter: drop-shadow(0 0 30px var(--glow-tier-8)); 
+}
+
+.volume-object-icon.volume-icon-orbital  { 
+  filter: drop-shadow(0 0 40px var(--glow-tier-9)); 
+}
+
 
 .weekly-volume-card.tier-shift .volume-bar-fill {
   animation: tierShiftPulse 0.9s ease-out;
@@ -4171,6 +4208,76 @@ footer {
   color: var(--accent-warm-end);
 }
 
+/* Row that holds + Add Set and Rest Timer */
+.focus-footer-row {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+/* Let them sit side-by-side and look like siblings */
+.focus-add-set-btn,
+.focus-rest-btn {
+  flex: 1;
+  justify-content: center;
+}
+
+/* Rest button "ghost" style so it's distinct from Complete */
+.focus-rest-btn {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--text-subtle);
+}
+
+/* When timer is running */
+.focus-rest-timer-btn {
+  margin-top: 0.5rem;
+  width: 100%;
+  padding: 0.85rem;
+  border-radius: var(--radius-pill);
+  text-align: center;
+
+  background: rgba(var(--accent-rgb), 0.08);
+  border: 1px solid rgba(var(--accent-rgb), 0.25);
+
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  font-weight: 500;
+
+  transition: background 0.25s ease, border-color 0.25s ease;
+}
+
+
+.focus-rest-timer-btn:hover {
+  background: rgba(var(--accent-rgb), 0.15);
+  border-color: rgba(var(--accent-rgb), 0.45);
+}
+
+/* When the timer is running */
+.focus-rest-timer-btn.running {
+  background: linear-gradient(
+    90deg,
+    var(--accent-warm-start),
+    var(--accent-warm-end)
+  );
+  box-shadow: var(--shadow-progress);
+  border-color: transparent;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* When timer is finished */
+.focus-rest-timer-btn.finished {
+  background: rgba(var(--accent-warm-start-rgb), 0.2);
+  border-color: rgba(var(--accent-warm-start-rgb), 0.4);
+  color: var(--text-accent);
+}
+
+
+.focus-rest-btn.rest-done-ping {
+  animation: restTimerPing 0.8s ease-out;
+}
 
 
 /* Split card container */
@@ -4582,6 +4689,293 @@ footer {
   }
 }
 
+/* === Training History 30-day grid === */
+
+.history-card {
+  padding: 1.5rem 1.6rem 2.2rem;
+  border-radius: var(--radius-card);
+  background: var(--surface-main);
+  border: 1px solid var(--card-border);
+  box-shadow: var(--shadow-soft);
+  overflow: visible;
+}
+
+.history-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.history-days-logged {
+  font-weight: 600;
+  font-size: 0.98rem;
+}
+
+.history-subcopy {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-top: 0.2rem;
+}
+
+/* Range button (you mostly have this style already) */
+.history-range-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.22rem 0.65rem;
+  font-size: 0.75rem;
+  border-radius: 999px; /* keep pill but thin */
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: radial-gradient(circle at top, rgba(255,255,255,0.06), transparent 60%),
+              linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+  color: var(--text-primary);
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  box-shadow: var(--shadow-accent-soft);
+}
+
+.history-range-btn .history-range-chevron {
+  font-size: 0.7rem;
+  opacity: 0.85;
+}
+
+/* Intensity legend row */
+
+.history-intensity-legend {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 1.1rem;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.history-intensity-dots {
+  display: inline-flex;
+  gap: 0.3rem;
+}
+
+.history-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.02);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+/* tie legend colors into theme tokens */
+.history-dot-0 {
+  background: rgba(255, 255, 255, 0.03);
+}
+.history-dot-1 {
+  background: rgba(var(--accent-warm-start-rgb), 0.36);
+}
+.history-dot-2 {
+  background: rgba(var(--accent-warm-start-rgb), 0.65);
+}
+.history-dot-3 {
+  background: rgba(var(--accent-warm-start-rgb), 0.95);
+  box-shadow: 0 0 12px rgba(var(--accent-warm-start-rgb), 0.9);
+}
+
+/* 30-day grid */
+
+.history-calendar-grid {
+  margin-top: 1.1rem;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr)); /* 7 days per row */
+  gap: 0.3rem;
+}
+
+/* each cell is a button so it’s tappable later */
+.history-day {
+  border: none;
+  padding: 0;
+  background: transparent;
+  cursor: default;
+}
+
+.history-day-dot {
+  display: block;
+  width: 16px;
+  height: 16px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.02);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06);
+  transition:
+    background 0.18s ease,
+    box-shadow 0.18s ease,
+    transform 0.12s ease;
+}
+
+/* Intensity buckets – all theme-aware */
+
+.history-day-intensity-0 .history-day-dot {
+  background: rgba(255, 255, 255, 0.02);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+.history-day-intensity-1 .history-day-dot {
+  background: rgba(var(--accent-warm-start-rgb), 0.35);
+  box-shadow: 0 0 6px rgba(var(--accent-warm-start-rgb), 0.65);
+}
+
+.history-day-intensity-2 .history-day-dot {
+  background: rgba(var(--accent-warm-start-rgb), 0.6);
+  box-shadow: 0 0 10px rgba(var(--accent-warm-start-rgb), 0.9);
+}
+
+.history-day-intensity-3 .history-day-dot {
+  background: rgba(var(--accent-warm-start-rgb), 0.9);
+  box-shadow:
+    0 0 12px rgba(var(--accent-warm-start-rgb), 0.95),
+    0 0 20px var(--aura-glow);
+}
+
+/* small hover bump (desktop only) */
+@media (hover: hover) and (pointer: fine) {
+  .history-day:hover .history-day-dot {
+    transform: translateY(-1px) scale(1.05);
+    box-shadow:
+      0 0 12px rgba(var(--accent-warm-start-rgb), 0.95),
+      0 0 22px var(--aura-glow);
+  }
+}
+
+.history-range-label {
+  margin-top: 0.9rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+/* --- Collapse / expand behavior --- */
+
+/* start hidden */
+.history-calendar-grid,
+.history-range-label {
+  max-height: 0;
+  opacity: 0;
+  transform: translateY(-6px);
+  overflow: hidden;
+  pointer-events: none;
+  transition:
+    max-height 0.35s ease,
+    opacity 0.22s ease,
+    transform 0.22s ease;
+}
+
+/* when card is expanded */
+.history-card.history-expanded .history-calendar-grid,
+.history-card.history-expanded .history-range-label {
+  max-height: 999px; /* adjust if needed */
+  opacity: 1;
+  overflow: visible;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* chevron animation */
+.history-range-btn .history-range-chevron {
+  display: inline-block;
+  transition: transform 0.2s ease;
+}
+
+.history-card.history-expanded .history-range-chevron {
+  transform: rotate(180deg);
+}
+.history-calendar-grid {
+  padding-bottom: 0.35rem;
+}
+
+/* ===== 90-day Heatmap ===== */
+
+.history-heatmap-months {
+  display: grid;
+  grid-template-columns: repeat(13, 1fr);
+  gap: 0.35rem;
+  margin-top: 1rem;
+  margin-bottom: 0.35rem;
+  padding-left: 0.1rem;
+}
+
+.history-month-label {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
+  opacity: 0.9;
+  transform: translateY(2px);
+  white-space: nowrap;
+}
+
+.history-month-label.is-accent {
+  color: var(--text-primary);
+  opacity: 0.95;
+}
+
+.history-heatmap {
+  display: grid;
+  grid-template-columns: repeat(13, minmax(0, 1fr));
+  grid-template-rows: repeat(7, auto);
+  gap: 0.3rem;
+  margin-top: 0.25rem;
+}
+
+/* each cell */
+.history-hm-day {
+  border: none;
+  padding: 0;
+  background: transparent;
+  cursor: default;
+}
+
+.history-hm-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.02);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.07);
+  transition: transform 0.12s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+
+/* intensity buckets (theme aware) */
+.history-hm-i0 .history-hm-dot {
+  background: rgba(255, 255, 255, 0.02);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+.history-hm-i1 .history-hm-dot {
+  background: rgba(var(--accent-warm-start-rgb), 0.28);
+  box-shadow: 0 0 7px rgba(var(--accent-warm-start-rgb), 0.45);
+}
+.history-hm-i2 .history-hm-dot {
+  background: rgba(var(--accent-warm-start-rgb), 0.55);
+  box-shadow: 0 0 10px rgba(var(--accent-warm-start-rgb), 0.75);
+}
+.history-hm-i3 .history-hm-dot {
+  background: rgba(var(--accent-warm-start-rgb), 0.90);
+  box-shadow:
+    0 0 12px rgba(var(--accent-warm-start-rgb), 0.9),
+    0 0 18px var(--aura-glow);
+}
+
+/* "today" outline */
+.history-hm-today .history-hm-dot {
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.28),
+    0 0 12px rgba(var(--accent-warm-start-rgb), 0.55);
+}
+
+/* hover bump for desktop */
+@media (hover:hover) and (pointer:fine) {
+  .history-hm-day:hover .history-hm-dot {
+    transform: translateY(-1px) scale(1.06);
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,0.22),
+      0 0 16px rgba(var(--accent-warm-start-rgb), 0.7),
+      0 0 24px var(--aura-glow);
+  }
+}
+
 
 
     </style>
@@ -4783,27 +5177,62 @@ footer {
             <!-- JS: X of Y sessions completed -->
         </p>
         <div class="weekly-day-row" id="weekly-day-row"></div>
+        <section id="training-history" class="section">
+            <div class="section-head">
+                <h2>Training History</h2>
+                <p class="section-subtitle">Last 6 months of check-ins</p>
+            </div>
+        
+            <div class="history-card">
+                <div class="history-header-row">
+                    <div class="history-summary">
+                        <div id="history-days-logged" class="history-days-logged">
+                            0 days logged
+                        </div>
+                        <p class="history-subcopy">
+                            Streaks stack one week at a time.
+                        </p>
+                    </div>
+        
+                    <!-- Range button you already have -->
+                    <button type="button" id="history-range-toggle" class="history-range-btn">
+                        Last 30 days
+                        <span class="history-range-chevron">▾</span>
+                    </button>
+                </div>
+        
+                <!-- Intensity legend (you basically have this already) -->
+                <div class="history-intensity-legend">
+                    <span>Intensity</span>
+                    <div class="history-intensity-dots">
+                        <span class="history-dot history-dot-0"></span>
+                        <span class="history-dot history-dot-1"></span>
+                        <span class="history-dot history-dot-2"></span>
+                        <span class="history-dot history-dot-3"></span>
+                    </div>
+                </div>
+        
+                <!-- 👉 30-day grid goes here -->
+                <div id="history-calendar-grid" class="history-calendar-grid"></div>
+        
+                <p id="history-range-label" class="history-range-label">
+                    Showing last 30 days
+                </p>
+                            <!-- Month labels -->
+                            <div class="history-heatmap-months" id="history-heatmap-months"></div>
+                            
+                            <!-- Heatmap grid -->
+                            <div class="history-heatmap" id="history-heatmap"></div>
+            </div>
+
+
+        </section>
+
+
+
     </article>
 </section>
 
-<div style="padding:1rem; text-align:center; margin-top:2rem;">
-    <button type="button" id="dev-gate-btn"
-        style="padding:0.8rem 1.2rem; border-radius:10px; background:#444; color:white;">
-        Test Gate Encounter (from stats)
-    </button>
-</div>
-
-<button type="button" id="dev-boss-btn"
-    style="padding:0.8rem 1.2rem; border-radius:10px; background:#444; color:white;">
-    Test Boss Encounter
-</button>
-
-<button type="button" id="dev-complete-weekly-btn"
-    style="padding:0.8rem 1.2rem; border-radius:10px; background:#333; color:white; margin-top:10px;">
-    Test: Complete Weekly Goal
-</button>
-<button id="dev-clear-volume-btn" class="btn btn-outline">Reset Volume (DEV)</button>
-<button id="dev-reset-streak-btn" class="btn btn-outline">Reset Weekly Streak (DEV)</button>
 
 
 
@@ -4986,6 +5415,23 @@ footer {
         </section>
     </div>
 
+<div style="padding:1rem; text-align:center; margin-top:2rem;">
+    <button type="button" id="dev-gate-btn"
+        style="padding:0.8rem 1.2rem; border-radius:10px; background:#444; color:white;">
+        Test Gate Encounter (from stats)
+    </button>
+</div>
+<button type="button" id="dev-boss-btn"
+    style="padding:0.8rem 1.2rem; border-radius:10px; background:#444; color:white;">
+    Test Boss Encounter
+</button>
+
+<button type="button" id="dev-complete-weekly-btn"
+    style="padding:0.8rem 1.2rem; border-radius:10px; background:#333; color:white; margin-top:10px;">
+    Test: Complete Weekly Goal
+</button>
+<button id="dev-clear-volume-btn" class="btn btn-outline">Reset Volume (DEV)</button>
+<button id="dev-reset-streak-btn" class="btn btn-outline">Reset Weekly Streak (DEV)</button>
 
         <section class="section" id="weekly-goal-control">
             <article class="workout-card">
@@ -5050,35 +5496,30 @@ footer {
             Press horizontally with control. Focus on chest and triceps.
         </p>
 
-        <!-- Sets list -->
-        <div id="focus-sets-list" class="focus-sets-list">
-            <!-- JS fills in Set 1 / Set 2 / Set 3 rows -->
-        </div>
+    <!-- Sets list -->
+    <div id="focus-sets-list" class="focus-sets-list"></div>
+    
+    <!-- Footer row: Add Set + Rest Timer -->
+    <div class="focus-footer-row">
+        <button type="button" id="focus-add-set-btn" class="btn focus-add-set-btn">
+            + Add Set
+        </button>
+    
+        <button type="button" id="focus-rest-btn" class="btn focus-rest-btn">
+            <span id="focus-rest-label">Rest Timer</span>
+        </button>
+    </div>
+    
+    <!-- Actions -->
+    <div class="focus-actions">
+        <button type="button" id="focus-cancel-btn" class="btn btn-outline">
+            Cancel
+        </button>
+        <button type="button" id="focus-complete-btn" class="btn btn-primary">
+            Complete
+        </button>
+    </div>
 
-    <!-- Footer (Add Set + Rest Timer + Cancel/Complete) -->
-    <div class="focus-footer">
-        <div class="focus-footer-left">
-            <button type="button" id="focus-add-set-btn" class="btn focus-add-set-btn">
-                + Add Set
-            </button>
-    
-            <!-- 🕒 Rest Timer -->
-            <button type="button" id="focus-rest-timer-btn" class="btn focus-rest-btn">
-                Rest Timer
-            </button>
-    
-            <!-- Countdown text -->
-            <span id="focus-rest-timer-text" class="focus-rest-timer-text"></span>
-        </div>
-    
-        <div class="focus-footer-right">
-            <button type="button" id="focus-cancel-btn" class="btn btn-outline">
-                Cancel
-            </button>
-            <button type="button" id="focus-complete-btn" class="btn btn-primary">
-                Complete
-            </button>
-        </div>
     </div>
 
     </div>

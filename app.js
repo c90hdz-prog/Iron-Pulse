@@ -3925,6 +3925,9 @@ function renderFocusSets() {
     focusDescEl.textContent = description;
 
     renderFocusSets();
+    clearRestTimer();      
+    updateRestTimerUI();
+
 
     // Show overlay
     focusOverlayEl.classList.remove('hidden');
@@ -3937,7 +3940,103 @@ focusOverlayEl.classList.add('hidden');
 focusOverlayEl.classList.remove('active');
 document.body.style.overflow = '';
 currentFocusExercise = null;
+clearRestTimer();
 }
+
+// === Rest Timer (Focus Card) ==========================
+const REST_TIMER_DEFAULT_SECS = 120; // 2 minutes
+
+let restTimerRemaining = 0;
+let restTimerRunning   = false;
+let restTimerInterval  = null;
+
+const focusRestBtn    = document.getElementById("focus-rest-btn");
+const focusRestLabel  = document.getElementById("focus-rest-label");
+
+function formatMmSs(totalSeconds) {
+  const s = Math.max(0, Math.floor(totalSeconds));
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  return `${m}:${sec.toString().padStart(2, "0")}`;
+}
+
+function updateRestTimerUI() {
+  const btn = document.getElementById("focus-rest-btn");
+
+  if (!btn) return;
+
+  if (restTimerRunning) {
+    btn.textContent = `Rest • ${formatMmSs(restTimerRemaining)}`;
+    btn.classList.add("running");
+    btn.classList.remove("finished");
+  } 
+  else if (!restTimerRunning && restTimerRemaining === 0) {
+    btn.textContent = "Rest Timer";
+    btn.classList.remove("running", "finished");
+  }
+  else {
+    // finished naturally
+    btn.textContent = "Rest done";
+    btn.classList.remove("running");
+    btn.classList.add("finished");
+  }
+}
+
+
+function clearRestTimer() {
+  if (restTimerInterval) {
+    clearInterval(restTimerInterval);
+    restTimerInterval = null;
+  }
+  restTimerRemaining = 0;
+  restTimerRunning   = false;
+  updateRestTimerUI();
+}
+function toggleRestTimer() {
+  // If idle or finished → start a fresh 2:00
+  if (!restTimerRunning && restTimerRemaining === 0) {
+    restTimerRemaining = REST_TIMER_DEFAULT_SECS;
+    restTimerRunning   = true;
+
+    if (restTimerInterval) clearInterval(restTimerInterval);
+
+    restTimerInterval = setInterval(() => {
+      restTimerRemaining -= 1;
+      if (restTimerRemaining <= 0) {
+        clearInterval(restTimerInterval);
+        restTimerInterval = null;
+        restTimerRemaining = 0;
+        restTimerRunning = false;
+        updateRestTimerUI();
+        showToast?.("Rest is up — next set when you're ready. 💪");
+        return;
+      }
+      updateRestTimerUI();
+    }, 1000);
+
+    updateRestTimerUI();
+    return;
+  }
+
+  // If running → cancel + reset
+  if (restTimerRunning) {
+    clearRestTimer();
+    showToast?.("Rest timer cancelled.");
+  }
+}
+
+
+function initFocusRestTimerControls() {
+  if (!focusRestBtn || !focusRestLabel) return;
+
+  clearRestTimer();
+
+    focusRestBtn.addEventListener("click", () => {
+    toggleRestTimer();
+    });
+
+}
+
 
 // Weight input → update state
 focusSetsListEl.addEventListener('input', (event) => {
@@ -4074,11 +4173,271 @@ function devResetStreak() {
   showToast?.("Dev: Weekly streak reset to 0.");
 }
 
+// --- Helper: bucket daily volume into 0–3 intensity ---
+function getHistoryIntensityBucket(totalVolume) {
+  if (!totalVolume || totalVolume <= 0) return 0;
+
+  // tweak thresholds as you see real data
+  if (totalVolume < 5000)  return 1; // light
+  if (totalVolume < 15000) return 2; // medium
+  return 3;                           // heavy
+}
+
+// --- Helper: build { "YYYY-MM-DD": totalVolume } from your exercise log ---
+function getTotalVolumeByDateMap() {
+  if (typeof getExerciseLog !== "function") {
+    console.warn("[History] getExerciseLog is not defined");
+    return {};
+  }
+
+  const log = getExerciseLog(); // same store used by focus card
+  const volumeByDate = {};
+
+  Object.keys(log || {}).forEach((dayKey) => {
+    const exercises = log[dayKey];
+    if (!exercises) return;
+
+    let sum = 0;
+
+    Object.keys(exercises).forEach((exerciseName) => {
+      const sets = exercises[exerciseName] || [];
+      sets.forEach((set) => {
+        const w = Number(set.weight) || 0;
+        const r = Number(set.reps) || 0;
+        sum += w * r;
+      });
+    });
+
+    volumeByDate[dayKey] = sum;
+  });
+
+  return volumeByDate;
+}
+
+// --- Helper: last N calendar days as Date objects ---
+function getLastNDates(n) {
+  const dates = [];
+  const today = new Date();
+
+  for (let i = n - 1; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    dates.push(d);
+  }
+  return dates;
+}
+
+// Make sure this matches your getTodayKey date format (YYYY-MM-DD)
+function formatDateKeyFromDate(d) {
+  return d.toISOString().slice(0, 10);
+}
+
+function formatFriendlyDate(d) {
+  return d.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+  });
+}
+
+// --- Main render: 30-day heatmap ---
+function renderTrainingHistoryLast30Days() {
+  const gridEl      = document.getElementById("history-calendar-grid");
+  const daysLabelEl = document.getElementById("history-days-logged");
+  const rangeLabelEl = document.getElementById("history-range-label");
+
+  if (!gridEl) {
+    console.warn("[History] #history-calendar-grid not found");
+    return;
+  }
+
+  const volumeByDate = getTotalVolumeByDateMap();
+  const dates = getLastNDates(30);
+
+  gridEl.innerHTML = "";
+
+  let loggedCount = 0;
+
+  dates.forEach((d) => {
+    const key = formatDateKeyFromDate(d);
+    const vol = volumeByDate[key] || 0;
+    if (vol > 0) loggedCount++;
+
+    const bucket = getHistoryIntensityBucket(vol);
+
+    const cell = document.createElement("button");
+    cell.type = "button";
+    cell.className = `history-day history-day-intensity-${bucket}`;
+    cell.setAttribute("data-date", key);
+
+    const friendly = formatFriendlyDate(d);
+    cell.title =
+      vol > 0
+        ? `${friendly}: ${vol.toLocaleString()} lbs logged`
+        : `${friendly}: no work logged yet`;
+
+    const dot = document.createElement("span");
+    dot.className = "history-day-dot";
+    cell.appendChild(dot);
+
+    gridEl.appendChild(cell);
+  });
+
+  if (daysLabelEl) {
+    daysLabelEl.textContent =
+      `${loggedCount} day${loggedCount === 1 ? "" : "s"} logged`;
+  }
+  if (rangeLabelEl) {
+    rangeLabelEl.textContent = "Showing last 30 days";
+  }
+}
+let historyGridInitialized = false;
+
+function initTrainingHistoryToggle() {
+  const card     = document.querySelector(".history-card");
+  const toggle   = document.getElementById("history-range-toggle");
+
+  if (!card || !toggle) {
+    console.warn("[History] missing card or toggle button");
+    return;
+  }
+
+  toggle.addEventListener("click", () => {
+    const nowExpanded = card.classList.toggle("history-expanded");
+
+    // First time it opens → render grid
+    if (nowExpanded && !historyGridInitialized) {
+      renderTrainingHistoryLast30Days();
+      historyGridInitialized = true;
+    }
+  });
+}
+function getLocalDateKey(d) {
+  // local YYYY-MM-DD (no timezone surprises)
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function startOfWeekMonday(d) {
+  // returns a new Date at local midnight, Monday-based week
+  const x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const day = x.getDay(); // 0 Sun..6 Sat
+  const diff = (day === 0 ? -6 : 1) - day; // move to Monday
+  x.setDate(x.getDate() + diff);
+  return x;
+}
+
+// intensity function (edit this later to match your real “volume/intensity” logic)
+function getIntensityForDateKey(dateKey) {
+  // Example: if you already store "completed today" or workout volume,
+  // map it into 0..3 here.
+  //
+  // For now, try to use your existing log if possible:
+  // - if you have log[dateKey] with sets, compute volume and bucket it.
+  //
+  // Fallback: if you have a boolean "worked out this day", return 2.
+
+  const log = getExerciseLog?.() || {};
+  const dayLog = log[dateKey];
+
+  if (!dayLog) return 0;
+
+  // compute total volume for that day (sum weight*reps across exercises)
+  let total = 0;
+  for (const exName in dayLog) {
+    const sets = dayLog[exName] || [];
+    for (const s of sets) {
+      const w = Number(s.weight) || 0;
+      const r = Number(s.reps) || 0;
+      total += w * r;
+    }
+  }
+
+  if (total <= 0) return 1;     // logged but tiny
+  if (total < 6000) return 1;   // light
+  if (total < 16000) return 2;  // medium
+  return 3;                     // heavy
+}
+
+function render90DayHeatmap() {
+  const gridEl = document.getElementById("history-heatmap");
+  const monthsEl = document.getElementById("history-heatmap-months");
+  if (!gridEl || !monthsEl) return;
+
+  gridEl.innerHTML = "";
+  monthsEl.innerHTML = "";
+
+  const today = new Date();
+  const todayKey = getLocalDateKey(today);
+
+  // We render 13 weeks (91 days) ending at end-of-this-week (Sunday) or today?
+  // For "last 90 days ending today", anchor by week columns ending with the week containing today.
+  const endWeekStart = startOfWeekMonday(today); // Monday of current week
+  const start = new Date(endWeekStart);
+  start.setDate(start.getDate() - (12 * 7)); // 13 columns total => go back 12 weeks
+
+  // Month label placement: label a column if its Monday is in a new month
+  const monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+  for (let col = 0; col < 13; col++) {
+    const colDate = new Date(start);
+    colDate.setDate(start.getDate() + col * 7);
+
+    const month = colDate.getMonth();
+    const label = monthNames[month];
+
+    // only show label when month changes (or first column)
+    let show = col === 0;
+    if (col > 0) {
+      const prev = new Date(start);
+      prev.setDate(start.getDate() + (col - 1) * 7);
+      show = prev.getMonth() !== month;
+    }
+
+    const span = document.createElement("div");
+    span.className = "history-month-label" + (show ? " is-accent" : "");
+    span.textContent = show ? label : "";
+    monthsEl.appendChild(span);
+  }
+
+  // Fill cells: 7 rows (Mon..Sun) × 13 cols
+  // We’ll create in row-major order but assign grid positions by CSS grid placement.
+  for (let row = 0; row < 7; row++) {
+    for (let col = 0; col < 13; col++) {
+      const cellDate = new Date(start);
+      cellDate.setDate(start.getDate() + col * 7 + row);
+
+      const key = getLocalDateKey(cellDate);
+
+      // Only show last ~90 days up to today as “active”; future days in this week should look empty
+      const isFuture = cellDate > today;
+      const intensity = isFuture ? 0 : getIntensityForDateKey(key);
+
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = `history-hm-day history-hm-i${intensity}` + (key === todayKey ? " history-hm-today" : "");
+      btn.setAttribute("aria-label", key);
+
+      // optional: tooltip
+      btn.title = `${key}${intensity ? ` • intensity ${intensity}` : ""}`;
+
+      const dot = document.createElement("span");
+      dot.className = "history-hm-dot";
+      btn.appendChild(dot);
+
+      // Place into grid: column/row start are 1-indexed
+      btn.style.gridColumnStart = col + 1;
+      btn.style.gridRowStart = row + 1;
+
+      gridEl.appendChild(btn);
+    }
+  }
+}
 
 
-    // =============================
-    // 9) INIT
-    // =============================
+
+
 // =============================
 // 9) INIT
 // =============================
@@ -4093,6 +4452,10 @@ window.addEventListener("DOMContentLoaded", () => {
   initServiceWorker();
   updateStreak();
   updateWeeklyVolumeSummaryFromLog();
+  initFocusRestTimerControls();
+  initTrainingHistoryToggle();
+  render90DayHeatmap();
+
 
   // 🔧 Dev buttons
 initWeeklyVolumeScrollTrigger();
