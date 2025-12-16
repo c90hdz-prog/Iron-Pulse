@@ -647,6 +647,8 @@ nav {
 }
 
         /* Title + description inside cards */
+
+
 .card-title {
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -4719,26 +4721,7 @@ footer {
 }
 
 /* Range button (you mostly have this style already) */
-.history-range-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.22rem 0.65rem;
-  font-size: 0.75rem;
-  border-radius: 999px; /* keep pill but thin */
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: radial-gradient(circle at top, rgba(255,255,255,0.06), transparent 60%),
-              linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
-  color: var(--text-primary);
-  letter-spacing: 0.02em;
-  cursor: pointer;
-  box-shadow: var(--shadow-accent-soft);
-}
 
-.history-range-btn .history-range-chevron {
-  font-size: 0.7rem;
-  opacity: 0.85;
-}
 
 /* Intensity legend row */
 
@@ -4780,35 +4763,7 @@ footer {
   box-shadow: 0 0 12px rgba(var(--accent-warm-start-rgb), 0.9);
 }
 
-/* 30-day grid */
 
-.history-calendar-grid {
-  margin-top: 1.1rem;
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr)); /* 7 days per row */
-  gap: 0.3rem;
-}
-
-/* each cell is a button so it’s tappable later */
-.history-day {
-  border: none;
-  padding: 0;
-  background: transparent;
-  cursor: default;
-}
-
-.history-day-dot {
-  display: block;
-  width: 16px;
-  height: 16px;
-  border-radius: 5px;
-  background: rgba(255, 255, 255, 0.02);
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06);
-  transition:
-    background 0.18s ease,
-    box-shadow 0.18s ease,
-    transform 0.12s ease;
-}
 
 /* Intensity buckets – all theme-aware */
 
@@ -4844,26 +4799,6 @@ footer {
   }
 }
 
-.history-range-label {
-  margin-top: 0.9rem;
-  font-size: 0.8rem;
-  color: var(--text-muted);
-}
-/* --- Collapse / expand behavior --- */
-
-/* start hidden */
-.history-calendar-grid,
-.history-range-label {
-  max-height: 0;
-  opacity: 0;
-  transform: translateY(-6px);
-  overflow: hidden;
-  pointer-events: none;
-  transition:
-    max-height 0.35s ease,
-    opacity 0.22s ease,
-    transform 0.22s ease;
-}
 
 /* when card is expanded */
 .history-card.history-expanded .history-calendar-grid,
@@ -4875,11 +4810,6 @@ footer {
   pointer-events: auto;
 }
 
-/* chevron animation */
-.history-range-btn .history-range-chevron {
-  display: inline-block;
-  transition: transform 0.2s ease;
-}
 
 .history-card.history-expanded .history-range-chevron {
   transform: rotate(180deg);
@@ -4975,7 +4905,192 @@ footer {
       0 0 24px var(--aura-glow);
   }
 }
+/* === Training History (90-day heatmap) === */
 
+.history-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  gap: 1rem;
+}
+
+.history-toggle-btn{
+  display:inline-flex;
+  align-items:center;
+  gap:.45rem;
+  padding:.26rem .7rem;
+  font-size:.78rem;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.12);
+  background:
+    radial-gradient(circle at top, rgba(255,255,255,.06), transparent 60%),
+    linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+  color: var(--text-primary);
+  box-shadow: var(--shadow-accent-soft);
+  cursor:pointer;
+}
+
+.history-toggle-chevron{
+  display:inline-block;
+  transition: transform .2s ease;
+  opacity:.9;
+}
+.history-card.history-expanded .history-toggle-chevron{
+  transform: rotate(180deg);
+}
+
+.history-card {
+  padding: 1.5rem 1.6rem 1.6rem;
+  border-radius: var(--radius-card);
+  background: var(--surface-main);
+  border: 1px solid var(--card-border);
+  box-shadow: var(--shadow-soft);
+}
+
+.history-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.history-days-logged {
+  font-weight: 600;
+  font-size: 0.98rem;
+}
+
+.history-subcopy {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-top: 0.2rem;
+}
+
+.history-intensity-legend {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 1.1rem;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.history-intensity-dots {
+  display: inline-flex;
+  gap: 0.3rem;
+}
+
+.history-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.02);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+.history-dot-0 { background: rgba(255,255,255,0.03); }
+.history-dot-1 { background: rgba(var(--accent-warm-start-rgb), 0.36); }
+.history-dot-2 { background: rgba(var(--accent-warm-start-rgb), 0.65); }
+.history-dot-3 {
+  background: rgba(var(--accent-warm-start-rgb), 0.95);
+  box-shadow: 0 0 12px rgba(var(--accent-warm-start-rgb), 0.9);
+}
+
+/* collapse container */
+.history-heatmap-wrap{
+  max-height:0;
+  opacity:0;
+  transform: translateY(-6px);
+  overflow:hidden;
+  pointer-events:none;
+  transition:
+    max-height .45s ease,
+    opacity .22s ease,
+    transform .22s ease;
+}
+
+.history-card.history-expanded .history-heatmap-wrap{
+  max-height: 520px;
+  opacity:1;
+  transform: translateY(0);
+  pointer-events:auto;
+}
+
+.history-range-label{
+  margin-top: 0.9rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* Month labels row (13 week columns) */
+.history-month-row{
+  margin-top: 1rem;
+  display: grid;
+  grid-template-columns: repeat(13, 16px);
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.history-month-label{
+  opacity: 0.75;
+  white-space: nowrap;
+}
+.history-month-label.is-accent{
+  color: var(--text-primary);
+  opacity: 1;
+}
+
+/* Heatmap grid */
+.history-heatmap-grid{
+  margin-top: 0.6rem;
+  display: grid;
+  grid-template-columns: repeat(13, 16px);
+  grid-template-rows: repeat(7, 16px);
+  gap: 0.35rem;
+}
+
+/* Each day is a button, dot is inside */
+.history-hm-day{
+  border: none;
+  padding: 0;
+  background: transparent;
+  width: 16px;
+  height: 16px;
+  cursor: default;
+}
+
+.history-hm-dot{
+  display:block;
+  width:16px;
+  height:16px;
+  border-radius:5px;
+  background: rgba(255,255,255,0.03);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.07);
+  transition: transform .12s ease, box-shadow .18s ease, background .18s ease;
+}
+
+/* intensity -> style the DOT (not the button) */
+.history-hm-i0 .history-hm-dot{ background: rgba(255,255,255,0.03); }
+.history-hm-i1 .history-hm-dot{
+  background: rgba(var(--accent-warm-start-rgb), 0.35);
+  box-shadow: 0 0 8px rgba(var(--accent-warm-start-rgb), 0.45);
+}
+.history-hm-i2 .history-hm-dot{
+  background: rgba(var(--accent-warm-start-rgb), 0.60);
+  box-shadow: 0 0 12px rgba(var(--accent-warm-start-rgb), 0.75);
+}
+.history-hm-i3 .history-hm-dot{
+  background: rgba(var(--accent-warm-start-rgb), 0.90);
+  box-shadow:
+    0 0 14px rgba(var(--accent-warm-start-rgb), 0.95),
+    0 0 22px var(--aura-glow);
+}
+
+.history-hm-today .history-hm-dot{
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.35),
+    0 0 14px rgba(var(--accent-warm-start-rgb), 0.65);
+}
 
 
     </style>
@@ -5177,56 +5292,45 @@ footer {
             <!-- JS: X of Y sessions completed -->
         </p>
         <div class="weekly-day-row" id="weekly-day-row"></div>
-        <section id="training-history" class="section">
-            <div class="section-head">
-                <h2>Training History</h2>
-                <p class="section-subtitle">Last 6 months of check-ins</p>
-            </div>
-        
-            <div class="history-card">
-                <div class="history-header-row">
-                    <div class="history-summary">
-                        <div id="history-days-logged" class="history-days-logged">
-                            0 days logged
-                        </div>
-                        <p class="history-subcopy">
-                            Streaks stack one week at a time.
-                        </p>
-                    </div>
-        
-                    <!-- Range button you already have -->
-                    <button type="button" id="history-range-toggle" class="history-range-btn">
-                        Last 30 days
-                        <span class="history-range-chevron">▾</span>
-                    </button>
-                </div>
-        
-                <!-- Intensity legend (you basically have this already) -->
-                <div class="history-intensity-legend">
-                    <span>Intensity</span>
-                    <div class="history-intensity-dots">
-                        <span class="history-dot history-dot-0"></span>
-                        <span class="history-dot history-dot-1"></span>
-                        <span class="history-dot history-dot-2"></span>
-                        <span class="history-dot history-dot-3"></span>
-                    </div>
-                </div>
-        
-                <!-- 👉 30-day grid goes here -->
-                <div id="history-calendar-grid" class="history-calendar-grid"></div>
-        
-                <p id="history-range-label" class="history-range-label">
-                    Showing last 30 days
-                </p>
-                            <!-- Month labels -->
-                            <div class="history-heatmap-months" id="history-heatmap-months"></div>
-                            
-                            <!-- Heatmap grid -->
-                            <div class="history-heatmap" id="history-heatmap"></div>
-            </div>
+<section id="training-history" class="section">
+  <div class="section-head history-head">
+    <div>
+      <h2>Training History</h2>
+      <p class="section-subtitle">Last 90 days of check-ins</p>
+    </div>
 
+    <button id="history-toggle-btn" class="history-toggle-btn" type="button" aria-expanded="false">
+      Last 90 days <span class="history-toggle-chevron">▾</span>
+    </button>
+  </div>
 
-        </section>
+  <div class="history-card" id="history-card">
+    <div class="history-header-row">
+      <div>
+        <div class="history-days-logged" id="history-days-logged">0 days logged</div>
+        <div class="history-subcopy">Streaks stack one week at a time.</div>
+      </div>
+    </div>
+
+    <div class="history-intensity-legend">
+      <span>Intensity</span>
+      <div class="history-intensity-dots" aria-hidden="true">
+        <span class="history-dot history-dot-0"></span>
+        <span class="history-dot history-dot-1"></span>
+        <span class="history-dot history-dot-2"></span>
+        <span class="history-dot history-dot-3"></span>
+      </div>
+    </div>
+
+    <!-- EXPANDABLE AREA -->
+    <div class="history-heatmap-wrap">
+      <div id="history-month-row" class="history-month-row"></div>
+      <div id="history-heatmap-grid" class="history-heatmap-grid"></div>
+      <div id="history-range-label" class="history-range-label">Showing last 90 days</div>
+    </div>
+  </div>
+</section>
+
 
 
 

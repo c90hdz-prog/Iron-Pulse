@@ -775,12 +775,9 @@ const MUSCLE_EMOJI_MAP = {
 };
 
 function getTodayKey() {
-  const d = new Date();
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`; // "YYYY-MM-DD"
+  return dateToKey(new Date());
 }
+
 
 function getExerciseLog() {
   try {
@@ -815,6 +812,7 @@ function recordExerciseSetsForToday(exerciseName, cleanedSets) {
 
   // Recompute weekly volume + refresh Weekly Challenge UI
   updateWeeklyVolumeSummaryFromLog();
+  render90DayHeatmap();
 }
 // ======================================
 // WEEKLY VOLUME – READ FROM EXERCISE LOG
@@ -853,6 +851,37 @@ function updateWeeklyVolumeSummaryFromLog() {
   console.log("[WeeklyVolume] total lbs this week =", totalVolume);
   renderWeeklyVolumeChallenge(totalVolume);
 }
+
+function getDayTotalVolume(dateKey) {
+  const log = getExerciseLog();
+  const dayLog = log[dateKey];
+  if (!dayLog) return 0;
+
+  let total = 0;
+  Object.values(dayLog).forEach((sets) => {
+    (sets || []).forEach((set) => {
+      const w = Number(set.weight) || 0;
+      const r = Number(set.reps) || 0;
+      total += w * r;
+    });
+  });
+
+  return total;
+}
+
+/**
+ * Map daily volume into 0..3 buckets
+ * Tune these thresholds to your taste.
+ */
+function getIntensityForDateKey(dateKey) {
+  const v = getDayTotalVolume(dateKey);
+
+  if (v <= 0) return 0;        // no workout
+  if (v < 4000) return 1;      // light
+  if (v < 12000) return 2;     // medium
+  return 3;                   // heavy
+}
+
 
 function renderWeeklyVolumeChallenge(totalVolume) {
   const iconEl    = document.getElementById("volume-object-icon");
@@ -1016,6 +1045,41 @@ function computeWeeklyVolumeSummary() {
 
   return { totalVolume, perMuscle, perExercise };
 }
+const CHECKIN_KEY = "ip_checkins_v1"; // separate from EXERCISE_LOG_KEY
+
+function getCheckins() {
+  try {
+    return JSON.parse(localStorage.getItem(CHECKIN_KEY) || "{}");
+  } catch {
+    return {};
+  }
+}
+
+function saveCheckins(map) {
+  localStorage.setItem(CHECKIN_KEY, JSON.stringify(map));
+}
+
+function markWorkoutCompletedToday() {
+  const map = getCheckins();
+  const key = getTodayKey(); // you already have YYYY-MM-DD
+  map[key] = true;
+  saveCheckins(map);
+}
+
+function isWorkoutCompletedOn(date) {
+  const map = getCheckins();
+  const key = dateToKey(date); // you already have dateToKey()
+  return !!map[key];
+}
+
+function isWorkoutCompletedOn(dateObj) {
+  const map = getCheckins();
+  const key = dateToKey(dateObj); // IMPORTANT: uses the same key format as the week row
+  return !!map[key];
+}
+
+
+
 
 // ---- Tier lookup for current + next object ----
 
@@ -1928,14 +1992,144 @@ function setWeeklyDayLog(log) {
   localStorage.setItem(WEEKLY_DAY_LOG_KEY, JSON.stringify(log));
 }
 
-/* Mark that today had a completed workout */
-function markWorkoutCompletedToday() {
-  const today = getTodayIsoDate();
-  const log = getWeeklyDayLog();
-  log[today] = true;
-  setWeeklyDayLog(log);
+function initTrainingHistoryToggle90() {
+  const card = document.getElementById("history-card");
+  const btn  = document.getElementById("history-toggle-btn");
+  if (!card || !btn) return;
+
+  // start collapsed
+  card.classList.remove("history-expanded");
+  btn.setAttribute("aria-expanded", "false");
+
+  btn.addEventListener("click", () => {
+    const expanded = card.classList.toggle("history-expanded");
+    btn.setAttribute("aria-expanded", expanded ? "true" : "false");
+  });
 }
-       
+function getTotalVolumeForDay(dateKey) {
+  const log = getExerciseLog();
+  const dayLog = log[dateKey];
+  if (!dayLog) return 0;
+
+  let total = 0;
+  Object.values(dayLog).forEach((sets) => {
+    (sets || []).forEach((set) => {
+      const w = Number(set.weight) || 0;
+      const r = Number(set.reps) || 0;
+      total += w * r;
+    });
+  });
+  return total;
+}
+
+// Tune these 3 thresholds to your taste
+function intensityFromVolume(totalVolume) {
+  if (totalVolume <= 0) return 0;
+  if (totalVolume < 3000) return 1;
+  if (totalVolume < 9000) return 2;
+  return 3;
+}
+function render90DayHeatmap() {
+  const gridEl   = document.getElementById("history-heatmap-grid");
+  const monthsEl = document.getElementById("history-month-row");
+  if (!gridEl || !monthsEl) return;
+
+  gridEl.innerHTML = "";
+  monthsEl.innerHTML = "";
+
+  const checkins = getCheckins();
+  const today = new Date();
+  today.setHours(0,0,0,0);
+
+  const daysBack = 90;
+  const start = new Date(today);
+  start.setDate(start.getDate() - (daysBack - 1));
+
+  // We align rows to Monday=0..Sunday=6
+  const dayIndexMon0 = (d) => (d.getDay() + 6) % 7;
+
+  // Build list of dates from start..today
+  const dates = [];
+  for (let i = 0; i < daysBack; i++) {
+    const d = new Date(start);
+    d.setDate(start.getDate() + i);
+    dates.push(d);
+  }
+
+  // We want columns by week. Determine how many week-columns we need.
+  // Column = week index relative to start, but we’ll also account for start day offset.
+  const startOffset = dayIndexMon0(dates[0]); // how many empty cells above first date
+  const totalCells = startOffset + dates.length;
+  const weeks = Math.ceil(totalCells / 7);
+
+  // Prepare month labels array aligned to week columns
+  // Put month label above the first column that contains a day in that month.
+  const monthLabelByWeek = new Array(weeks).fill("");
+
+  // Create a helper to place a date into (week, row)
+  const getWeekIndex = (i) => Math.floor((startOffset + i) / 7);
+  const getRowIndex  = (d) => dayIndexMon0(d);
+
+  // Fill month labels
+  let lastMonth = null;
+  dates.forEach((d, i) => {
+    const w = getWeekIndex(i);
+    const month = d.getMonth();
+    if (month !== lastMonth) {
+      // Only set if empty so we don’t overwrite when multiple transitions land in same week
+      if (!monthLabelByWeek[w]) {
+        monthLabelByWeek[w] = d.toLocaleString(undefined, { month: "short" });
+      }
+      lastMonth = month;
+    }
+  });
+
+  // Render month row (one "slot" per week column)
+  monthLabelByWeek.forEach((label) => {
+    const span = document.createElement("div");
+    span.textContent = label;
+    monthRow.appendChild(span);
+  });
+
+  // Render heatmap cells: we’ll create weeks * 7 cells in column-flow order.
+  let loggedDays = 0;
+
+  for (let w = 0; w < weeks; w++) {
+    for (let r = 0; r < 7; r++) {
+      const cellIndex = w * 7 + r;       // cell order in the visual grid
+      const dateIndex = cellIndex - startOffset; // map back into dates array
+
+      const dot = document.createElement("div");
+      dot.className = "history-hm-day history-hm-i0";
+
+      if (dateIndex >= 0 && dateIndex < dates.length) {
+        const d = dates[dateIndex];
+        const key = dateToKey(d);
+
+        const didWorkout = !!checkins[key];
+        if (didWorkout) loggedDays++;
+
+        const volume = didWorkout ? getTotalVolumeForDay(key) : 0;
+        const intensity = intensityFromVolume(volume);
+
+        dot.classList.remove("history-hm-i0");
+        dot.classList.add(`history-hm-i${intensity}`);
+
+        // tooltip (nice on desktop)
+        dot.title = `${d.toLocaleDateString()} • ${didWorkout ? "Workout" : "No workout"} • ${Math.round(volume).toLocaleString()} lbs`;
+      } else {
+        // padding cells before the start date (stay faint)
+        dot.classList.add("history-hm-i0");
+        dot.style.opacity = "0.35";
+      }
+
+      gridEl.appendChild(dot);
+    }
+  }
+
+  daysEl.textContent = `${loggedDays} day${loggedDays === 1 ? "" : "s"} logged`;
+}
+
 
 function resetWeeklyGoalCelebrationFlag() {
   localStorage.removeItem(WEEKLY_GOAL_CELEBRATED_KEY);
@@ -2996,7 +3190,9 @@ function onWorkoutCompleted() {
     const current = getWorkoutsCompletedThisWeek();
     setWorkoutsCompletedThisWeek(current + 1);
     markWorkoutCompletedToday();
+    renderTrainingGoalWeekRow();
     renderWeeklyFocusLive();
+   
 
     // 2) Advance rotation if recommended session
     if (currentSessionMeta.isRecommended && currentSessionMeta.programId) {
@@ -3027,7 +3223,7 @@ function onWorkoutCompleted() {
     // 4) UI updates
     updateStreak();
     updateWeeklyVolumeSummaryFromLog();
-
+    render90DayHeatmap();
     flashDayComplete(); // per-workout animation
 
     // 5) Weekly goal celebration + overlay + quote
@@ -3125,6 +3321,51 @@ function initFinisherControls() {
   function clearCatSelection() {
     catButtons.forEach(btn => btn.classList.remove("btn-primary"));
   }
+// Converts JS getDay() (Sun=0..Sat=6) → Monday-first index (Mon=0..Sun=6)
+function getMondayIndex(date) {
+  return (date.getDay() + 6) % 7;
+}
+function renderHistoryGrid(days = 30) {
+  const gridEl = document.getElementById("history-grid"); // your grid container
+  if (!gridEl) return;
+
+  const today = new Date();
+  today.setHours(0,0,0,0);
+
+  const start = new Date(today);
+  start.setDate(start.getDate() - (days - 1));
+
+  const leadBlanks = getMondayIndex(start);
+
+  gridEl.innerHTML = "";
+
+  // leading blanks (keeps weekday alignment correct)
+  for (let i = 0; i < leadBlanks; i++) {
+    const blank = document.createElement("div");
+    blank.className = "history-day history-day-blank";
+    gridEl.appendChild(blank);
+  }
+
+  // actual days
+  for (let i = 0; i < days; i++) {
+    const d = new Date(start);
+    d.setDate(start.getDate() + i);
+
+    const key = dateToKey(d);
+    const intensity = getIntensityForDateKey(key); // 0..3 from your log
+
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = `history-day history-day-intensity-${intensity}`;
+    btn.setAttribute("aria-label", key);
+
+    const dot = document.createElement("span");
+    dot.className = "history-day-dot";
+    btn.appendChild(dot);
+
+    gridEl.appendChild(btn);
+  }
+}
 
 
   // 🔹 Central place to keep button labels + disabled state in sync
@@ -4238,6 +4479,35 @@ function formatFriendlyDate(d) {
     day: "numeric",
   });
 }
+function renderTrainingGoalWeekRow() {
+  const row = document.getElementById("weekly-day-row");
+  if (!row) return;
+
+  const start = getStartOfWeek(new Date()); // Monday start
+  const labels = ["M","T","W","T","F","S","S"];
+  const todayKey = getTodayKey();
+
+  row.innerHTML = "";
+
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(start);
+    d.setDate(start.getDate() + i);
+
+    const key = dateToKey(d);
+
+    const pill = document.createElement("div");
+    pill.className = "weekly-day-pill";
+    pill.textContent = labels[i];
+
+    if (key === todayKey) pill.classList.add("weekly-day-pill--today");
+    if (isWorkoutCompletedOn(d)) pill.classList.add("weekly-day-pill--worked");
+
+    row.appendChild(pill);
+  }
+}
+
+
+
 
 // --- Main render: 30-day heatmap ---
 function renderTrainingHistoryLast30Days() {
@@ -4290,11 +4560,12 @@ function renderTrainingHistoryLast30Days() {
     rangeLabelEl.textContent = "Showing last 30 days";
   }
 }
+
 let historyGridInitialized = false;
 
 function initTrainingHistoryToggle() {
-  const card     = document.querySelector(".history-card");
-  const toggle   = document.getElementById("history-range-toggle");
+  const card   = document.getElementById("history-card");
+  const toggle = document.getElementById("history-toggle-btn");
 
   if (!card || !toggle) {
     console.warn("[History] missing card or toggle button");
@@ -4303,14 +4574,16 @@ function initTrainingHistoryToggle() {
 
   toggle.addEventListener("click", () => {
     const nowExpanded = card.classList.toggle("history-expanded");
+    toggle.setAttribute("aria-expanded", nowExpanded ? "true" : "false");
 
-    // First time it opens → render grid
+    // First time opening: render
     if (nowExpanded && !historyGridInitialized) {
-      renderTrainingHistoryLast30Days();
+      render90DayHeatmap();
       historyGridInitialized = true;
     }
   });
 }
+
 function getLocalDateKey(d) {
   // local YYYY-MM-DD (no timezone surprises)
   const y = d.getFullYear();
@@ -4359,80 +4632,113 @@ function getIntensityForDateKey(dateKey) {
   if (total < 16000) return 2;  // medium
   return 3;                     // heavy
 }
-
 function render90DayHeatmap() {
-  const gridEl = document.getElementById("history-heatmap");
-  const monthsEl = document.getElementById("history-heatmap-months");
-  if (!gridEl || !monthsEl) return;
+  const gridEl   = document.getElementById("history-heatmap-grid");
+  const monthsEl = document.getElementById("history-month-row");
+  const daysEl   = document.getElementById("history-days-logged");
+
+  if (!gridEl || !monthsEl || !daysEl) {
+    console.warn("[History] missing heatmap elements");
+    return;
+  }
 
   gridEl.innerHTML = "";
   monthsEl.innerHTML = "";
 
+  const checkins = getCheckins();
+
   const today = new Date();
-  const todayKey = getLocalDateKey(today);
+  today.setHours(0, 0, 0, 0);
 
-  // We render 13 weeks (91 days) ending at end-of-this-week (Sunday) or today?
-  // For "last 90 days ending today", anchor by week columns ending with the week containing today.
-  const endWeekStart = startOfWeekMonday(today); // Monday of current week
-  const start = new Date(endWeekStart);
-  start.setDate(start.getDate() - (12 * 7)); // 13 columns total => go back 12 weeks
+  const daysBack = 90;
+  const start = new Date(today);
+  start.setDate(start.getDate() - (daysBack - 1));
 
-  // Month label placement: label a column if its Monday is in a new month
-  const monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  // Monday=0 ... Sunday=6
+  const dayIndexMon0 = (d) => (d.getDay() + 6) % 7;
 
-  for (let col = 0; col < 13; col++) {
-    const colDate = new Date(start);
-    colDate.setDate(start.getDate() + col * 7);
-
-    const month = colDate.getMonth();
-    const label = monthNames[month];
-
-    // only show label when month changes (or first column)
-    let show = col === 0;
-    if (col > 0) {
-      const prev = new Date(start);
-      prev.setDate(start.getDate() + (col - 1) * 7);
-      show = prev.getMonth() !== month;
-    }
-
-    const span = document.createElement("div");
-    span.className = "history-month-label" + (show ? " is-accent" : "");
-    span.textContent = show ? label : "";
-    monthsEl.appendChild(span);
+  // Build date list
+  const dates = [];
+  for (let i = 0; i < daysBack; i++) {
+    const d = new Date(start);
+    d.setDate(start.getDate() + i);
+    d.setHours(0,0,0,0);
+    dates.push(d);
   }
 
-  // Fill cells: 7 rows (Mon..Sun) × 13 cols
-  // We’ll create in row-major order but assign grid positions by CSS grid placement.
-  for (let row = 0; row < 7; row++) {
-    for (let col = 0; col < 13; col++) {
-      const cellDate = new Date(start);
-      cellDate.setDate(start.getDate() + col * 7 + row);
+  // Align to week columns
+  const startOffset = dayIndexMon0(dates[0]); // empty cells before start date
+  const totalCells = startOffset + dates.length;
+  const weeks = Math.ceil(totalCells / 7);
 
-      const key = getLocalDateKey(cellDate);
+  // Month labels above week columns
+  const monthLabelByWeek = new Array(weeks).fill("");
+  let lastMonth = null;
 
-      // Only show last ~90 days up to today as “active”; future days in this week should look empty
-      const isFuture = cellDate > today;
-      const intensity = isFuture ? 0 : getIntensityForDateKey(key);
+  const getWeekIndex = (i) => Math.floor((startOffset + i) / 7);
+
+  dates.forEach((d, i) => {
+    const w = getWeekIndex(i);
+    const month = d.getMonth();
+    if (month !== lastMonth) {
+      if (!monthLabelByWeek[w]) {
+        monthLabelByWeek[w] = d.toLocaleString(undefined, { month: "short" });
+      }
+      lastMonth = month;
+    }
+  });
+
+  monthLabelByWeek.forEach((label) => {
+    const span = document.createElement("div");
+    span.className = "history-month-label" + (label ? " is-accent" : "");
+    span.textContent = label;
+    monthsEl.appendChild(span);
+  });
+
+  // Cells
+  let loggedDays = 0;
+
+  for (let w = 0; w < weeks; w++) {
+    for (let r = 0; r < 7; r++) {
+      const cellIndex = w * 7 + r;
+      const dateIndex = cellIndex - startOffset;
 
       const btn = document.createElement("button");
       btn.type = "button";
-      btn.className = `history-hm-day history-hm-i${intensity}` + (key === todayKey ? " history-hm-today" : "");
-      btn.setAttribute("aria-label", key);
-
-      // optional: tooltip
-      btn.title = `${key}${intensity ? ` • intensity ${intensity}` : ""}`;
+      btn.className = "history-hm-day history-hm-i0";
 
       const dot = document.createElement("span");
       dot.className = "history-hm-dot";
       btn.appendChild(dot);
 
-      // Place into grid: column/row start are 1-indexed
-      btn.style.gridColumnStart = col + 1;
-      btn.style.gridRowStart = row + 1;
+      if (dateIndex >= 0 && dateIndex < dates.length) {
+        const d = dates[dateIndex];
+        const key = dateToKey(d);
+
+        const didWorkout = !!checkins[key];
+        if (didWorkout) loggedDays++;
+
+        const volume = didWorkout ? getTotalVolumeForDay(key) : 0;
+        const intensity = intensityFromVolume(volume);
+
+        btn.classList.remove("history-hm-i0");
+        btn.classList.add(`history-hm-i${intensity}`);
+
+        // today outline
+        if (dateToKey(today) === key) btn.classList.add("history-hm-today");
+
+        btn.title = `${d.toLocaleDateString()} • ${didWorkout ? "Workout" : "No workout"} • ${Math.round(volume).toLocaleString()} lbs`;
+      } else {
+        // padding cells
+        btn.style.opacity = "0.25";
+        btn.disabled = true;
+      }
 
       gridEl.appendChild(btn);
     }
   }
+
+  daysEl.textContent = `${loggedDays} day${loggedDays === 1 ? "" : "s"} logged`;
 }
 
 
@@ -4453,8 +4759,9 @@ window.addEventListener("DOMContentLoaded", () => {
   updateStreak();
   updateWeeklyVolumeSummaryFromLog();
   initFocusRestTimerControls();
-  initTrainingHistoryToggle();
+  initTrainingHistoryToggle90();
   render90DayHeatmap();
+  renderTrainingGoalWeekRow();
 
 
   // 🔧 Dev buttons
