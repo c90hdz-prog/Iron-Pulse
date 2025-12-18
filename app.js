@@ -809,6 +809,9 @@ function recordExerciseSetsForToday(exerciseName, cleanedSets) {
   // Overwrite today's sets for this exercise with the latest completed ones
   log[todayKey][exerciseName] = cleanedSets;
   saveExerciseLog(log);
+  setDailySummary(getTodayKey(), {
+  totalVolume: Math.round(getTotalVolumeForDay(getTodayKey()) || 0)
+});
 
   // Recompute weekly volume + refresh Weekly Challenge UI
   updateWeeklyVolumeSummaryFromLog();
@@ -869,18 +872,7 @@ function getDayTotalVolume(dateKey) {
   return total;
 }
 
-/**
- * Map daily volume into 0..3 buckets
- * Tune these thresholds to your taste.
- */
-function getIntensityForDateKey(dateKey) {
-  const v = getDayTotalVolume(dateKey);
 
-  if (v <= 0) return 0;        // no workout
-  if (v < 4000) return 1;      // light
-  if (v < 12000) return 2;     // medium
-  return 3;                   // heavy
-}
 
 
 function renderWeeklyVolumeChallenge(totalVolume) {
@@ -1009,42 +1001,7 @@ function dateToKey(date) {
 
 let lastVolumeTierId = null;
 
-function computeWeeklyVolumeSummary() {
-  const log = getExerciseLog();
-  const startOfWeek = getStartOfWeek();
-  const now = new Date();
 
-  let totalVolume = 0;
-  const perMuscle = {};
-  const perExercise = {};
-
-  const cursor = new Date(startOfWeek);
-  while (cursor <= now) {
-    const key = dateToKey(cursor);
-    const dayLog = log[key];
-    if (dayLog) {
-      Object.entries(dayLog).forEach(([exerciseName, sets]) => {
-        const muscle = EXERCISE_MUSCLE_MAP[exerciseName] || "Full Body";
-
-        const exerciseVolume = (sets || []).reduce((sum, set) => {
-          const w = Number(set.weight) || 0;
-          const r = Number(set.reps) || 0;
-          return sum + w * r;
-        }, 0);
-
-        totalVolume += exerciseVolume;
-        perExercise[exerciseName] =
-          (perExercise[exerciseName] || 0) + exerciseVolume;
-        perMuscle[muscle] =
-          (perMuscle[muscle] || 0) + exerciseVolume;
-      });
-    }
-
-    cursor.setDate(cursor.getDate() + 1);
-  }
-
-  return { totalVolume, perMuscle, perExercise };
-}
 const CHECKIN_KEY = "ip_checkins_v1"; // separate from EXERCISE_LOG_KEY
 
 function getCheckins() {
@@ -1069,12 +1026,6 @@ function markWorkoutCompletedToday() {
 function isWorkoutCompletedOn(date) {
   const map = getCheckins();
   const key = dateToKey(date); // you already have dateToKey()
-  return !!map[key];
-}
-
-function isWorkoutCompletedOn(dateObj) {
-  const map = getCheckins();
-  const key = dateToKey(dateObj); // IMPORTANT: uses the same key format as the week row
   return !!map[key];
 }
 
@@ -1953,30 +1904,32 @@ function renderWeeklyDayMarkers() {
     row.appendChild(pill);
   });
 }
-
-/* Returns an array of 7 ISO dates for the current week (Mon → Sun) */
 function getCurrentWeekDates() {
   const today = new Date();
-  const jsDay = today.getDay(); // 0=Sun..6=Sat
-  const diffToMonday = (jsDay + 6) % 7; // 0 if Monday
+  const jsDay = today.getDay();            // 0=Sun..6=Sat
+  const diffToMonday = (jsDay + 6) % 7;    // 0 if Monday
 
   const monday = new Date(today);
   monday.setDate(today.getDate() - diffToMonday);
+  monday.setHours(0, 0, 0, 0);
 
   const dates = [];
   for (let i = 0; i < 7; i++) {
     const d = new Date(monday);
     d.setDate(monday.getDate() + i);
-    dates.push(d.toISOString().slice(0, 10));
+    dates.push(dateToKey(d)); // ✅ local YYYY-MM-DD
   }
   return dates;
 }
 
-
- function getTodayIsoDate() {
-  const d = new Date();
-  return d.toISOString().slice(0, 10); // "YYYY-MM-DD"
+function formatDateKeyFromDate(d) {
+  return dateToKey(d); // local YYYY-MM-DD
 }
+
+function getTodayIsoDate() {
+  return dateToKey(new Date());
+}
+
 
 function getWeeklyDayLog() {
   const raw = localStorage.getItem(WEEKLY_DAY_LOG_KEY);
@@ -3114,8 +3067,10 @@ function onWorkoutCompleted() {
     // 4) UI updates
     updateStreak();
     updateWeeklyVolumeSummaryFromLog();
+
     render90DayHeatmap();
     flashDayComplete(); // per-workout animation
+    persistTodaySummary();
 
     // 5) Weekly goal celebration + overlay + quote
     setTimeout(() => {
@@ -4059,6 +4014,15 @@ function renderFocusSets() {
   // Disable Add Set when we hit the cap
   focusAddSetBtn.disabled = currentFocusExercise.sets.length >= MAX_FOCUS_SETS;
 }
+function persistTodaySummary() {
+  const key = getTodayKey(); // your local YYYY-MM-DD
+  const volume = getTotalVolumeForDay(key) || 0;
+
+  setDailySummary(key, {
+    didWorkout: true,
+    totalVolume: Math.round(volume)
+  });
+}
 
 // Open the overlay for a given exercise
     window.openFocusCardForExercise = function (name, options = {}) {
@@ -4402,10 +4366,7 @@ function getLastNDates(n) {
   return dates;
 }
 
-// Make sure this matches your getTodayKey date format (YYYY-MM-DD)
-function formatDateKeyFromDate(d) {
-  return d.toISOString().slice(0, 10);
-}
+
 
 function formatFriendlyDate(d) {
   return d.toLocaleDateString(undefined, {
@@ -4442,15 +4403,6 @@ function renderTrainingGoalWeekRow() {
 
 
 
-
-function getLocalDateKey(d) {
-  // local YYYY-MM-DD (no timezone surprises)
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-}
-
 function startOfWeekMonday(d) {
   // returns a new Date at local midnight, Monday-based week
   const x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
@@ -4462,20 +4414,14 @@ function startOfWeekMonday(d) {
 
 // intensity function (edit this later to match your real “volume/intensity” logic)
 function getIntensityForDateKey(dateKey) {
-  // Example: if you already store "completed today" or workout volume,
-  // map it into 0..3 here.
-  //
-  // For now, try to use your existing log if possible:
-  // - if you have log[dateKey] with sets, compute volume and bucket it.
-  //
-  // Fallback: if you have a boolean "worked out this day", return 2.
+
 
   const log = getExerciseLog?.() || {};
   const dayLog = log[dateKey];
 
   if (!dayLog) return 0;
 
-  // compute total volume for that day (sum weight*reps across exercises)
+
   let total = 0;
   for (const exName in dayLog) {
     const sets = dayLog[exName] || [];
@@ -4491,6 +4437,7 @@ function getIntensityForDateKey(dateKey) {
   if (total < 16000) return 2;  // medium
   return 3;                     // heavy
 }
+
 function getLocalDateKey(d) {
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, "0");
@@ -4573,12 +4520,25 @@ function render90DayHeatmap() {
         const didWorkout = !!checkins[key];
         if (didWorkout) loggedDays++;
 
-        const volume = didWorkout ? (getTotalVolumeForDay?.(key) || 0) : 0;
+        const summary = getDailySummary?.(key);
+        const volume =
+        summary?.totalVolume ??
+        (didWorkout ? (getTotalVolumeForDay?.(key) || 0) : 0);
+
         let intensity = intensityFromVolume?.(volume) ?? (didWorkout ? 2 : 0);
         if (didWorkout && intensity === 0) intensity = 1;
 
         dot.classList.remove("history-hm-i0");
         dot.classList.add(`history-hm-i${intensity}`);
+
+          // ✅ Tooltip + accessibility
+        const friendly = d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+        const volText = Math.round(volume).toLocaleString();
+        btn.title = didWorkout
+          ? `${friendly} • ${volText} lbs`
+          : `${friendly} • No workout`;
+
+  btn.setAttribute("aria-label", btn.title);
 
         if (getLocalDateKey(today) === key) btn.classList.add("history-hm-today");
       } else {
@@ -4593,6 +4553,125 @@ function render90DayHeatmap() {
 }
 
 
+const DAILY_SUMMARY_KEY = "ip_daily_summary_v1";
+
+function getDailySummaryMap() {
+  try { return JSON.parse(localStorage.getItem(DAILY_SUMMARY_KEY) || "{}"); }
+  catch { return {}; }
+}
+
+function saveDailySummaryMap(map) {
+  localStorage.setItem(DAILY_SUMMARY_KEY, JSON.stringify(map));
+}
+
+function setDailySummary(dateKey, summary) {
+  const map = getDailySummaryMap();
+  map[dateKey] = { ...(map[dateKey] || {}), ...summary, updatedAt: Date.now() };
+  saveDailySummaryMap(map);
+}
+
+function getDailySummary(dateKey) {
+  const map = getDailySummaryMap();
+  return map[dateKey] || null;
+
+}
+function initHeatmapMiniTip() {
+    const tip = document.getElementById("history-hm-tip");
+    const main = document.querySelector(".history-heatmap-main");
+    const grid = document.getElementById("history-heatmap-grid");
+    if (!tip || !main || !grid) return;
+
+    const showTip = (btn) => {
+    if (!btn || btn.classList.contains("history-hm-pad")) return;
+
+    const title = btn.getAttribute("aria-label") || btn.title;
+    if (!title) return;
+
+    const parts = title.split("•").map(s => s.trim());
+    const dateTxt = parts[0] || "";
+    const volTxt  = parts[1] || "";
+
+    tip.innerHTML = `
+      <div class="hm-tip-date">${dateTxt}</div>
+      <div class="hm-tip-vol">${volTxt}</div>
+    `;
+
+    const rect = btn.getBoundingClientRect();
+
+    // Centered above the square, relative to viewport
+    const x = rect.left + rect.width / 2;
+    const y = rect.top;
+
+    tip.style.left = `${x}px`;
+    tip.style.top  = `${y}px`;
+    tip.style.transform = `translate(-50%, -12px)`;
+
+    tip.classList.add("is-visible");
+  };
+
+  // Hover + focus support
+  grid.addEventListener("mouseover", (e) => {
+    const btn = e.target.closest(".history-hm-day");
+    if (!btn) return;
+    showTip(btn);
+  });
+
+  grid.addEventListener("mouseout", (e) => {
+    const leavingGrid = !e.relatedTarget || !grid.contains(e.relatedTarget);
+    if (leavingGrid) hideTip();
+  });
+
+  grid.addEventListener("focusin", (e) => {
+    const btn = e.target.closest(".history-hm-day");
+    if (!btn) return;
+    showTip(btn);
+  });
+
+  grid.addEventListener("focusout", () => hideTip());
+
+  // Tap support: tap a square to show; tap elsewhere to hide
+  grid.addEventListener("click", (e) => {
+    const btn = e.target.closest(".history-hm-day");
+    if (!btn) { hideTip(); return; }
+    showTip(btn);
+  });
+
+  document.addEventListener("click", (e) => {
+    if (main.contains(e.target)) return;
+    hideTip();
+  });
+}
+function initHistoryHeatmapTooltipDismiss() {
+  const tip = document.getElementById("history-hm-tip");
+  const grid = document.getElementById("history-heatmap-grid");
+  if (!tip || !grid) return;
+
+  const hideTip = () => {
+    tip.classList.remove("is-visible");
+  };
+
+  // Hide when clicking/tapping anywhere outside a heatmap day
+  document.addEventListener("pointerdown", (e) => {
+    const dayBtn = e.target.closest?.(".history-hm-day");
+    if (!dayBtn) {
+      hideTip();
+      return;
+    }
+
+    // If they tapped a padding cell, also hide
+    if (dayBtn.classList.contains("history-hm-pad")) hideTip();
+  }, { passive: true });
+
+  // Hide on Escape
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") hideTip();
+  });
+
+  // Hide when the user scrolls (prevents “floating orphan tooltip”)
+  const onScroll = () => hideTip();
+  window.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("resize", onScroll, { passive: true });
+}
 
 
 // =============================
@@ -4613,6 +4692,8 @@ window.addEventListener("DOMContentLoaded", () => {
   initFocusRestTimerControls();
   initTrainingHistoryToggle();
   render90DayHeatmap();
+  initHeatmapMiniTip();
+  initHistoryHeatmapTooltipDismiss();
   renderTrainingGoalWeekRow();
 
 

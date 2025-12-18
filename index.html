@@ -4690,20 +4690,53 @@ footer {
     filter: grayscale(0.6);
   }
 }
+.history-intensity-dots{
+  display: inline-flex;
+  gap: .3rem;
+}
+
+.history-dot{
+  width: 12px;
+  height: 12px;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.02);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.08);
+}
+
+.history-dot-1{ background: rgba(var(--accent-warm-start-rgb), 0.36); }
+.history-dot-2{ background: rgba(var(--accent-warm-start-rgb), 0.65); }
+.history-dot-3{
+  background: rgba(var(--accent-warm-start-rgb), 0.95);
+  box-shadow: 0 0 12px rgba(var(--accent-warm-start-rgb), 0.9);
+}
 
 /* ===== Training History Heatmap (Heat.js style) ===== */
 
 .history-heatmap-wrap{
   max-height:0;
+  padding: 0;
   opacity:0;
   transform: translateY(-6px);
-  overflow:hidden;
+  overflow:visible;
   pointer-events:none;
   transition: max-height .45s ease, opacity .22s ease, transform .22s ease;
 }
 
+.history-heatmap-main {
+  overflow-x: auto;
+  position: relative;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
+  padding-right: 12px;
+  padding-left: 6px;
+  padding-bottom: 10px; /* gives room for scrollbar */
+}
+
 .history-card.history-expanded .history-heatmap-wrap{
   max-height: 520px;
+  overflow: visible;
+  padding: 0 12px 12px;
+  box-sizing: border-box;
   opacity:1;
   transform: translateY(0);
   pointer-events:auto;
@@ -4740,6 +4773,19 @@ footer {
   height: 16px;             /* lock height */
   align-items: center;
   margin-bottom: .45rem;
+}
+/* Add scrollable breathing room AFTER the last column */
+.history-month-row::after{
+  content: "";
+  width: 14px;           /* tweak 10–20px */
+  display: block;
+}
+
+.history-heatmap-grid::after{
+  content: "";
+  width: 14px;           /* must match month row spacer */
+  display: block;
+  grid-row: 1 / -1;      /* span all 7 rows */
 }
 
 .history-month-label{
@@ -4812,6 +4858,87 @@ footer {
 .history-hm-pad .history-hm-dot{
   opacity: .25;
 }
+.history-hm-dot.history-hm-i1 {
+  background: color-mix(in srgb, var(--accent-warm-start) 35%, transparent);
+}
+
+.history-hm-dot.history-hm-i2 {
+  background: color-mix(in srgb, var(--accent-warm-start) 60%, transparent);
+}
+
+.history-hm-dot.history-hm-i3 {
+  background: color-mix(in srgb, var(--accent-warm-start) 90%, transparent);
+}
+/* Allow glow to spill outside the 16x16 cell */
+.history-heatmap-grid,
+.history-hm-day {
+  overflow: visible !important;
+}
+
+/* Some resets kill shadows on buttons */
+.history-hm-day {
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+}
+.history-card{
+  overflow: visible;
+}
+
+#history-card{
+  overflow: visible; /* or remove overflow:hidden if you set it elsewhere */
+}
+.history-subcopy {
+  opacity: 0.65;
+  font-size: 0.85rem;
+}
+.history-hm-day:hover .history-hm-dot,
+.history-hm-day:focus-visible .history-hm-dot {
+  transform: scale(1.12);
+  box-shadow:
+    0 0 18px rgba(var(--accent-warm-start-rgb), 0.9),
+    0 0 28px var(--aura-glow);
+}
+
+
+.history-hm-tip{
+  position: fixed;
+  z-index: 9999;
+  left: 0;
+  top: 0;
+  transform: translate3d(0,0,0);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .12s ease, transform .12s ease;
+
+  padding: .45rem .55rem;
+  border-radius: 12px;
+
+  background: rgba(8, 10, 18, 0.92);
+  border: 1px solid rgba(255,255,255,0.10);
+  box-shadow: 0 10px 24px rgba(0,0,0,0.55);
+
+  font-size: .78rem;
+  line-height: 1.15;
+  color: var(--text-primary);
+  white-space: nowrap;
+  backdrop-filter: blur(10px);
+}
+
+.history-hm-tip.is-visible{
+  opacity: 1;
+}
+
+/* two-line style but still minimal */
+.history-hm-tip .hm-tip-date{
+  opacity: .92;
+}
+
+.history-hm-tip .hm-tip-vol{
+  opacity: .78;
+  margin-top: 2px;
+}
+
 
     </style>
 
@@ -5015,9 +5142,6 @@ footer {
 
 <section id="training-history" class="section">
   <div class="section-head history-head">
-    <div>
-      <h2>Training History</h2>
-    </div>
 
     <button id="history-toggle-btn" class="history-toggle-btn" type="button" aria-expanded="false">
       Last 90 days <span class="history-toggle-chevron">▾</span>
@@ -5028,7 +5152,7 @@ footer {
     <div class="history-header-row">
       <div>
         <div class="history-days-logged" id="history-days-logged">0 days logged</div>
-        <div class="history-subcopy">Streaks stack one week at a time.</div>
+
       </div>
     </div>
 
@@ -5058,6 +5182,7 @@ footer {
         <div class="history-heatmap-main">
           <div id="history-month-row" class="history-month-row"></div>
           <div id="history-heatmap-grid" class="history-heatmap-grid"></div>
+          
         </div>
       </div>
 
@@ -5382,6 +5507,10 @@ footer {
   ">
     +1 Week Streak
 </button>
+<body>
+  ...
+  <div id="history-hm-tip" class="history-hm-tip" role="status" aria-live="polite"></div>
+</body>
 
 </body>
 
