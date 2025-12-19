@@ -1029,6 +1029,37 @@ nav {
   z-index: -1;
 }
 
+/* ✅ Week complete: clean “win pulse” */
+.streak-banner.streak-week-complete {
+  animation: streakWinPulse 520ms ease-out;
+}
+
+@keyframes streakWinPulse {
+  0%   { transform: scale(1); filter: brightness(1); }
+  35%  { transform: scale(1.012); filter: brightness(1.06); }
+  100% { transform: scale(1); filter: brightness(1); }
+}
+/* ✅ Token earned: sharper pop + ring */
+.streak-banner.streak-token-earned {
+  animation: streakTokenPop 680ms ease-out;
+}
+
+@keyframes streakTokenPop {
+  0%   { transform: scale(1); box-shadow: none; }
+  30%  { transform: scale(1.014); box-shadow: 0 0 0 2px rgba(255,255,255,0.10); }
+  65%  { transform: scale(1.006); box-shadow: 0 0 0 6px rgba(255,255,255,0.06); }
+  100% { transform: scale(1); box-shadow: none; }
+}
+/* ✅ Micro feedback on any workout log */
+.streak-banner.streak-tick {
+  animation: streakTick 260ms ease-out;
+}
+
+@keyframes streakTick {
+  0%   { transform: translateY(0); filter: brightness(1); }
+  45%  { transform: translateY(-1px); filter: brightness(1.04); }
+  100% { transform: translateY(0); filter: brightness(1); }
+}
 
 /* we reuse the emblem aura classes here too */
 .rankup-emblem-preview.emblem-weekly-1::before,
@@ -1078,7 +1109,7 @@ nav {
   margin-bottom: 1rem;
   padding: 0.75rem 1rem;
   border-radius: 18px;
-
+  will-change: transform;
   /* ✅ Now fully theme-driven */
   background: linear-gradient(
     135deg,

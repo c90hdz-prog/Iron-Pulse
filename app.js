@@ -666,10 +666,7 @@ function getTodayKey() {
         // === Rest tokens ===
     const REST_TOKENS_KEY = "ironPulseRestTokens";
     const REST_TOKEN_PROGRESS_KEY = "ironPulseRestTokenProgress";
-    const MAX_REST_TOKENS = 5; // you can change to 3–5 later if you want
 
-
-    // === Weekly weight (by day, 0 = Sunday ... 6 = Saturday) ===
     const WEEKLY_WEIGHT_BY_DAY_KEY = "ironPulseWeeklyWeightByDay";
 // =============================
 // 4) VOLUME & WEEKLY CHALLENGE
@@ -874,6 +871,15 @@ function getDayTotalVolume(dateKey) {
 
 
 
+function hideTip() {
+  const tip =
+    document.getElementById("heatmap-mini-tip") ||
+    document.querySelector(".heatmap-mini-tip") ||
+    document.querySelector(".mini-tip") ||
+    document.querySelector(".tip");
+
+  if (tip) tip.classList.add("hidden");
+}
 
 function renderWeeklyVolumeChallenge(totalVolume) {
   const iconEl    = document.getElementById("volume-object-icon");
@@ -1530,29 +1536,6 @@ function advanceRecommendedSession(programId) {
   localStorage.setItem(STORAGE_KEYS.nextIndex, String(nextIndex));
 }
 
-
-
-
-
-
-
-
-
-
-
-// ----- Rest token helpers -----
-    function getRestTokens() {
-        const raw = localStorage.getItem(REST_TOKENS_KEY);
-        const num = parseInt(raw ?? "0", 10);
-        return Number.isNaN(num) ? 0 : Math.max(0, num);
-    }
-
-    function setRestTokens(value) {
-            const capped = Math.max(0, Math.min(MAX_REST_TOKENS, value));
-            localStorage.setItem(REST_TOKENS_KEY, String(capped));
-        }
-
-
     function getRestTokenProgress() {
         const raw = localStorage.getItem(REST_TOKEN_PROGRESS_KEY);
         const num = parseFloat(raw ?? "0");
@@ -1564,35 +1547,6 @@ function advanceRecommendedSession(programId) {
         const clamped = Math.min(Math.max(value, 0), 1);
         localStorage.setItem(REST_TOKEN_PROGRESS_KEY, String(clamped));
     }
-
-    function addRestTokenProgress(amount) {
-            let progress = getRestTokenProgress();
-            let tokens = getRestTokens();
-
-            // Already maxed out → keep bar full, do nothing else
-            if (tokens >= MAX_REST_TOKENS) {
-                setRestTokenProgress(1);
-                showToast?.("Rest token stash is full. Time to spend a few. 😴");
-                return;
-            }
-
-            progress += amount;
-
-            // Convert progress → tokens, but never exceed the cap
-            while (progress >= 1 && tokens < MAX_REST_TOKENS) {
-                tokens += 1;
-                progress -= 1;
-            }
-
-            // If we somehow overshoot at the exact moment we hit cap
-            if (tokens >= MAX_REST_TOKENS) {
-                tokens = MAX_REST_TOKENS;
-                progress = 0; // clean bar once fully capped
-            }
-
-            setRestTokens(tokens);
-            setRestTokenProgress(progress);
-        }
 
 
     // ----- Weekly weight helpers -----
@@ -1669,16 +1623,17 @@ function advanceRecommendedSession(programId) {
         }
 
 
+function getWorkoutsForWeekId(weekId) {
+  const counts = safeParseJSON(localStorage.getItem("ip_weekCountsById"), {});
+  return Number(counts[weekId] || 0);
+}
 
-    function getWorkoutsCompletedThisWeek() {
-            const raw = localStorage.getItem(WORKOUTS_THIS_WEEK_KEY);
-            const num = parseInt(raw ?? "0", 10);
-            return Number.isNaN(num) ? 0 : num;
-        }
 
-        function setWorkoutsCompletedThisWeek(value) {
-            localStorage.setItem(WORKOUTS_THIS_WEEK_KEY, String(Math.max(0, value)));
-        }
+function setWorkoutsCompletedThisWeek(value) {
+  // 🚫 Legacy setter disabled. Weekly counts are owned by the new module.
+  // Keep a mirror key for backwards compatibility/debug displays only.
+  localStorage.setItem(WORKOUTS_THIS_WEEK_KEY, String(Math.max(0, value)));
+}
 
         function getRotationIndex() {
             const raw = localStorage.getItem(ROTATION_INDEX_KEY);
@@ -1790,26 +1745,22 @@ function computeVolumeSummaryForWeek(weekStartDate) {
   };
 }
 
-/**
- * Called when we detect a new week (inside ensureWeeklyState).
- * Looks at last week's total volume + sessions completed and quietly
- * updates the current volume band (novice / intermediate / advanced).
- */
+
 function evaluateLastWeekForVolumeBand() {
   const storedWeekId = localStorage.getItem(WEEK_ID_KEY);
   if (!storedWeekId) return;
 
-  // WEEK_ID_KEY is the Monday "YYYY-MM-DD" string for the *previous* week
+
   const weekStart = new Date(storedWeekId + "T00:00:00");
   if (Number.isNaN(weekStart.getTime())) return;
 
   const { totalVolume } = computeVolumeSummaryForWeek(weekStart);
 
-  // Use your existing weekly workout counter as "sessions"
-  const lastWeekSessions = getWorkoutsCompletedThisWeek?.() ?? 0;
+  const lastWeekSessions = getWorkoutsForWeekId(storedWeekId);
+
 
   if (lastWeekSessions <= 0 || totalVolume <= 0) {
-    // No real training logged last week → don't change band, just store stats
+
     const current = getVolumeBandState();
     setVolumeBandState({
       ...current,
@@ -2161,28 +2112,34 @@ function renderWeeklyProgressText() {
   if (!progressEl) return;
 
   const goal = getWeeklyGoal();
-  const completed =
-    typeof getWorkoutsCompletedThisWeek === "function"
-      ? (getWorkoutsCompletedThisWeek() || 0)
-      : 0;
-
   if (!goal) {
     progressEl.textContent =
-      "No sessions tracked yet. Set your weekly goal below to start your streak.";
+      "No sessions tracked yet. Pick a weekly goal to get started.";
     return;
   }
 
-  const clampedCompleted = Math.max(0, Math.min(goal, completed));
-  progressEl.textContent =
-    `${clampedCompleted} of ${goal} sessions completed this week`;
+  // ✅ Single source of truth
+  const s = getWeeklyBannerState();
+  const done = s.workoutsThisWeek;
+  const minComplete = s.minToComplete;
+
+  if (s.weekCompleted) {
+    progressEl.textContent =
+      done >= s.tokenThreshold
+        ? `Week complete — ${done} sessions logged`
+        : `Week complete — minimum met (${done}/${minComplete})`;
+  } else {
+    progressEl.textContent =
+      `${done} of ${minComplete} sessions completed this week`;
+  }
 }
+
 
 function renderWeeklyGoalDots() {
   const dotsContainer = document.getElementById("weekly-goal-dots");
   if (!dotsContainer) return;
 
   const goal = getWeeklyGoal();
-  console.log("[WeeklyDots] goal =", goal); // DEBUG
 
   if (!goal || goal < 1) {
     dotsContainer.innerHTML = "";
@@ -2193,29 +2150,20 @@ function renderWeeklyGoalDots() {
   dotsContainer.style.display = "flex";
   dotsContainer.innerHTML = "";
 
-  const completed =
-    typeof getWorkoutsCompletedThisWeek === "function"
-      ? (getWorkoutsCompletedThisWeek() || 0)
-      : 0;
-
-  console.log("[WeeklyDots] completed =", completed); // DEBUG
+  // ✅ single source of truth
+  const s = getWeeklyBannerState();
+  const completed = s.workoutsThisWeek || 0;
 
   const clampedCompleted = Math.max(0, Math.min(goal, completed));
 
   for (let i = 0; i < goal; i++) {
     const dotEl = document.createElement("span");
     dotEl.classList.add("weekly-goal-dot");
-    if (i < clampedCompleted) {
-      dotEl.classList.add("weekly-goal-dot--active");
-    }
+    if (i < clampedCompleted) dotEl.classList.add("weekly-goal-dot--active");
     dotsContainer.appendChild(dotEl);
   }
-
-  console.log(
-    "[WeeklyDots] dots rendered:",
-    dotsContainer.querySelectorAll(".weekly-goal-dot").length
-  );
 }
+
 
 function renderWeeklyFocusLive() {
   const daysLabelEl = document.getElementById("weekly-focus-days-label");
@@ -2261,139 +2209,73 @@ function renderWeeklyFocusLive() {
 
 
 
-    function initWeeklyGoalControls() {
-            const dailyScreen = document.getElementById("screen-daily");
-            if (!dailyScreen) return;
+function initWeeklyGoalControls() {
+  const dailyScreen = document.getElementById("screen-daily");
+  if (!dailyScreen) return;
 
-            const pills = dailyScreen.querySelectorAll(".day-pill");
-            if (!pills.length) return;
+  const pills = dailyScreen.querySelectorAll(".day-pill");
+  if (!pills.length) return;
 
-            const resetBtn = document.getElementById("reset-weekly-goal-btn");
-            const commitBtn = document.getElementById("commit-weekly-goal-btn");
+  const resetBtn = document.getElementById("reset-weekly-goal-btn");
+  const commitBtn = document.getElementById("commit-weekly-goal-btn"); // we’ll hide this
 
-            const currentGoal = getWeeklyGoal();
-            const isLocked = localStorage.getItem(WEEKLY_GOAL_LOCKED_KEY) === "true";
+  // ✅ No more commit button in the new model
+  if (commitBtn) commitBtn.style.display = "none";
 
-            let pendingDays = null; // what the user has selected but not committed yet
+  const currentPref = getWeeklyGoal(); // now: preference days/week (optional)
 
-            // Reset button visibility: only show if a goal actually exists
-            if (resetBtn) {
-                resetBtn.style.display = currentGoal ? "inline-flex" : "none";
-            }
+  // Reset button only if preference exists
+  if (resetBtn) {
+    resetBtn.style.display = currentPref ? "inline-flex" : "none";
+  }
 
-            // Commit button starts hidden
-            if (commitBtn) {
-                commitBtn.style.display = "none";
-            }
+  // Initialize pill active state
+  pills.forEach(pill => {
+    const pillDays = parseInt(pill.getAttribute("data-days"), 10);
+    pill.classList.toggle("active", currentPref && pillDays === currentPref);
 
-            // Initialize pill states
-            pills.forEach(pill => {
-                const pillDays = parseInt(pill.getAttribute("data-days"), 10);
+    pill.disabled = false;
 
-                if (currentGoal && pillDays === currentGoal) {
-                    pill.classList.add("active");
-                }
+    pill.addEventListener("click", () => {
+      // ✅ Save preference immediately (no locking, no confirm)
+      setWeeklyGoal(pillDays);
 
-                if (isLocked) {
-                    pill.disabled = true;
-                }
+      pills.forEach(p => p.classList.remove("active"));
+      pill.classList.add("active");
 
-                pill.addEventListener("click", () => {
-                    if (localStorage.getItem(WEEKLY_GOAL_LOCKED_KEY) === "true") {
-                        return;
-                    }
+      if (resetBtn) resetBtn.style.display = "inline-flex";
 
-                    pendingDays = pillDays;
+      // Refresh any UI that uses the preference
+      renderWeeklyFocusLive?.();
+      repositionWeeklyGoalSection?.();
+      renderTrainingGoalWeekRow?.();
+      updateStreak(); // doesn’t depend on goal anymore, but safe to refresh
+    });
+  });
 
-                    pills.forEach(p => p.classList.remove("active"));
-                    pill.classList.add("active");
+  // Reset preference
+  if (resetBtn) {
+    resetBtn.addEventListener("click", () => {
+      const ok = window.confirm("Clear your weekly preference?");
+      if (!ok) return;
 
-                    if (commitBtn) {
-                        commitBtn.style.display = "inline-flex";
-                    }
-                });
-            });
+      localStorage.removeItem(WEEKLY_GOAL_KEY);
 
-            // ✅ Commit the weekly goal (lock it + reset progress + rotation)
-            if (commitBtn) {
-                commitBtn.addEventListener("click", () => {
-                    if (localStorage.getItem(WEEKLY_GOAL_LOCKED_KEY) === "true") return;
-                    if (!pendingDays) return;
+      pills.forEach(p => p.classList.remove("active"));
 
-                    const confirmCommit = window.confirm(
-                        `Commit to training ${pendingDays} days this week?`
-                    );
-                    if (!confirmCommit) return;
+      resetBtn.style.display = "none";
 
-                    setWeeklyGoal(pendingDays);
-                    localStorage.setItem(WEEKLY_GOAL_LOCKED_KEY, "true");
+      renderWeeklyFocusLive?.();
+      repositionWeeklyGoalSection?.();
+      renderTrainingGoalWeekRow?.();
+      updateStreak();
+    });
+  }
 
-                    // 🔹 Reset progress + rotation for a fresh week
-                    setWorkoutsCompletedThisWeek(0);
-                    setRotationIndex(0);
+  renderWeeklyFocusLive?.();
+  repositionWeeklyGoalSection?.();
+}
 
-                    pills.forEach(p => {
-                        p.disabled = true;
-                    });
-
-                    if (commitBtn) {
-                        commitBtn.style.display = "none";
-                    }
-                    if (resetBtn) {
-                        resetBtn.style.display = "inline-flex";
-                    }
-
-                    renderWeeklyFocusLive();
-                    repositionWeeklyGoalSection();
-                    initTodaysSplit();
-                    updateStreak();
-                });
-            }
-
-            // ✅ Reset weekly goal (also reset progress + rotation)
-            if (resetBtn) {
-                resetBtn.addEventListener("click", () => {
-                    const firstConfirm = window.confirm(
-                        "Are you sure you want to reset this week’s training goal?"
-                    );
-                    if (!firstConfirm) return;
-
-                    const secondConfirm = window.confirm(
-                        "Resetting will clear your current weekly goal and unlock the day selector.\n\n" +
-                        "Use this if your schedule changed, not because today feels hard.\n\nContinue?"
-                    );
-                    if (!secondConfirm) return;
-
-                    localStorage.removeItem(WEEKLY_GOAL_KEY);
-                    localStorage.removeItem(WEEKLY_GOAL_LOCKED_KEY);
-
-                    // 🔹 Reset progress + rotation when goal is reset
-                    setWorkoutsCompletedThisWeek(0);
-                    setRotationIndex(0);
-
-                    pills.forEach(p => {
-                        p.classList.remove("active");
-                        p.disabled = false;
-                    });
-
-                    if (resetBtn) {
-                        resetBtn.style.display = "none";
-                    }
-                    if (commitBtn) {
-                        commitBtn.style.display = "none";
-                    }
-
-                    pendingDays = null;
-
-                    renderWeeklyFocusLive();
-                    repositionWeeklyGoalSection();
-                    initTodaysSplit();
-                    updateStreak();
-                });
-            }
-            renderWeeklyFocusLive();
-            repositionWeeklyGoalSection();
-        }
 
 
 
@@ -2465,92 +2347,73 @@ function renderWeeklyFocusLive() {
                     hard: null // no hard tier for recovery; hard work earns tokens elsewhere
                 }
             };
+function getWorkoutsCompletedThisWeek() {
+  return getWeeklyBannerState().workoutsThisWeek;
+}
 
 
-     function evaluateLastWeekForStreak() {
-            const goal = getWeeklyGoal();
-            const done = getWorkoutsCompletedThisWeek();
+function evaluateLastWeekForStreak() {
+  const goal = getWeeklyGoal();
+  const done = getWorkoutsCompletedThisWeek();
 
-            // No goal set → we don't maintain a streak for that week
-            if (!goal) {
-                setWeeklyStreak(0);
-                return;
-            }
+  if (!goal) {
+    setWeeklyStreak(0);
+    return;
+  }
 
-            const currentStreak = getWeeklyStreak();
-            let tokens = getRestTokens();
+  const currentStreak = getWeeklyStreak();
+  const shortfall = Math.max(goal - done, 0);
 
-            const shortfall = Math.max(goal - done, 0);
+  // Met goal → streak grows
+  if (shortfall === 0) {
+    setWeeklyStreak(currentStreak + 1);
+    return;
+  }
 
-            // Already met or exceeded the goal → easy win, no tokens needed
-            if (shortfall === 0) {
-                setWeeklyStreak(currentStreak + 1);
-                return;
-            }
+  // Only allow a save if shortfall is exactly 1
+  if (shortfall === 1 && getRestTokens() > 0) {
+    setRestTokens(getRestTokens() - 1);
+    setWeeklyStreak(currentStreak + 1);
+    showToast?.("Rest Token saved your streak this week. 🛌");
+    return;
+  }
 
-            // No tokens to help and didn’t meet goal → streak breaks
-            if (tokens <= 0) {
-                setWeeklyStreak(0);
-                return;
-            }
-
-            // How many tokens would we need to cover the gap?
-            const tokensNeeded = shortfall;
-            const tokensWeCanUse = Math.min(tokensNeeded, tokens);
-            const effectiveDone = done + tokensWeCanUse;
-
-            if (effectiveDone >= goal) {
-                // ✅ Tokens SAVE the streak → spend them
-                tokens -= tokensWeCanUse;
-                setRestTokens(tokens);
-                setRestTokenProgress(0); // fresh bar for next token
-
-                setWeeklyStreak(currentStreak + 1);
-
-                showToast?.(
-                    `Rest tokens saved your streak this week (${tokensWeCanUse} used).`
-                );
-            } else {
-                // ❌ Even using all tokens wouldn't reach the goal → don't burn them
-                setWeeklyStreak(0);
-                // tokens stay as-is for another week
-            }
-        }
-
+  // Otherwise streak breaks (don't burn tokens)
+  setWeeklyStreak(0);
+}
 
 function ensureWeeklyState() {
   const currentWeekId = getCurrentWeekId();
   const storedWeekId = localStorage.getItem(WEEK_ID_KEY);
 
-  // First time using the app: initialize week ID and bail
+  // First time: set and bail
   if (!storedWeekId) {
     localStorage.setItem(WEEK_ID_KEY, currentWeekId);
     return;
   }
 
-  // Same week → nothing to do
-  if (storedWeekId === currentWeekId) {
-    return;
-  }
+  // Same week: nothing
+  if (storedWeekId === currentWeekId) return;
 
-  // 🚀 New week detected:
-  // 1) Evaluate last week for streak (attendance/commitment)
-  evaluateLastWeekForStreak();
+  // ✅ NEW WEEK detected:
+  // 1) Finalize missed weeks / apply token-save / break streak if needed
+  reconcileUpToCurrentWeek();
 
-  // 2) Evaluate last week for volume band (strength/effort)
-  evaluateLastWeekForVolumeBand();
+  // 2) Keep your volume-band / weekly weight resets (these are separate from streak)
+  evaluateLastWeekForVolumeBand?.();
+  resetWeeklyWeightByDay?.();
 
-  // 3) Reset weekly counters for the new week
-  setWorkoutsCompletedThisWeek(0);
-  setRotationIndex(0);
-  resetWeeklyWeightByDay();
+  // 3) Reset rotation if you want a fresh split start each week
+  setRotationIndex?.(0);
 
-  // 4) After resetting + evaluating streak, refresh streak UI
-  updateStreak();
-
-  // 5) Store the new week ID
+  // 4) Store the new week id
   localStorage.setItem(WEEK_ID_KEY, currentWeekId);
+
+  // 5) Re-render
+  updateStreak();
+  updateWeeklyVolumeSummaryFromLog?.();
 }
+
 
 let hasRecordedCompletionForCurrentSplit = false;
 
@@ -2559,9 +2422,21 @@ let hasRecordedCompletionForCurrentSplit = false;
 // =====================================
 function initTodaysSplit() {
   const weeklyGoal = getWeeklyGoal();
+
+  const saved = loadTodaySession();
+  if (saved && saved.session) {
+    currentSessionMeta = {
+      programId: saved.programId ?? null,
+      recommendedIndex: saved.recommendedIndex ?? null,
+      isRecommended: saved.isRecommended ?? true,
+      session: saved.session
+    };
+    renderSessionIntoSplitCard(currentSessionMeta.session, weeklyGoal);
+    return;
+  }
+
   const { programId, index, session } = getRecommendedSession(weeklyGoal);
 
-  // Store metadata so we can advance rotation after workout
   currentSessionMeta = {
     programId,
     recommendedIndex: index,
@@ -2569,9 +2444,10 @@ function initTodaysSplit() {
     session
   };
 
-  // Render the NEW session into the old UI
+  saveTodaySession(currentSessionMeta);
   renderSessionIntoSplitCard(session, weeklyGoal);
 }
+
 function handleSkipToday() {
   if (!currentSessionMeta) return;
 
@@ -2674,6 +2550,24 @@ function renderSessionIntoSplitCard(session, weeklyGoal) {
         </div>
       </div>
     `;
+    // ✅ Rehydrate "completed" state from today's saved exercise log
+    const loggedSets = getTodaysLoggedSets(exerciseName);
+
+    if (loggedSets.length > 0) {
+      li.classList.add("completed");
+
+      // tick checkbox so finisher unlock survives refresh
+      const checkboxEl = li.querySelector(`#${checkboxId}`);
+      if (checkboxEl) checkboxEl.checked = true;
+
+      // update "X lbs logged"
+      const metaValueEl = li.querySelector(".exercise-meta-value");
+      if (metaValueEl && typeof getTodaysVolumeForExercise === "function") {
+        const v = getTodaysVolumeForExercise(exerciseName) || 0;
+        metaValueEl.textContent = v > 0 ? `${v.toLocaleString()} lbs logged` : "0 lbs logged";
+      }
+    }
+
 
     // Open focus card on click
     const btn = li.querySelector(".exercise-name-btn");
@@ -2716,311 +2610,383 @@ function renderSessionIntoSplitCard(session, weeklyGoal) {
 
 
 
-    function getEmblemVisualForTier(tier) {
-            // Default if somehow no tier
-            if (!tier) {
-                return {
-                    icon: "🔥",
-                    label: "Keep showing up"
-                };
-            }
+function getEmblemVisualForTier(tier) {
+// Default if somehow no tier
+if (!tier) {
+  return {
+      icon: "🔥",
+      label: "Keep showing up"
+  };
+}
 
-            // Group tiers into “Iron Pulse” progressions
-            if (tier.startsWith("emblem-weekly")) {
-                // Very first weeks – simple iron plate
-                return {
-                    icon: "⬢",
-                    label: "Bronze – Iron Spark"
-                };
-            }
+// Group tiers into “Iron Pulse” progressions
+if (tier.startsWith("emblem-weekly")) {
+  // Very first weeks – simple iron plate
+  return {
+      icon: "⬢",
+      label: "Bronze – Iron Spark"
+  };
+}
 
-            if (tier.startsWith("emblem-monthly")) {
-                // 1–3 months – reinforced shield
-                return {
-                    icon: "🛡️",
-                    label: "Silver – Iron Guard"
-                };
-            }
+if (tier.startsWith("emblem-monthly")) {
+  // 1–3 months – reinforced shield
+  return {
+      icon: "🛡️",
+      label: "Silver – Iron Guard"
+  };
+}
 
-            if (tier.startsWith("emblem-quarterly")) {
-                // 4–9 months – crossed weapons / reaper feel
-                return {
-                    icon: "⚔️",
-                    label: "Gold – Iron Vanguard"
-                };
-            }
+if (tier.startsWith("emblem-quarterly")) {
+  // 4–9 months – crossed weapons / reaper feel
+  return {
+      icon: "⚔️",
+      label: "Gold – Iron Vanguard"
+  };
+}
 
-            if (tier.startsWith("emblem-annual")) {
-                // 1+ year – skull-shield
-                return {
-                    icon: "💀",
-                    label: "Mythic – Iron Warden"
-                };
-            }
+if (tier.startsWith("emblem-annual")) {
+  // 1+ year – skull-shield
+  return {
+      icon: "💀",
+      label: "Mythic – Iron Warden"
+  };
+}
 
-            if (tier.startsWith("emblem-legendary")) {
-                // 2+ years – fully cracked, COD-zombie vibes
-                return {
-                    icon: "☠️",
-                    label: "Legendary – Eternal Grind"
-                };
-            }
+if (tier.startsWith("emblem-legendary")) {
+  // 2+ years – fully cracked, COD-zombie vibes
+  return {
+      icon: "☠️",
+      label: "Legendary – Eternal Grind"
+  };
+}
 
-            return {
-                icon: "🔥",
-                label: "Streak Active"
-            };
-        }
-
-
-
-        function getEmblemTierForStreak(streak) {
-                if (!streak || streak <= 0) return null;
-
-                // Very early weeks
-                if (streak === 1) return "emblem-weekly-1";
-                if (streak === 2) return "emblem-weekly-2";
-                if (streak === 3) return "emblem-weekly-3";
-
-                // ~1–3 months
-                if (streak >= 4 && streak <= 7) return "emblem-monthly-1";
-                if (streak >= 8 && streak <= 11) return "emblem-monthly-2";
-                if (streak >= 12 && streak <= 15) return "emblem-monthly-3";
-
-                // ~4–9 months
-                if (streak >= 16 && streak <= 23) return "emblem-quarterly-1";
-                if (streak >= 24 && streak <= 35) return "emblem-quarterly-2";
-                if (streak >= 36 && streak <= 51) return "emblem-quarterly-3";
-
-                // 1–2 years
-                if (streak >= 52 && streak <= 77) return "emblem-annual-1";
-                if (streak >= 78 && streak <= 103) return "emblem-annual-2";
-
-                // 2+ years — split into three legendary sub-tiers
-                if (streak >= 104 && streak <= 151) return "emblem-legendary-1";
-                if (streak >= 152 && streak <= 199) return "emblem-legendary-2";
-                if (streak >= 200) return "emblem-legendary-3";
-
-                return null;
-            }
-
-        function getStoredEmblemTier() {
-            return localStorage.getItem(EMBLEM_TIER_KEY) || "";
-        }
-
-        function setStoredEmblemTier(tier) {
-            if (!tier) {
-                localStorage.removeItem(EMBLEM_TIER_KEY);
-            } else {
-                localStorage.setItem(EMBLEM_TIER_KEY, tier);
-            }
-        }
-
-        function applyEmblemTierClass(banner, tier) {
-                const emblem = document.getElementById("streak-emblem");
-                const targets = [banner, emblem].filter(Boolean);
-
-                targets.forEach(el => {
-                    const toRemove = [];
-                    el.classList.forEach(cls => {
-                        if (cls.startsWith("emblem-")) {
-                            toRemove.push(cls);
-                        }
-                    });
-                    toRemove.forEach(cls => el.classList.remove(cls));
-
-                    if (tier) {
-                        el.classList.add(tier);
-                    }
-                });
-            }
-
-
-        // Friendly name for overlay text
-        function getEmblemLabelForTier(tier) {
-            const map = {
-                "emblem-weekly-1": "Week 1 – Ember Spark",
-                "emblem-weekly-2": "Week 2 – Warming Forge",
-                "emblem-weekly-3": "Week 3 – Steady Flame",
-
-                "emblem-monthly-1": "Monthly Rank I – Kindled Core",
-                "emblem-monthly-2": "Monthly Rank II – Flow State",
-                "emblem-monthly-3": "Monthly Rank III – Iron Rhythm",
-
-                "emblem-quarterly-1": "Quarter Rank I – Forged Focus",
-                "emblem-quarterly-2": "Quarter Rank II – Relentless Drive",
-                "emblem-quarterly-3": "Quarter Rank III – Unbroken Arc",
-
-                "emblem-annual-1": "Annual Rank I – Iron Pulse Year One",
-                "emblem-annual-2": "Annual Rank II – Iron Pulse Veteran",
-
-                "emblem-legendary-1": "Legendary – Eternal Grind"
-            };
-            return map[tier] || "New Emblem Unlocked";
-        }
-
-   
-
-        function triggerEmblemRankUp(tier, visuals) {
-                const overlay = document.createElement("div");
-                overlay.className = "rankup-overlay";
-
-                overlay.innerHTML = `
-        <div class="rankup-inner">
-            <div class="rankup-emblem-preview ${tier}">
-                <span class="rankup-icon">${visuals.icon}</span>
-            </div>
-            <h2>New Emblem Unlocked</h2>
-            <p>${visuals.label}</p>
-            <button type="button" class="btn btn-primary">Nice</button>
-        </div>
-    `;
-
-                document.body.appendChild(overlay);
-                const btn = overlay.querySelector("button");
-                btn?.addEventListener("click", () => overlay.remove());
-            }
-
-
-        // Called from updateStreak()
-        function handleEmblemTier(streak) {
-                const banner = document.getElementById("streak-banner");
-                if (!banner) return;
-
-                const emblemEl = document.getElementById("streak-emblem");
-                const emblemIconSpan = emblemEl?.querySelector(".streak-emblem-icon");
-                const emblemLabelEl = document.getElementById("streak-emblem-label");
-
-                const newTier = getEmblemTierForStreak(streak);
-                const prevTier = getStoredEmblemTier();
-
-                // No streak → clear emblem + label
-                if (!newTier) {
-                    applyEmblemTierClass(banner, null);
-                    setStoredEmblemTier("");
-                    if (emblemIconSpan) emblemIconSpan.textContent = "🔥";
-                    if (emblemLabelEl) emblemLabelEl.textContent = "Keep showing up";
-                    return;
-                }
-
-                // Always apply tier classes
-                applyEmblemTierClass(banner, newTier);
-
-                // Set icon + label based on the tier
-                const visuals = getEmblemVisualForTier(newTier);
-                if (emblemIconSpan) emblemIconSpan.textContent = visuals.icon;
-                if (emblemLabelEl) emblemLabelEl.textContent = visuals.label;
-
-                // First emblem ever → just store it, no pop
-                if (!prevTier) {
-                    setStoredEmblemTier(newTier);
-                    return;
-                }
-
-                // If tier changed → rank up!
-                if (prevTier !== newTier) {
-                    setStoredEmblemTier(newTier);
-                    triggerEmblemRankUp(newTier, visuals);
-                }
-            }
+return {
+  icon: "🔥",
+  label: "Streak Active"
+};
+}
 
 
 
+function getEmblemTierForStreak(streak) {
+  if (!streak || streak <= 0) return null;
 
-    function updateStreak() {
-            const banner = document.getElementById("streak-banner");
-            const weekLabelEl = document.getElementById("streak-week-label");
-            const tokenLabelEl = document.getElementById("streak-token-label");
-            const progressTextEl = document.getElementById("streak-text");
-            const progressFillEl = document.getElementById("streak-progress-fill");
-            const emblemLabelEl = document.getElementById("streak-emblem-label"); // 🔥 NEW
+  // Very early weeks
+  if (streak === 1) return "emblem-weekly-1";
+  if (streak === 2) return "emblem-weekly-2";
+  if (streak === 3) return "emblem-weekly-3";
 
+  // ~1–3 months
+  if (streak >= 4 && streak <= 7) return "emblem-monthly-1";
+  if (streak >= 8 && streak <= 11) return "emblem-monthly-2";
+  if (streak >= 12 && streak <= 15) return "emblem-monthly-3";
 
-            if (!banner || !weekLabelEl || !tokenLabelEl || !progressTextEl || !progressFillEl) return;
+  // ~4–9 months
+  if (streak >= 16 && streak <= 23) return "emblem-quarterly-1";
+  if (streak >= 24 && streak <= 35) return "emblem-quarterly-2";
+  if (streak >= 36 && streak <= 51) return "emblem-quarterly-3";
 
-            const goal = getWeeklyGoal();
-            const done = getWorkoutsCompletedThisWeek();
-            const streak = getWeeklyStreak?.() ?? 0;
-            const tokens = getRestTokens();
-            const tokenProgress = getRestTokenProgress();
+  // 1–2 years
+  if (streak >= 52 && streak <= 77) return "emblem-annual-1";
+  if (streak >= 78 && streak <= 103) return "emblem-annual-2";
 
-            // ❌ No goal set → banner off, aura off
-            if (!goal) {
-                banner.classList.add("hidden");
-                banner.classList.remove("streak-active");
-                banner.style.setProperty("--emblem-strength", "0");
-                return;
-            }
+  // 2+ years — split into three legendary sub-tiers
+  if (streak >= 104 && streak <= 151) return "emblem-legendary-1";
+  if (streak >= 152 && streak <= 199) return "emblem-legendary-2";
+  if (streak >= 200) return "emblem-legendary-3";
 
-            banner.classList.remove("hidden");
+  return null;
+}
 
-            // 1) Week label chip
-            if (streak > 0) {
-                weekLabelEl.textContent = `Week ${streak} streak`;
-            } else {
-                weekLabelEl.textContent = "No active streak yet";
-            }
+function getStoredEmblemTier() {
+return localStorage.getItem(EMBLEM_TIER_KEY) || "";
+}
 
-            // 2) Progress text
-            const clampedDone = Math.min(done, goal);
-            const progressPct = Math.round((clampedDone / goal) * 100);
-            progressTextEl.textContent = `${done} / ${goal} sessions • ${progressPct}% of weekly goal`;
+function setStoredEmblemTier(tier) {
+if (!tier) {
+  localStorage.removeItem(EMBLEM_TIER_KEY);
+} else {
+  localStorage.setItem(EMBLEM_TIER_KEY, tier);
+}
+}
 
-            // 3) Token label
-            if (tokens > 0 || tokenProgress > 0) {
-                const tokenPct = Math.round(tokenProgress * 100);
-                const extra =
-                    tokenProgress > 0 && tokenProgress < 1
-                        ? ` • Next: ${tokenPct}%`
-                        : "";
-                tokenLabelEl.textContent = `Rest tokens: ${tokens}${extra}`;
-            } else {
-                tokenLabelEl.textContent = "Earn rest tokens with Afterburn sessions";
-            }
-            // Not sure if this goes here lol
-            if (emblemLabelEl) {
-                const tier = getEmblemTierForStreak(streak);
-                if (tier) {
-                    const label = getEmblemLabelForTier(tier); 
-                    emblemLabelEl.textContent = label;
-                    emblemLabelEl.classList.remove("hidden");
-                } else {
-                    emblemLabelEl.textContent = "";
-                    emblemLabelEl.classList.add("hidden");
-                }
-            }
+function applyEmblemTierClass(banner, tier) {
+  const emblem = document.getElementById("streak-emblem");
+  const targets = [banner, emblem].filter(Boolean);
+
+  targets.forEach(el => {
+      const toRemove = [];
+      el.classList.forEach(cls => {
+          if (cls.startsWith("emblem-")) {
+              toRemove.push(cls);
+          }
+      });
+      toRemove.forEach(cls => el.classList.remove(cls));
+
+      if (tier) {
+          el.classList.add(tier);
+      }
+  });
+}
 
 
-            // 4) Progress bar fill
-            progressFillEl.style.width = `${Math.min(progressPct, 100)}%`;
+// Friendly name for overlay text
+function getEmblemLabelForTier(tier) {
+const map = {
+  "emblem-weekly-1": "Week 1 – Ember Spark",
+  "emblem-weekly-2": "Week 2 – Warming Forge",
+  "emblem-weekly-3": "Week 3 – Steady Flame",
 
-            handleEmblemTier(streak);
+  "emblem-monthly-1": "Monthly Rank I – Kindled Core",
+  "emblem-monthly-2": "Monthly Rank II – Flow State",
+  "emblem-monthly-3": "Monthly Rank III – Iron Rhythm",
+
+  "emblem-quarterly-1": "Quarter Rank I – Forged Focus",
+  "emblem-quarterly-2": "Quarter Rank II – Relentless Drive",
+  "emblem-quarterly-3": "Quarter Rank III – Unbroken Arc",
+
+  "emblem-annual-1": "Annual Rank I – Iron Pulse Year One",
+  "emblem-annual-2": "Annual Rank II – Iron Pulse Veteran",
+
+  "emblem-legendary-1": "Legendary – Eternal Grind"
+};
+return map[tier] || "New Emblem Unlocked";
+}
 
 
-            // 5) Continuous aura intensity (COD skin ramp)
-            if (streak > 0) {
-                banner.classList.add("streak-active");
 
-                let strength = 0.25; // base for 1 week
-                if (streak >= 2 && streak <= 3) {
-                    strength = 0.55;
-                } else if (streak >= 4 && streak <= 7) {
-                    strength = 0.85;
-                } else if (streak > 7) {
-                    strength = 1.15; // turned up
-                }
+function triggerEmblemRankUp(tier, visuals) {
+  const overlay = document.createElement("div");
+  overlay.className = "rankup-overlay";
 
-                banner.style.setProperty("--emblem-strength", String(strength));
-            } else {
-                banner.classList.remove("streak-active");
-                banner.style.setProperty("--emblem-strength", "0");
-            }
+  overlay.innerHTML = `
+<div class="rankup-inner">
+<div class="rankup-emblem-preview ${tier}">
+  <span class="rankup-icon">${visuals.icon}</span>
+</div>
+<h2>New Emblem Unlocked</h2>
+<p>${visuals.label}</p>
+<button type="button" class="btn btn-primary">Nice</button>
+</div>
+`;
 
-            // 6) Emblem tier + rank-up overlay / lightning
-            if (typeof handleEmblemTier === "function") {
-                handleEmblemTier(streak);
-            }
-        }
+  document.body.appendChild(overlay);
+  const btn = overlay.querySelector("button");
+  btn?.addEventListener("click", () => overlay.remove());
+}
+
+
+// Called from updateStreak()
+function handleEmblemTier(streak) {
+  const banner = document.getElementById("streak-banner");
+  if (!banner) return;
+
+  const emblemEl = document.getElementById("streak-emblem");
+  const emblemIconSpan = emblemEl?.querySelector(".streak-emblem-icon");
+  const emblemLabelEl = document.getElementById("streak-emblem-label");
+
+  const newTier = getEmblemTierForStreak(streak);
+  const prevTier = getStoredEmblemTier();
+
+  // No streak → clear emblem + label
+  if (!newTier) {
+      applyEmblemTierClass(banner, null);
+      setStoredEmblemTier("");
+      if (emblemIconSpan) emblemIconSpan.textContent = "🔥";
+      if (emblemLabelEl) emblemLabelEl.textContent = "Keep showing up";
+      return;
+  }
+
+  // Always apply tier classes
+  applyEmblemTierClass(banner, newTier);
+
+  // Set icon + label based on the tier
+  const visuals = getEmblemVisualForTier(newTier);
+  if (emblemIconSpan) emblemIconSpan.textContent = visuals.icon;
+  if (emblemLabelEl) emblemLabelEl.textContent = visuals.label;
+
+  // First emblem ever → just store it, no pop
+  if (!prevTier) {
+      setStoredEmblemTier(newTier);
+      return;
+  }
+
+  if (prevTier !== newTier) {
+    setStoredEmblemTier(newTier);
+  }
+
+}
+
+
+
+
+function updateStreak() {
+  const banner = document.getElementById("streak-banner");
+  const weekLabelEl = document.getElementById("streak-week-label");
+  const tokenLabelEl = document.getElementById("streak-token-label");
+  const progressTextEl = document.getElementById("streak-text");
+  const progressFillEl = document.getElementById("streak-progress-fill");
+  const emblemLabelEl = document.getElementById("streak-emblem-label");
+
+  if (!banner || !weekLabelEl || !tokenLabelEl || !progressTextEl || !progressFillEl) return;
+
+  const s = getWeeklyBannerState();
+
+  const done = s.workoutsThisWeek;
+  const minComplete = s.minToComplete;
+  const tokenThresh = s.tokenThreshold;
+  const streak = s.streak;
+  const tokens = s.restTokens;
+  const tokenProgress = s.restTokenProgress;
+
+  banner.classList.remove("hidden");
+
+  // state classes
+  banner.classList.toggle("streak-week-complete", s.weekCompleted);
+  banner.classList.toggle("streak-token-earned", done >= tokenThresh);
+
+  // 1) Week label chip
+  weekLabelEl.textContent = streak > 0 ? `Week ${streak} streak` : "No active streak yet";
+
+  // 2) Progress text
+  const clamped = Math.min(done, minComplete);
+  const progressPct = Math.round((clamped / minComplete) * 100);
+
+  progressTextEl.textContent = s.weekCompleted
+    ? (done >= tokenThresh
+        ? `Week complete • Recovery earned (${done}/${tokenThresh})`
+        : `Week complete (${done}/${minComplete})`)
+    : `This week: ${done}/${minComplete} sessions`;
+
+  // 3) Token label
+  if (tokens > 0 || tokenProgress > 0) {
+    const tokenPct = Math.round(tokenProgress * 100);
+    const extra = tokenProgress > 0 && tokenProgress < 1 ? ` • Next: ${tokenPct}%` : "";
+    tokenLabelEl.textContent = `Rest tokens: ${tokens}${extra}`;
+  } else {
+    tokenLabelEl.textContent = "Earn rest tokens with Afterburn sessions";
+  }
+
+  // 4) Progress bar fill
+  progressFillEl.style.width = `${Math.min(progressPct, 100)}%`;
+
+  // 5) Emblem label
+  if (emblemLabelEl) {
+    const tier = getEmblemTierForStreak(streak);
+    if (tier) {
+      emblemLabelEl.textContent = getEmblemLabelForTier(tier);
+      emblemLabelEl.classList.remove("hidden");
+    } else {
+      emblemLabelEl.textContent = "";
+      emblemLabelEl.classList.add("hidden");
+    }
+  }
+
+  // 6) Aura ramp
+  if (streak > 0) {
+    banner.classList.add("streak-active");
+
+    let strength = 0.25;
+    if (streak >= 2 && streak <= 3) strength = 0.55;
+    else if (streak >= 4 && streak <= 7) strength = 0.85;
+    else if (streak > 7) strength = 1.15;
+
+    banner.style.setProperty("--emblem-strength", String(strength));
+  } else {
+    banner.classList.remove("streak-active");
+    banner.style.setProperty("--emblem-strength", "0");
+  }
+
+  // 7) Tier visuals
+  if (typeof handleEmblemTier === "function") {
+    handleEmblemTier(streak);
+  }
+}
+
+const RankFX = (() => {
+  let playing = false;
+  const q = [];
+
+  function afterburnOverlayOpen() {
+    return !!document.querySelector(".postworkout-overlay.afterburn-prompt");
+  }
+
+  function pump() {
+    if (playing || !q.length) return;
+
+    // don't overlay on top of the Afterburn prompt
+    if (afterburnOverlayOpen()) {
+      setTimeout(pump, 250);
+      return;
+    }
+
+    playing = true;
+    const job = q.shift();
+
+    try {
+      job(() => {
+        playing = false;
+        setTimeout(pump, 80);
+      });
+    } catch (e) {
+      playing = false;
+      setTimeout(pump, 80);
+    }
+  }
+
+  function enqueue(job) {
+    q.push(job);
+    pump();
+  }
+
+  return { enqueue };
+})();
+
+
+
+function triggerStreakPowerup(duration = 900) {
+  const b = document.getElementById("streak-banner");
+  if (!b) return;
+
+  b.classList.remove("streak-powerup");
+  void b.offsetWidth;
+  b.classList.add("streak-powerup");
+
+  setTimeout(() => b.classList.remove("streak-powerup"), duration);
+}
+function queueRankUpOverlay(tier, label) {
+  RankFX.enqueue((done) => {
+    // let the banner powerup land first
+    setTimeout(() => {
+      showRankUpOverlay(tier, label);
+      // allow time to read; closes on button anyway
+      setTimeout(done, 900);
+    }, 650);
+  });
+}
+const FOCUS_DRAFT_PREFIX = "ip_focus_draft_v1";
+
+function getFocusDraftKey(exerciseName) {
+  const d = dateToKey(new Date());
+  const prog = currentSessionMeta?.programId ?? "na";
+  const idx  = currentSessionMeta?.recommendedIndex ?? "na";
+  return `${FOCUS_DRAFT_PREFIX}:${d}:${prog}:${idx}:${exerciseName}`;
+}
+
+function saveFocusDraft(exerciseName, draft) {
+  try { localStorage.setItem(getFocusDraftKey(exerciseName), JSON.stringify(draft)); } catch {}
+}
+
+function loadFocusDraft(exerciseName) {
+  try {
+    const raw = localStorage.getItem(getFocusDraftKey(exerciseName));
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+
+function clearFocusDraft(exerciseName) {
+  try { localStorage.removeItem(getFocusDraftKey(exerciseName)); } catch {}
+}
 
 
 function onWorkoutCompleted() {
@@ -3030,9 +2996,7 @@ function onWorkoutCompleted() {
     if (hasRecordedCompletionForCurrentSplit) return;
     hasRecordedCompletionForCurrentSplit = true;
 
-    // 1) Increment workouts done
-    const current = getWorkoutsCompletedThisWeek();
-    setWorkoutsCompletedThisWeek(current + 1);
+
     markWorkoutCompletedToday();
     renderTrainingGoalWeekRow();
     renderWeeklyFocusLive();
@@ -3065,8 +3029,9 @@ function onWorkoutCompleted() {
     }
 
     // 4) UI updates
-    updateStreak();
-    updateWeeklyVolumeSummaryFromLog();
+    logWorkoutAndUpdateWeeklySystems();   // ✅ update weekly counts/streak/token FIRST
+    updateStreak();                       // ✅ render banner from new state
+    updateWeeklyVolumeSummaryFromLog();   // keep
 
     render90DayHeatmap();
     flashDayComplete(); // per-workout animation
@@ -3135,6 +3100,16 @@ function checkSplitCompletion() {
     if (lockedTagEl) lockedTagEl.textContent = "Locked";
   }
 }
+function restoreFocusDraftIfAny() {
+  const ex = getCurrentFocusExerciseName();
+  if (!ex) return;
+
+  const draft = loadFocusDraft(ex);
+  if (!draft) return;
+
+  writeFocusStateToUI(draft);
+}
+
 function restoreTodayCompletionUI() {
   if (!isWorkoutDoneToday()) return;
 
@@ -3217,34 +3192,46 @@ function getMondayIndex(date) {
 
 
   // 🔹 Central place to keep button labels + disabled state in sync
-  function updateFinisherButtons() {
-    const todayKey = getTodayDateKey();
-    const lastFinisherDay = localStorage.getItem(LAST_FINISHER_DATE_KEY);
-    const decisionLocked = lastFinisherDay === todayKey;
-    const hardLocked = finisherCard.classList.contains("locked") || decisionLocked;
+function updateFinisherButtons() {
+  const todayKey = getTodayDateKey();
+  const lastFinisherDay = localStorage.getItem(LAST_FINISHER_DATE_KEY);
+  const decisionLocked = lastFinisherDay === todayKey;
+  const hardLocked = finisherCard.classList.contains("locked") || decisionLocked;
 
-    // Skip is always allowed (until locked) – "I choose not to do a finisher today"
-    skipBtn.disabled = hardLocked;
+  // ✅ If today's decision is locked, explain why and bail
+  if (decisionLocked) {
+    doBtn.disabled = true;
+    skipBtn.disabled = true;
 
-    if (!currentFinisher || !selectedCategory || !selectedDifficulty) {
-      // No finisher chosen yet → can't start
-      doBtn.textContent = hasStartedFinisher ? "Mark Afterburn done" : "Lock In";
-      doBtn.disabled = true || hardLocked;
-      return;
+    if (typeof statusEl !== "undefined" && statusEl) {
+      statusEl.textContent = "Afterburn decision locked for today. Come back tomorrow 🔒";
     }
-
-    if (!hasStartedFinisher) {
-      // Finisher chosen, not started yet
-      doBtn.textContent = "Start Afterburn";   // wording easy to change later
-      doBtn.disabled = hardLocked;
-      skipBtn.textContent = "Skip Afterburn today";
-    } else {
-      // User already tapped "Start finisher" → we're in progress
-      doBtn.textContent = "Mark Afterburn done"; // final commit
-      doBtn.disabled = hardLocked;
-      skipBtn.textContent = "Too burned out to finish";
+    if (typeof tagEl !== "undefined" && tagEl) {
+      tagEl.textContent = "LOCKED";
     }
+    return;
   }
+
+  // Skip is allowed unless card is hard-locked
+  skipBtn.disabled = finisherCard.classList.contains("locked");
+
+  if (!currentFinisher || !selectedCategory || !selectedDifficulty) {
+    doBtn.textContent = hasStartedFinisher ? "Mark Afterburn done" : "Lock In";
+    doBtn.disabled = true || finisherCard.classList.contains("locked");
+    return;
+  }
+
+  if (!hasStartedFinisher) {
+    doBtn.textContent = "Start Afterburn";
+    doBtn.disabled = finisherCard.classList.contains("locked");
+    skipBtn.textContent = "Skip Afterburn today";
+  } else {
+    doBtn.textContent = "Mark Afterburn done";
+    doBtn.disabled = finisherCard.classList.contains("locked");
+    skipBtn.textContent = "Too burned out to finish";
+  }
+}
+
 
   function selectFinisher(catKey, diffKey) {
     const cat = FINISHERS[catKey];
@@ -3263,13 +3250,8 @@ function getMondayIndex(date) {
     tagEl.textContent   = "Unlocked"
 
     statusEl.textContent =
-      data.tokenReward > 0
-        ? `Complete this Afterburn session to earn ${
-            data.tokenReward >= 1
-              ? "a Rest Token"
-              : `${data.tokenReward * 100}% of a Rest Token`
-          }.`
-        : "Extra work for extra pride — no token reward on this one.";
+  "Complete this Afterburn session to earn 33% of a Rest Token. (3 Afterburns = 1 token)";
+
 
     updateFinisherButtons();
   }
@@ -3368,11 +3350,9 @@ function getMondayIndex(date) {
     );
     if (!confirmDone) return;
 
-    const reward = currentFinisher.tokenReward || 0;
-    if (reward > 0) {
-      addRestTokenProgress(reward);
-      updateStreak();
-    }
+    onAfterburnCompleted();  // ✅ uses AFTERBURN_TOKEN_PROGRESS = 1/3 inside the new module
+    updateStreak();          // ✅ re-renders banner
+
 
     // Lock today's finisher decision
     localStorage.setItem(LAST_FINISHER_DATE_KEY, todayKey);
@@ -3456,6 +3436,32 @@ function scrollToFinisherSection() {
   }, 900);
 }
 
+function showRankUpOverlay(tier, label) {
+  const visuals = getEmblemVisualForTier(tier);
+  visuals.label = label || visuals.label;
+  triggerEmblemRankUp(tier, visuals);
+}
+function queueRankUpOverlay(tier, label) {
+  RankFX.enqueue((done) => {
+    setTimeout(() => {
+      const overlay = showRankUpOverlay(tier, label);
+
+      let released = false;
+      const release = () => {
+        if (released) return;
+        released = true;
+        done();
+      };
+
+      // release if user closes it
+      overlay?.querySelector("button")?.addEventListener("click", release);
+
+      // safety timeout
+      setTimeout(release, 1200);
+    }, 650);
+  });
+}
+
 
 
 
@@ -3521,7 +3527,6 @@ function showAfterburnPromptOverlay() {
     }
   });
 }
-
 
 
         // =============================
@@ -3714,6 +3719,29 @@ function celebrateWeeklyGoalHit() {
         }
     });
 }
+
+const TODAY_SESSION_KEY = "ip_today_session_v1";
+
+function saveTodaySession(meta) {
+  try {
+    localStorage.setItem(TODAY_SESSION_KEY, JSON.stringify({
+      dateKey: dateToKey(new Date()),
+      ...meta
+    }));
+  } catch {}
+}
+
+function loadTodaySession() {
+  try {
+    const raw = localStorage.getItem(TODAY_SESSION_KEY);
+    if (!raw) return null;
+    const obj = JSON.parse(raw);
+    if (!obj || obj.dateKey !== dateToKey(new Date())) return null;
+    return obj;
+  } catch { return null; }
+}
+
+
 
 
 
@@ -4014,6 +4042,7 @@ function renderFocusSets() {
   // Disable Add Set when we hit the cap
   focusAddSetBtn.disabled = currentFocusExercise.sets.length >= MAX_FOCUS_SETS;
 }
+
 function persistTodaySummary() {
   const key = getTodayKey(); // your local YYYY-MM-DD
   const volume = getTotalVolumeForDay(key) || 0;
@@ -4054,6 +4083,7 @@ function persistTodaySummary() {
     focusDescEl.textContent = description;
 
     renderFocusSets();
+    restoreFocusDraftIfAny();
     clearRestTimer();      
     updateRestTimerUI();
 
@@ -4121,6 +4151,21 @@ function updateRestTimerUI() {
   }
 }
 
+function getTodaysSetsForExercise(exerciseName) {
+  const key = getTodayKey(); // MUST match whatever you use to store logs
+  const log = getExerciseLog?.() || {};
+  const today = log[key] || {};
+  const sets = today[exerciseName];
+  return Array.isArray(sets) ? sets : [];
+}
+
+function calcVolumeFromSets(sets = []) {
+  return sets.reduce((sum, s) => {
+    const w = Number(s.weight) || 0;
+    const r = Number(s.reps) || 0;
+    return sum + (w * r);
+  }, 0);
+}
 
 function clearRestTimer() {
   if (restTimerInterval) {
@@ -4187,6 +4232,7 @@ focusSetsListEl.addEventListener('input', (event) => {
 
   const index = Number(row.dataset.index);
   currentFocusExercise.sets[index].weight = input.value;
+  autosaveFocusDraft();
 });
 
 // Reps +/- buttons
@@ -4206,7 +4252,7 @@ focusSetsListEl.addEventListener('click', (event) => {
   } else if (btn.classList.contains('reps-plus')) {
     set.reps = (set.reps || 0) + 1;
   }
-
+  autosaveFocusDraft();
   renderFocusSets();
 });
 
@@ -4219,7 +4265,7 @@ focusAddSetBtn.addEventListener('click', () => {
     weight: '',
     reps: currentFocusExercise.suggestedReps || 10
   });
-
+  autosaveFocusDraft();
   renderFocusSets();
 });
 
@@ -4293,9 +4339,71 @@ function finalizeFocusExerciseCompletion() {
   if (typeof checkSplitCompletion === 'function') {
     checkSplitCompletion();
   }
-
+  clearFocusDraft(currentFocusExercise.name);
   // 5) Close the focus card
   closeFocusCard();
+}
+
+function finalizeFocusExerciseCompletion() {
+  if (!currentFocusExercise) return;
+
+  // 1) Clean the sets (only keep ones with weight + reps)
+  const cleanedSets = currentFocusExercise.sets.filter(
+    (s) => s.weight !== '' && s.reps > 0
+  );
+
+  // 2) Save to today's exercise log (this also updates weekly volume card)
+  recordExerciseSetsForToday(currentFocusExercise.name, cleanedSets);
+
+  // 3) Find the matching exercise row in the Today's Split list
+  const rows = document.querySelectorAll('#exercise-list .exercise-row');
+  let targetRow = null;
+
+  rows.forEach((row) => {
+    const btn = row.querySelector('.exercise-name-btn');
+    if (!btn) return;
+
+    const nameAttr = btn.getAttribute('data-exercise');
+    const label = nameAttr || btn.textContent.trim();
+
+    if (label === currentFocusExercise.name) {
+      targetRow = row;
+    }
+  });
+
+  if (targetRow) {
+    // a) Visually mark it as completed
+    targetRow.classList.add('completed');
+
+    // b) Tick the hidden checkbox so your existing logic still fires
+    const checkbox = targetRow.querySelector('input[type="checkbox"]');
+    if (checkbox && !checkbox.checked) {
+      checkbox.checked = true;
+      checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    // c) Update that row's "X lbs logged" text from today's log
+    const metaValueEl = targetRow.querySelector('.exercise-meta-value');
+    if (metaValueEl) {
+      const todaysVolume = getTodaysVolumeForExercise(currentFocusExercise.name);
+      metaValueEl.textContent =
+        todaysVolume > 0
+          ? `${todaysVolume.toLocaleString()} lbs logged`
+          : '0 lbs logged';
+    }
+  }
+
+  // 4) Re-run your split completion logic (unlock finisher, etc.)
+  if (typeof checkSplitCompletion === 'function') {
+    checkSplitCompletion();
+  }
+  clearFocusDraft(currentFocusExercise.name);
+  // 5) Close the focus card
+  closeFocusCard();
+}
+
+function getTodayKey(){
+  return getTodayDateKey();
 }
 /* Dev tools!!!!!!!!!!!! */
 function devClearVolume() {
@@ -4366,6 +4474,13 @@ function getLastNDates(n) {
   return dates;
 }
 
+function getTodaysLoggedSets(exerciseName) {
+  const todayKey = getTodayKey();              // make sure this matches your log keys
+  const log = getExerciseLog?.() || {};
+  const today = log[todayKey] || {};
+  const sets = today[exerciseName];
+  return Array.isArray(sets) ? sets : [];
+}
 
 
 function formatFriendlyDate(d) {
@@ -4672,25 +4787,454 @@ function initHistoryHeatmapTooltipDismiss() {
   window.addEventListener("scroll", onScroll, { passive: true });
   window.addEventListener("resize", onScroll, { passive: true });
 }
+/* ===============================
+   WEEKLY STREAK + REST TOKENS v1
+   Calendar week (Mon–Sun)
+   =============================== */
+
+const IP_KEYS = {
+  weekCounts: "ip_weekCountsById",         // { [weekId]: number }
+  lastSeenWeekId: "ip_lastSeenWeekId",     // "YYYY-W##"
+  streakCount: "ip_weeklyStreakCount",     // number
+  streakLastWeekId: "ip_streakLastWeekId", // "YYYY-W##" (latest week included)
+  restTokens: "ip_restTokens",             // integer
+  tokenProgress: "ip_restTokenProgress",   // 0..( < 1)
+  starterWeekId: "ip_starterWeekId",       // "YYYY-W##" (set on first workout ever)
+  rewardedWeekId: "ip_rewardedWeekId",     // last weekId that gave +1 token for 3+
+};
+
+const MAX_REST_TOKENS = 3;
+const MIN_FOR_WEEK_COMPLETE = 2;
+const MIN_FOR_TOKEN_EARN = 3;
+const AFTERBURN_TOKEN_PROGRESS = 1 / 3;
+
+function safeParseJSON(str, fallback) {
+  try { return JSON.parse(str); } catch { return fallback; }
+}
+
+function getWeekCounts() {
+  return safeParseJSON(localStorage.getItem(IP_KEYS.weekCounts), {});
+}
+
+function setWeekCounts(obj) {
+  localStorage.setItem(IP_KEYS.weekCounts, JSON.stringify(obj));
+}
+
+
+function getRestTokens() {
+  const n = Number(localStorage.getItem(IP_KEYS.restTokens) || 0);
+  const clamped = Math.min(MAX_REST_TOKENS, Math.max(0, Math.floor(n)));
+  if (clamped !== n) localStorage.setItem(IP_KEYS.restTokens, String(clamped)); // self-heal
+  return clamped;
+}
+
+function setRestTokens(n) {
+  const clamped = Math.max(0, Math.min(MAX_REST_TOKENS, Math.floor(n)));
+  localStorage.setItem(IP_KEYS.restTokens, String(clamped));
+}
+
+function getTokenProgress() {
+  const p = Number(localStorage.getItem(IP_KEYS.tokenProgress) || 0);
+  const clamped = Math.max(0, Math.min(0.999999, p));
+  if (clamped !== p) localStorage.setItem(IP_KEYS.tokenProgress, String(clamped)); // self-heal
+  return clamped;
+}
+
+function setTokenProgress(p) {
+  const clamped = Math.max(0, Math.min(0.999999, p));
+  localStorage.setItem(IP_KEYS.tokenProgress, String(clamped));
+}
+
+function addRestTokenProgress(delta) {
+  // If already capped, do not accumulate progress
+  if (getRestTokens() >= MAX_REST_TOKENS) {
+    setTokenProgress(0);
+    return;
+  }
+
+  let progress = getTokenProgress() + delta;
+
+  while (progress >= 1 && getRestTokens() < MAX_REST_TOKENS) {
+    setRestTokens(getRestTokens() + 1);
+    progress -= 1;
+  }
+
+  // If we hit cap, clear progress
+  if (getRestTokens() >= MAX_REST_TOKENS) {
+    setTokenProgress(0);
+    return;
+  }
+
+  setTokenProgress(progress);
+}
+
+
+function getStreakCount() {
+  return Number(localStorage.getItem(IP_KEYS.streakCount) || 0);
+}
+
+function setStreakCount(n) {
+  localStorage.setItem(IP_KEYS.streakCount, String(Math.max(0, Math.floor(n))));
+}
+
+function getStreakLastWeekId() {
+  return localStorage.getItem(IP_KEYS.streakLastWeekId) || "";
+}
+
+function setStreakLastWeekId(weekId) {
+  localStorage.setItem(IP_KEYS.streakLastWeekId, weekId);
+}
+
+/** WeekId format: "YYYY-W##" based on Monday-start week */
+function getWeekId(date = new Date()) {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+
+  // Monday-start week key (matches getCurrentWeekId)
+  const dayIndex = (d.getDay() + 6) % 7; // Mon=0..Sun=6
+  d.setDate(d.getDate() - dayIndex);
+
+  return dateToKey(d); // "YYYY-MM-DD" (Monday)
+}
+
+
+function isAdjacentWeek(prevWeekId, nextWeekId) {
+  // prevWeekId / nextWeekId are Monday keys: "YYYY-MM-DD"
+  const prev = new Date(prevWeekId + "T00:00:00");
+  const next = new Date(nextWeekId + "T00:00:00");
+  if (Number.isNaN(prev.getTime()) || Number.isNaN(next.getTime())) return false;
+
+  const diffDays = Math.round((next - prev) / (24 * 60 * 60 * 1000));
+  return diffDays === 7;
+}
+
+
+function weekIdToDate(weekId) {
+  // Approx: parse YYYY-W## and return Monday of that week
+  const m = /^(\d{4})-W(\d{2})$/.exec(weekId);
+  if (!m) return null;
+  const year = Number(m[1]);
+  const week = Number(m[2]);
+
+  // Monday of week 1
+  const jan4 = new Date(year, 0, 4);
+  const jan4Day = (jan4.getDay() + 6) % 7;
+  const week1Mon = new Date(jan4);
+  week1Mon.setDate(jan4.getDate() - jan4Day);
+  week1Mon.setHours(0, 0, 0, 0);
+
+  const target = new Date(week1Mon);
+  target.setDate(week1Mon.getDate() + (week - 1) * 7);
+  return target;
+}
+
+function getCountForWeek(weekId) {
+  const counts = getWeekCounts();
+  return Number(counts[weekId] || 0);
+}
+
+function setCountForWeek(weekId, n) {
+  const counts = getWeekCounts();
+  counts[weekId] = Math.max(0, Math.floor(n));
+  setWeekCounts(counts);
+}
+
+function ensureStarterWeekId(currentWeekId) {
+  const existing = localStorage.getItem(IP_KEYS.starterWeekId);
+  if (existing) return existing;
+  localStorage.setItem(IP_KEYS.starterWeekId, currentWeekId);
+  return currentWeekId;
+}
+
+function isStarterWeek(weekId) {
+  const starter = localStorage.getItem(IP_KEYS.starterWeekId);
+  return starter && starter === weekId;
+}
+
+function isWeekCompleted(weekId) {
+  const count = getCountForWeek(weekId);
+  if (isStarterWeek(weekId)) return count >= 1;
+  return count >= MIN_FOR_WEEK_COMPLETE;
+}
+
+function didWeekEarnToken(weekId) {
+  return getCountForWeek(weekId) >= MIN_FOR_TOKEN_EARN;
+}
+
+/**
+ * Reconcile missed weeks when app opens after being away.
+ * Applies token-save rule for "1 workout week".
+ */
+function reconcileUpToCurrentWeek() {
+  const currentWeekId = getWeekId(new Date());
+  const lastSeen = localStorage.getItem(IP_KEYS.lastSeenWeekId);
+
+  if (!lastSeen) {
+    localStorage.setItem(IP_KEYS.lastSeenWeekId, currentWeekId);
+    return;
+  }
+  if (lastSeen === currentWeekId) return;
+
+  let cursor = lastSeen;
+  let guard = 0;
+
+  while (cursor !== currentWeekId && guard < 60) { // ~60 weeks safety
+    finalizeWeek(cursor);
+
+    const cursorDate = new Date(cursor + "T00:00:00");
+    if (Number.isNaN(cursorDate.getTime())) break;
+
+    cursorDate.setDate(cursorDate.getDate() + 7);
+    cursor = getWeekId(cursorDate);
+
+    if (!cursor || cursor === lastSeen) break;
+    guard++;
+  }
+
+  localStorage.setItem(IP_KEYS.lastSeenWeekId, currentWeekId);
+}
+
+
+/**
+ * Finalize a past week at rollover time:
+ * - if completed -> streak continues
+ * - if 1 workout and token available -> spend 1 token -> count as completed
+ * - if 0 workouts -> break streak
+ */
+function finalizeWeek(weekId) {
+  const count = getCountForWeek(weekId);
+
+  // Starter week rule handled by isWeekCompleted (>=1)
+  if (isWeekCompleted(weekId)) {
+    // Completed weeks are already counted when they complete (instant),
+    // but reconciliation ensures streak breaks on gaps.
+    return;
+  }
+
+  // Not completed. Token-save only if exactly 1 workout (and not starter week)
+  if (!isStarterWeek(weekId) && count === 1 && getRestTokens() > 0) {
+    setRestTokens(getRestTokens() - 1);
+    // Treat as completed for streak continuity:
+    setCountForWeek(weekId, MIN_FOR_WEEK_COMPLETE);
+    return;
+  }
+
+  // 0 workouts OR starter week with 0 OR any other incomplete -> streak breaks
+  setStreakCount(0);
+  setStreakLastWeekId("");
+}
+
+function logWorkoutAndUpdateWeeklySystems() {
+  reconcileUpToCurrentWeek();
+
+  const weekId = getWeekId(new Date());
+
+  ensureStarterWeekId(weekId);
+
+  const prev = getCountForWeek(weekId);
+  const next = prev + 1;
+  setCountForWeek(weekId, next);
+
+  // --- micro feedback every workout ---
+  const banner = document.getElementById("streak-banner");
+  if (banner) {
+    banner.classList.remove("streak-tick");
+    void banner.offsetWidth;
+    banner.classList.add("streak-tick");
+  }
+
+  const wasCompleted = (isStarterWeek(weekId) ? prev >= 1 : prev >= MIN_FOR_WEEK_COMPLETE);
+  const nowCompleted = isWeekCompleted(weekId);
+
+  if (!wasCompleted && nowCompleted) {
+    const prevStreak = getStreakCount();
+    const prevTier = getEmblemTierForStreak?.(prevStreak);
+
+    const lastStreakWeek = getStreakLastWeekId();
+    if (lastStreakWeek && isAdjacentWeek(lastStreakWeek, weekId)) {
+      setStreakCount(prevStreak + 1);
+    } else {
+      setStreakCount(1);
+    }
+    setStreakLastWeekId(weekId);
+
+    // 🔥 Week clinched hit
+    triggerStreakPowerup();
+
+    const newStreak = getStreakCount();
+    const newTier = getEmblemTierForStreak?.(newStreak);
+
+    if (newTier && newTier !== prevTier) {
+      const label = getEmblemLabelForTier?.(newTier) || "Rank Up";
+
+      const shouldOverlay =
+        String(newTier).includes("monthly") ||
+        String(newTier).includes("quarterly") ||
+        String(newTier).includes("annual") ||
+        String(newTier).includes("legendary");
+
+      if (shouldOverlay) queueRankUpOverlay(newTier, label);
+    }
+
+  }
+
+  // IMMEDIATE TOKEN AWARD when they hit 3+ for the week (once per week)
+  if (prev < MIN_FOR_TOKEN_EARN && next >= MIN_FOR_TOKEN_EARN) {
+    const rewardedWeek = localStorage.getItem(IP_KEYS.rewardedWeekId);
+    if (rewardedWeek !== weekId) {
+      setRestTokens(getRestTokens() + 1);
+      localStorage.setItem(IP_KEYS.rewardedWeekId, weekId);
+
+      // 🔥 Recovery earned hit
+      triggerStreakPowerup();
+      // showToast?.("Recovery earned — Rest Token +1 🛌🔥");
+    }
+  }
+}
+
+
+function triggerStreakPowerup() {
+  const b = document.getElementById("streak-banner");
+  if (!b) return;
+  b.classList.remove("streak-powerup");
+  void b.offsetWidth;
+  b.classList.add("streak-powerup");
+  setTimeout(() => b.classList.remove("streak-powerup"), 900);
+}
+
+/** Called when Afterburn is completed */
+function onAfterburnCompleted() {
+  addRestTokenProgress(AFTERBURN_TOKEN_PROGRESS);
+  // updateStreakBannerUI?.();
+}
+
+function getWeeklyBannerState() {
+  const weekId = getWeekId(new Date());
+  const count = getCountForWeek(weekId);
+
+  const completed = isWeekCompleted(weekId);
+
+  return {
+    weekId,
+    workoutsThisWeek: count,
+    minToComplete: isStarterWeek(weekId) ? 1 : MIN_FOR_WEEK_COMPLETE,
+    tokenThreshold: MIN_FOR_TOKEN_EARN,
+    weekCompleted: completed,
+    tokenEarnedThisWeek: count >= MIN_FOR_TOKEN_EARN,
+    streak: getStreakCount(),
+    restTokens: getRestTokens(),
+    restTokenProgress: getTokenProgress(),
+    isStarterWeek: isStarterWeek(weekId),
+  };
+}
+function getCurrentFocusExerciseName() {
+  return document.getElementById("focus-exercise-name")?.textContent?.trim() || "";
+}
+
+function readFocusStateFromUI() {
+  const list = document.getElementById("focus-sets-list");
+  if (!list) return { sets: [] };
+
+  const rows = list.querySelectorAll(".focus-set-row");
+  const sets = Array.from(rows).map((row) => {
+    const weight = row.querySelector(".focus-weight-input")?.value ?? "";
+    const repsText = row.querySelector(".focus-reps-count")?.textContent ?? "0";
+    const reps = parseInt(repsText, 10);
+    const completed = row.classList.contains("completed");
+
+    return {
+      weight,
+      reps: Number.isNaN(reps) ? 0 : reps,
+      completed
+    };
+  });
+
+  return { sets };
+}
+
+function writeFocusStateToUI(state) {
+  const list = document.getElementById("focus-sets-list");
+  if (!list || !state?.sets) return;
+
+  const rows = list.querySelectorAll(".focus-set-row");
+
+  state.sets.forEach((s, i) => {
+    const row = rows[i];
+    if (!row) return;
+
+    const w = row.querySelector(".focus-weight-input");
+    if (w && typeof s.weight !== "undefined") w.value = String(s.weight);
+
+    const repsEl = row.querySelector(".focus-reps-count");
+    if (repsEl && typeof s.reps !== "undefined") repsEl.textContent = String(s.reps);
+
+    row.classList.toggle("completed", !!s.completed);
+  });
+}
+function debounce(fn, ms = 200) {
+  let t;
+  return (...args) => {
+    clearTimeout(t);
+    t = setTimeout(() => fn(...args), ms);
+  };
+}
+
+const autosaveFocusDraft = debounce(() => {
+  const ex = getCurrentFocusExerciseName();
+  if (!ex) return;
+
+  saveFocusDraft(ex, {
+    ...readFocusStateFromUI(),
+    updatedAt: Date.now()
+  });
+}, 200);
+
+function initFocusDraftAutosave() {
+  const overlay = document.getElementById("focus-overlay");
+  if (!overlay) return;
+
+  // weights inputs
+  overlay.addEventListener("input", (e) => {
+    if (e.target && e.target.classList?.contains("focus-weight-input")) autosaveFocusDraft();
+  });
+
+  // reps +/- buttons (click changes text content)
+  overlay.addEventListener("click", (e) => {
+    const t = e.target;
+    if (!t) return;
+
+    // if your +/- buttons have classes, swap these selectors accordingly
+    if (t.classList.contains("focus-reps-btn") || t.closest(".focus-reps-btn")) {
+      autosaveFocusDraft();
+    }
+
+    // if your set toggle marks row completed
+    if (t.classList.contains("focus-set-toggle") || t.closest(".focus-set-toggle")) {
+      autosaveFocusDraft();
+    }
+  });
+}
+
+
 
 
 // =============================
 // 9) INIT
 // =============================
 window.addEventListener("DOMContentLoaded", () => {
+
+  reconcileUpToCurrentWeek();
   ensureWeeklyState();
-  //resetWeeklyWeightByDay();
-  updateStreak();
   initScreens();
   initTodaysSplit();
   restoreTodayCompletionUI();
-  initWeeklyGoalControls();
+  initWeeklyGoalControls?.();
   initFinisherControls();
   initServiceWorker();
-  updateStreak();
-  updateWeeklyVolumeSummaryFromLog();
   initFocusRestTimerControls();
   initTrainingHistoryToggle();
+  updateStreak();
+  updateWeeklyVolumeSummaryFromLog();
   render90DayHeatmap();
   initHeatmapMiniTip();
   initHistoryHeatmapTooltipDismiss();
