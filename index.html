@@ -85,6 +85,15 @@
   --accent-progress-soft:  rgba(var(--accent-warm-start-rgb), 0.70);
   --accent-progress-soft2: rgba(162, 156, 255, 0.55); /* from --accent-warm-end */
 
+    /* Streak progress bar (theme-driven) */
+  --streak-progress-bg: rgba(255, 255, 255, 0.14);
+  --streak-progress-fill: linear-gradient(
+    90deg,
+    rgba(var(--accent-warm-start-rgb), 0.95),
+    rgba(var(--accent-2-rgb), 0.95)
+  );
+
+
   /* STREAK COLORS (feel free to tweak later) */
   --streak-grad-start: rgba(var(--accent-rgb), 0.7);
   --streak-grad-end:   rgba(var(--accent-2-rgb), 0.7);
@@ -902,7 +911,14 @@ nav {
 }
 
 .streak-emblem-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-left: 6px;
+  padding-right: 2px;
   flex-shrink: 0;
+  position: relative;
+  z-index: 2;
 }
 
 .streak-emblem.rankup-emblem-preview {
@@ -917,6 +933,9 @@ nav {
   box-shadow: var(--shadow-progress-strong);
 }
 .streak-emblem {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.18);
   box-shadow: 0 0 12px rgba(0, 0, 0, 0.8);
   overflow: hidden;
@@ -1105,6 +1124,11 @@ nav {
 
 /* Base streak banner */
 .streak-banner {
+  display: grid;
+  grid-template-columns: 84px 1fr;
+  gap: 14px;
+  align-items: center;
+  padding: 18px 18px;
   position: relative;
   margin-bottom: 1rem;
   padding: 0.75rem 1rem;
@@ -1183,10 +1207,33 @@ nav {
     gap: 0.5rem;
 }
 
-/* Top row: keep chips on one line on larger screens, allow wrap on small */
+/* Top row should allow wrapping to a new line */
 .streak-row-top {
-    flex-wrap: wrap;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
 }
+
+/* Critical: allow flex children to actually shrink */
+.streak-row-top > * {
+  min-width: 0;
+}
+
+/* Token pill should wrap instead of overflowing */
+#streak-token-label {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  flex: 0 1 auto;
+  max-width: 100%;
+}
+
+/* Optional: prevent the token pill from trying to stay one line */
+#streak-token-label.streak-pill {
+  max-width: 100%;
+}
+
 .streak-pill-emblem {
     border-color: rgba(255, 255, 255, 0.35);
     color: #ffe8b0;
@@ -1225,22 +1272,29 @@ nav {
 
 
 .streak-progress {
-  margin-top: 0.35rem;
+  opacity: 0.95;
+  position: relative;
+  margin-top: 10px;
   width: 100%;
-  height: 0.4rem;
+  height: 0.55rem;
   border-radius: 999px;
-  background: var(--streak-progress-bg);
+  background: var(--streak-progress-bg, rgba(255,255,255,0.14));
   overflow: hidden;
+  z-index: 3;
 }
 
 .streak-progress-fill {
+  position: relative;
   height: 100%;
   width: 0;
   border-radius: inherit;
-  background: var(--streak-progress-fill);
+   background: var(--streak-progress-fill, linear-gradient(90deg, rgba(124,58,237,0.95), rgba(167,139,250,0.95))
+   );
   box-shadow: var(--shadow-progress);
   transition: width 0.35s ease-out;
+  z-index: 4;
 }
+
 
 
 
@@ -2527,6 +2581,8 @@ footer {
 }
 
 .streak-body {
+    position: relative;
+    z-index: 2;
     flex: 1;
     min-width: 0;
     display: flex;
@@ -3045,6 +3101,9 @@ footer {
 .emblem-weekly-1 .streak-bg-layer,
 .emblem-weekly-2 .streak-bg-layer,
 .emblem-weekly-3 .streak-bg-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
     background-image:
         radial-gradient(circle at center,
             rgba(0, 0, 0, 0.65) 0%,
@@ -3074,6 +3133,9 @@ footer {
 .emblem-monthly-1 .streak-bg-layer,
 .emblem-monthly-2 .streak-bg-layer,
 .emblem-monthly-3 .streak-bg-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
     background-image:
         radial-gradient(circle at center,
             rgba(0, 0, 0, 0.7) 0%,
@@ -3109,6 +3171,9 @@ footer {
 .emblem-quarterly-1 .streak-bg-layer,
 .emblem-quarterly-2 .streak-bg-layer,
 .emblem-quarterly-3 .streak-bg-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
     background-image:
         radial-gradient(circle at center,
             rgba(0, 0, 0, 0.7) 0%,
@@ -3150,6 +3215,9 @@ footer {
 .emblem-legendary-1 .streak-bg-layer,
 .emblem-legendary-2 .streak-bg-layer,
 .emblem-legendary-3 .streak-bg-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
     background-image:
         radial-gradient(circle at center,
             rgba(0, 0, 0, 0.75) 0%,

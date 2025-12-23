@@ -2846,7 +2846,7 @@ function updateStreak() {
   banner.classList.toggle("streak-token-earned", done >= tokenThresh);
 
   // 1) Week label chip
-  weekLabelEl.textContent = streak > 0 ? `Week ${streak} streak` : "No active streak yet";
+  weekLabelEl.textContent = streak > 0 ? `Week ${streak} streak` : "No streak started";
 
   // 2) Progress text
   const clamped = Math.min(done, minComplete);
@@ -2861,10 +2861,10 @@ function updateStreak() {
   // 3) Token label
   if (tokens > 0 || tokenProgress > 0) {
     const tokenPct = Math.round(tokenProgress * 100);
-    const extra = tokenProgress > 0 && tokenProgress < 1 ? ` • Next: ${tokenPct}%` : "";
+    const extra = tokenProgress > 0 && tokenProgress < 1 ? ` • Charge: ${tokenPct}%` : "";
     tokenLabelEl.textContent = `Rest tokens: ${tokens}${extra}`;
   } else {
-    tokenLabelEl.textContent = "Earn rest tokens with Afterburn sessions";
+    tokenLabelEl.textContent = "Rest Tokens = 0";
   }
 
   // 4) Progress bar fill
@@ -5016,12 +5016,43 @@ function reconcileUpToCurrentWeek() {
 }
 
 
-/**
- * Finalize a past week at rollover time:
- * - if completed -> streak continues
- * - if 1 workout and token available -> spend 1 token -> count as completed
- * - if 0 workouts -> break streak
- */
+const COMPLETED_EXERCISES_KEY = "ip_completed_exercises_by_day";
+
+function getCompletedExercisesForDay(dayKey) {
+  try {
+    const all = JSON.parse(localStorage.getItem(COMPLETED_EXERCISES_KEY) || "{}");
+    return Array.isArray(all[dayKey]) ? all[dayKey] : [];
+  } catch {
+    return [];
+  }
+}
+
+function setExerciseCompletedForDay(dayKey, exerciseName) {
+  let all = {};
+  try { all = JSON.parse(localStorage.getItem(COMPLETED_EXERCISES_KEY) || "{}"); } catch {}
+
+  const set = new Set(all[dayKey] || []);
+  set.add(exerciseName);
+
+  all[dayKey] = Array.from(set);
+  localStorage.setItem(COMPLETED_EXERCISES_KEY, JSON.stringify(all));
+}
+
+function isExerciseCompletedForDay(dayKey, exerciseName) {
+  return getCompletedExercisesForDay(dayKey).includes(exerciseName);
+}
+
+function clearExerciseCompletedForDay(dayKey, exerciseName) {
+  let all = {};
+  try { all = JSON.parse(localStorage.getItem(COMPLETED_EXERCISES_KEY) || "{}"); } catch {}
+
+  const set = new Set(all[dayKey] || []);
+  set.delete(exerciseName);
+
+  all[dayKey] = Array.from(set);
+  localStorage.setItem(COMPLETED_EXERCISES_KEY, JSON.stringify(all));
+}
+
 function finalizeWeek(weekId) {
   const count = getCountForWeek(weekId);
 
