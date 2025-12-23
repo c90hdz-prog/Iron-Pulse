@@ -4928,16 +4928,37 @@ function weekIdToDate(weekId) {
   return target;
 }
 
-function getCountForWeek(weekId) {
-  const counts = getWeekCounts();
-  return Number(counts[weekId] || 0);
+// One place to store weekly counts (map of weekId -> number)
+function getWeekCountsMap() {
+  try {
+    const raw = localStorage.getItem(IP_KEYS.weekCounts);
+    const parsed = raw ? JSON.parse(raw) : {};
+    return (parsed && typeof parsed === "object") ? parsed : {};
+  } catch {
+    return {};
+  }
 }
 
-function setCountForWeek(weekId, n) {
-  const counts = getWeekCounts();
-  counts[weekId] = Math.max(0, Math.floor(n));
-  setWeekCounts(counts);
+function setWeekCountsMap(map) {
+  try {
+    localStorage.setItem(IP_KEYS.weekCounts, JSON.stringify(map || {}));
+  } catch {
+    // ignore
+  }
 }
+
+function getCountForWeek(weekId) {
+  const map = getWeekCountsMap();
+  const n = Number(map?.[weekId] ?? 0);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function setCountForWeek(weekId, value) {
+  const map = getWeekCountsMap();
+  map[weekId] = Math.max(0, Math.floor(Number(value) || 0));
+  setWeekCountsMap(map);
+}
+
 
 function ensureStarterWeekId(currentWeekId) {
   const existing = localStorage.getItem(IP_KEYS.starterWeekId);
@@ -5112,14 +5133,12 @@ function getWeeklyBannerState() {
   const weekId = getWeekId(new Date());
   const count = getCountForWeek(weekId);
 
-  const completed = isWeekCompleted(weekId);
-
   return {
     weekId,
     workoutsThisWeek: count,
     minToComplete: isStarterWeek(weekId) ? 1 : MIN_FOR_WEEK_COMPLETE,
     tokenThreshold: MIN_FOR_TOKEN_EARN,
-    weekCompleted: completed,
+    weekCompleted: isWeekCompleted(weekId),
     tokenEarnedThisWeek: count >= MIN_FOR_TOKEN_EARN,
     streak: getStreakCount(),
     restTokens: getRestTokens(),
@@ -5127,6 +5146,7 @@ function getWeeklyBannerState() {
     isStarterWeek: isStarterWeek(weekId),
   };
 }
+
 function getCurrentFocusExerciseName() {
   return document.getElementById("focus-exercise-name")?.textContent?.trim() || "";
 }
