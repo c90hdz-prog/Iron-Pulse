@@ -2237,20 +2237,31 @@ function initWeeklyGoalControls() {
     pill.disabled = false;
 
     pill.addEventListener("click", () => {
-      // ✅ Save preference immediately (no locking, no confirm)
-      setWeeklyGoal(pillDays);
+  setWeeklyGoal(pillDays);
 
-      pills.forEach(p => p.classList.remove("active"));
-      pill.classList.add("active");
+  pills.forEach(p => p.classList.remove("active"));
+  pill.classList.add("active");
 
-      if (resetBtn) resetBtn.style.display = "inline-flex";
+  if (resetBtn) resetBtn.style.display = "inline-flex";
 
-      // Refresh any UI that uses the preference
-      renderWeeklyFocusLive?.();
-      repositionWeeklyGoalSection?.();
-      renderTrainingGoalWeekRow?.();
-      updateStreak(); // doesn’t depend on goal anymore, but safe to refresh
-    });
+  // Refresh UI
+  renderWeeklyFocusLive?.();
+  repositionWeeklyGoalSection?.();
+  renderTrainingGoalWeekRow?.();
+  updateStreak();
+
+  // ✅ Smooth scroll (instead of jumping)
+  // ✅ Smooth scroll to Training Goal card (Weekly Goal card)
+const goalCard = document.getElementById("weekly-focus-card") 
+              || document.getElementById("weekly-focus-live");
+
+if (goalCard) {
+  goalCard.scrollIntoView({ behavior: "smooth", block: "start" });
+  pulseEl?.(goalCard);
+}
+
+});
+
   });
 
   // Reset preference
@@ -2603,6 +2614,9 @@ function renderSessionIntoSplitCard(session, weeklyGoal) {
   // Make sure finisher lock state reflects any already-logged exercises
   if (typeof checkSplitCompletion === "function") {
     checkSplitCompletion();
+  }
+  if (typeof updatePrimaryCTAs === "function") {
+    updatePrimaryCTAs();
   }
 }
 
@@ -3409,6 +3423,62 @@ function updateFinisherButtons() {
   // Initial button state on load
   updateFinisherButtons();
 }
+
+function scrollToSplitSection() {
+  const split = document.getElementById("split");
+  if (!split) return;
+
+  split.scrollIntoView({ behavior: "smooth", block: "start" });
+
+  split.classList.remove("pulse");
+  void split.offsetWidth;
+  split.classList.add("pulse");
+  setTimeout(() => split.classList.remove("pulse"), 650);
+}
+
+function getTodayWorkoutState() {
+  const listEl = document.getElementById("exercise-list");
+  const checkboxes = listEl?.querySelectorAll('input.exercise-complete-checkbox') || [];
+  const total = checkboxes.length;
+  const checked = Array.from(checkboxes).filter(cb => cb.checked).length;
+
+  const hasAny = checked > 0;
+  const allDone = total > 0 && checked === total;
+
+  const todayKey = (typeof getTodayDateKey === "function") ? getTodayDateKey() : null;
+  const lastFinisherDay = localStorage.getItem(LAST_FINISHER_DATE_KEY);
+  const afterburnLocked = !!todayKey && lastFinisherDay === todayKey;
+
+  return { total, checked, hasAny, allDone, afterburnLocked };
+}
+
+function updatePrimaryCTAs() {
+  const topBtn = document.getElementById("hero-cta");
+  const bottomBtn = document.getElementById("bottom-split-btn");
+  const sub = document.getElementById("app-status-sub"); // optional
+
+  const s = getTodayWorkoutState();
+
+  if (sub) {
+    if (s.allDone) sub.textContent = s.afterburnLocked ? "Done for today" : "Workout done • Afterburn optional";
+    else if (s.hasAny) sub.textContent = `In progress • ${s.checked}/${s.total} done`;
+    else sub.textContent = "Ready";
+  }
+
+  let label = "Start Today";
+  if (s.allDone) label = s.afterburnLocked ? "View Today" : "Afterburn";
+  else if (s.hasAny) label = "Continue";
+
+    [topBtn, bottomBtn].forEach(btn => {
+    if (!btn) return;
+    btn.textContent = label;
+    // ✅ do NOT set btn.onclick here
+  });
+
+}
+
+
+
 function scrollToFinisherSection() {
   const finisherSection =
     document.getElementById("finisher-card") ||
@@ -3572,29 +3642,6 @@ function showAfterburnPromptOverlay() {
                 showScreen("daily");
             }
 
-            // --- Start Today (top nav) ---
-            const heroCta = document.getElementById("hero-cta");
-            if (heroCta) {
-                heroCta.addEventListener("click", () => {
-                    console.log("hero-cta clicked");
-                    localStorage.setItem(ONBOARDED_KEY, "true");
-                    showScreen("daily");
-                });
-            } else {
-                console.warn("hero-cta not found");
-            }
-
-            // --- Get Started (bottom bar) ---
-            const bottomSplitBtn = document.getElementById("bottom-split-btn");
-            if (bottomSplitBtn) {
-                bottomSplitBtn.addEventListener("click", () => {
-                    console.log("bottom-split-btn clicked");
-                    localStorage.setItem(ONBOARDED_KEY, "true");
-                    showScreen("daily");
-                });
-            } else {
-                console.warn("bottom-split-btn not found");
-            }
 
             // --- Setup button in nav ---
             const settingsBtn = document.getElementById("open-settings-btn");
@@ -4342,6 +4389,7 @@ function finalizeFocusExerciseCompletion() {
   clearFocusDraft(currentFocusExercise.name);
   // 5) Close the focus card
   closeFocusCard();
+  updatePrimaryCTAs();
 }
 
 function finalizeFocusExerciseCompletion() {
@@ -5266,6 +5314,71 @@ function initFocusDraftAutosave() {
   });
 }
 
+function initHeaderUI() {
+  window.addEventListener("scroll", () => {
+    document.body.classList.toggle("scrolled", window.scrollY > 6);
+  });
+}
+function pulseEl(el) {
+  if (!el) return;
+  el.classList.remove("pulse-hint");
+  void el.offsetWidth;
+  el.classList.add("pulse-hint");
+  setTimeout(() => el.classList.remove("pulse-hint"), 900);
+}
+
+function scrollToEl(el, offset = 14) {
+  if (!el) return;
+  const top = el.getBoundingClientRect().top + window.scrollY - offset;
+  window.scrollTo({ top, behavior: "smooth" });
+}
+
+function isSetupVisible() {
+  const setup = document.getElementById("screen-setup");
+  if (!setup) return false;
+  return getComputedStyle(setup).display !== "none";
+}
+
+function initStartTodayCTA() {
+  const btnTop = document.getElementById("hero-cta");
+  const btnBottom = document.getElementById("bottom-split-btn");
+
+  const onClick = (e) => {
+    e.preventDefault();
+
+    // ✅ If user is on page 1 → ONLY switch screens, no scrolling
+    if (isSetupVisible()) {
+      localStorage.setItem(ONBOARDED_KEY, "true");
+      showScreen("daily");
+      return;
+    }
+
+    // ✅ Already on page 2 → now we can scroll based on goal
+    const goal = getWeeklyGoal?.() || 0;
+
+    if (!goal) {
+      const goalSection = document.getElementById("weekly-goal-control");
+      if (goalSection) {
+        goalSection.scrollIntoView({ behavior: "smooth", block: "start" });
+        pulseEl?.(goalSection);
+      }
+      
+
+      showToast?.("Set your weekly goal to start your streak 🔥");
+      return;
+    }
+
+    const splitSection = document.getElementById("split");
+    splitSection?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  // IMPORTANT: use ONE handler, don’t stack multiples
+  btnTop?.addEventListener("click", onClick);
+  btnBottom?.addEventListener("click", onClick);
+}
+
+
+
 
 
 
@@ -5273,11 +5386,13 @@ function initFocusDraftAutosave() {
 // 9) INIT
 // =============================
 window.addEventListener("DOMContentLoaded", () => {
-
+  initHeaderUI();
   reconcileUpToCurrentWeek();
   ensureWeeklyState();
   initScreens();
+  initStartTodayCTA();
   initTodaysSplit();
+  updatePrimaryCTAs();
   restoreTodayCompletionUI();
   initWeeklyGoalControls?.();
   initFinisherControls();
@@ -5293,7 +5408,11 @@ window.addEventListener("DOMContentLoaded", () => {
 
 
   // 🔧 Dev buttons
-initWeeklyVolumeScrollTrigger();
+
+
+  /*initDebugStreakButton(); // 🔧 DEV ONLY – remove later
+  // 
+  initWeeklyVolumeScrollTrigger();
 const devClearVolumeBtn = document.getElementById("dev-clear-volume-btn");
 if (devClearVolumeBtn) {
   devClearVolumeBtn.addEventListener("click", devClearVolume);
@@ -5329,6 +5448,5 @@ if (devResetStreakBtn) {
       devForceWeeklyGoalCompletion();
     });
   }
-
-  initDebugStreakButton(); // 🔧 DEV ONLY – remove later
+  */
 });
