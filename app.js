@@ -2068,38 +2068,35 @@ function openWeeklyDaySheet({ dateStr, label, isWorked }) {
 }
 
 
-    function setWeeklyGoal(days) {
-        localStorage.setItem(WEEKLY_GOAL_KEY, String(days));
+function setWeeklyGoal(days) {
+    localStorage.setItem(WEEKLY_GOAL_KEY, String(days));
+}
+function hasWeeklyGoal() {
+        return localStorage.getItem(WEEKLY_GOAL_KEY) !== null;
     }
-    function hasWeeklyGoal() {
-            return localStorage.getItem(WEEKLY_GOAL_KEY) !== null;
-        }
-    function repositionWeeklyGoalSection() {
-            const days = getWeeklyGoal();  // null when no goal set
-            const dailyScreen = document.getElementById("screen-daily");
-            const weeklyFocus = document.getElementById("weekly-focus-live");
-            const goalSection = document.getElementById("weekly-goal-control");
-            const dailyMain = document.getElementById("daily-main-content");
 
-            if (!dailyScreen || !weeklyFocus || !goalSection || !dailyMain) return;
+function repositionWeeklyGoalSection() {
+  const days = getWeeklyGoal();
+  const dailyScreen = document.getElementById("screen-daily");
+  const weeklyFocus = document.getElementById("weekly-focus-live");
+  const goalSection = document.getElementById("weekly-goal-control");
+  const dailyMain = document.getElementById("daily-main-content");
 
-            if (!days) {
-                // 🔸 No weekly goal set:
-                // - hide split/motivation/finisher
-                // - move goal section right under the focus card
-                dailyMain.classList.add("hidden");
+  if (!dailyScreen || !weeklyFocus || !goalSection || !dailyMain) return;
 
-                // weeklyFocus is before dailyMain, so insert goalSection before dailyMain
-                dailyScreen.insertBefore(goalSection, dailyMain);
-            } else {
-                // 🔹 Goal is set:
-                // - show workouts
-                // - keep goal selector down at the bottom
-                dailyMain.classList.remove("hidden");
+  if (!days) {
+    dailyMain.classList.add("hidden");
+    dailyScreen.insertBefore(goalSection, dailyMain);
 
-                dailyScreen.appendChild(goalSection);
-            }
-        }
+    setWeeklyGoalLockedUI(0);                // ✅ unlock
+  } else {
+    dailyMain.classList.remove("hidden");
+    dailyScreen.appendChild(goalSection);
+
+    setWeeklyGoalLockedUI(Number(days));     // ✅ lock to chosen
+  }
+}
+
 
 
 
@@ -2208,7 +2205,6 @@ function renderWeeklyFocusLive() {
 
 
 
-
 function initWeeklyGoalControls() {
   const dailyScreen = document.getElementById("screen-daily");
   if (!dailyScreen) return;
@@ -2217,54 +2213,47 @@ function initWeeklyGoalControls() {
   if (!pills.length) return;
 
   const resetBtn = document.getElementById("reset-weekly-goal-btn");
-  const commitBtn = document.getElementById("commit-weekly-goal-btn"); // we’ll hide this
+  const commitBtn = document.getElementById("commit-weekly-goal-btn");
 
-  // ✅ No more commit button in the new model
   if (commitBtn) commitBtn.style.display = "none";
 
-  const currentPref = getWeeklyGoal(); // now: preference days/week (optional)
+  const currentPref = getWeeklyGoal(); // days/week or null
 
   // Reset button only if preference exists
-  if (resetBtn) {
-    resetBtn.style.display = currentPref ? "inline-flex" : "none";
-  }
+  if (resetBtn) resetBtn.style.display = currentPref ? "inline-flex" : "none";
 
-  // Initialize pill active state
+  // ✅ Lock/unlock pills immediately on init
+  setWeeklyGoalLockedUI(currentPref ? Number(currentPref) : 0);
+
   pills.forEach(pill => {
     const pillDays = parseInt(pill.getAttribute("data-days"), 10);
-    pill.classList.toggle("active", currentPref && pillDays === currentPref);
-
-    pill.disabled = false;
 
     pill.addEventListener("click", () => {
-  setWeeklyGoal(pillDays);
+      // ✅ Already set? Ignore clicks (Reset is the unlock)
+      if (hasWeeklyGoal()) return;
 
-  pills.forEach(p => p.classList.remove("active"));
-  pill.classList.add("active");
+      setWeeklyGoal(pillDays);
 
-  if (resetBtn) resetBtn.style.display = "inline-flex";
+      if (resetBtn) resetBtn.style.display = "inline-flex";
 
-  // Refresh UI
-  renderWeeklyFocusLive?.();
-  repositionWeeklyGoalSection?.();
-  renderTrainingGoalWeekRow?.();
-  updateStreak();
+      // Refresh UI (and apply lock + layout)
+      repositionWeeklyGoalSection?.();
+      renderWeeklyFocusLive?.();
+      renderTrainingGoalWeekRow?.();
+      updateStreak();
 
-  // ✅ Smooth scroll (instead of jumping)
-  // ✅ Smooth scroll to Training Goal card (Weekly Goal card)
-const goalCard = document.getElementById("weekly-focus-card") 
-              || document.getElementById("weekly-focus-live");
+      // ✅ Smooth scroll to Training Goal card (slightly higher tweak below)
+      const goalCard =
+        document.getElementById("weekly-focus-card") ||
+        document.getElementById("weekly-focus-live");
 
-if (goalCard) {
-  goalCard.scrollIntoView({ behavior: "smooth", block: "start" });
-  pulseEl?.(goalCard);
-}
-
-});
-
+      if (goalCard) {
+        goalCard.scrollIntoView({ behavior: "smooth", block: "start" });
+        pulseEl?.(goalCard);
+      }
+    });
   });
 
-  // Reset preference
   if (resetBtn) {
     resetBtn.addEventListener("click", () => {
       const ok = window.confirm("Clear your weekly preference?");
@@ -2272,12 +2261,10 @@ if (goalCard) {
 
       localStorage.removeItem(WEEKLY_GOAL_KEY);
 
-      pills.forEach(p => p.classList.remove("active"));
+      if (resetBtn) resetBtn.style.display = "none";
 
-      resetBtn.style.display = "none";
-
+      repositionWeeklyGoalSection?.();   // ✅ unlock pills + move section
       renderWeeklyFocusLive?.();
-      repositionWeeklyGoalSection?.();
       renderTrainingGoalWeekRow?.();
       updateStreak();
     });
@@ -2286,6 +2273,23 @@ if (goalCard) {
   renderWeeklyFocusLive?.();
   repositionWeeklyGoalSection?.();
 }
+function hasLoggedAnythingToday() {
+  const todayKey = getTodayKey?.();
+  if (!todayKey) return false;
+
+  // If any volume exists, something was logged
+  const volume = getTotalVolumeForDay?.(todayKey) || 0;
+  if (volume > 0) return true;
+
+  // Fallback: check exercise logs directly if you have them
+  if (typeof getTodaysExerciseLog === "function") {
+    const log = getTodaysExerciseLog();
+    return log && Object.keys(log).length > 0;
+  }
+
+  return false;
+}
+
 
 
 
@@ -2494,6 +2498,18 @@ function handleSkipToday() {
   showToast?.("Today’s workout skipped. You’re on the next session in your rotation.");
 }
 
+function updateSkipTodayState(skipBtn) {
+  if (!skipBtn) return;
+
+  const blocked = hasLoggedAnythingToday();
+
+  skipBtn.disabled = blocked;
+  skipBtn.classList.toggle("disabled", blocked);
+
+  skipBtn.title = blocked
+    ? "You’ve already logged work today"
+    : "Skip today’s workout";
+}
 
 
 function renderSessionIntoSplitCard(session, weeklyGoal) {
@@ -2509,18 +2525,25 @@ function renderSessionIntoSplitCard(session, weeklyGoal) {
   if (descEl) descEl.textContent = session.description || "";
 
   // Turn the old "3 days / week" chip into a Skip button
-  if (skipBtn) {
-    skipBtn.textContent = "Skip today";
-    skipBtn.onclick = () => {
-      const ok = window.confirm(
-        "Skip today's workout?\n(It won't log any volume for today.)"
-      );
-      if (!ok) return;
+if (skipBtn) {
+  skipBtn.textContent = "Skip today";
 
-      // Use your proper skip logic (marks skipped + advances rotation)
-      handleSkipToday();
-    };
-  }
+  skipBtn.onclick = () => {
+    if (hasLoggedAnythingToday()) {
+      showToast?.("You’ve already logged work today — skipping is disabled.");
+      return;
+    }
+
+    const ok = window.confirm(
+      "Skip today's workout?\n(It won’t count toward your streak.)"
+    );
+    if (!ok) return;
+
+    handleSkipToday();
+  };
+  updateSkipTodayState();
+}
+
 
   // Clear previous rows
   listEl.innerHTML = "";
@@ -2620,6 +2643,27 @@ function renderSessionIntoSplitCard(session, weeklyGoal) {
   }
 }
 
+function isInstalledPWA() {
+  return window.matchMedia("(display-mode: standalone)").matches
+    || window.navigator.standalone === true; // iOS Safari
+}
+
+function applyInstalledUI() {
+  if (!isInstalledPWA()) return;
+
+  // Hide install instructions once installed
+  const installSection = document.getElementById("install");
+  if (installSection) installSection.style.display = "none";
+
+  // Optional: change the “Add to Home Screen” button into a Help/Info scroll
+  const addBtn = document.getElementById("add-to-home-btn");
+  if (addBtn) {
+    addBtn.textContent = "App Info";
+    addBtn.onclick = () => {
+      document.getElementById("weekly-goal")?.scrollIntoView({ behavior: "smooth" });
+    };
+  }
+}
 
 
 
@@ -3063,57 +3107,32 @@ function onWorkoutCompleted() {
 function checkSplitCompletion() {
   const exerciseListEl = document.getElementById("exercise-list");
   const finisherCard   = document.getElementById("finisher-card");
-  const doBtn          = document.getElementById("finisher-do-btn");
-  const skipBtn        = document.getElementById("finisher-skip-btn");
-
-  if (!exerciseListEl || !finisherCard || !doBtn || !skipBtn) return;
+  if (!exerciseListEl || !finisherCard) return;
 
   const checkboxes = exerciseListEl.querySelectorAll('input[type="checkbox"]');
   const allChecked =
     checkboxes.length > 0 &&
     Array.from(checkboxes).every(cb => cb.checked);
 
-  const titleEl  = document.getElementById("finisher-title");
-  const tagEl    = document.getElementById("finisher-tag");
-  const descEl   = document.getElementById("finisher-description");
-  const statusEl = document.getElementById("finisher-status");
-
-  // Was it locked before this check?
   const wasLocked = finisherCard.classList.contains("locked");
 
   if (allChecked) {
-    // 🔓 Unlock card
     finisherCard.classList.remove("locked");
 
-    // Control button states
-    doBtn.disabled   = true;   // still disabled until user picks category/diff
-    skipBtn.disabled = false;
-
-    // Text content for "unlocked" state
-    if (titleEl)  titleEl.textContent  = "Choose Your Afterburn";
-    if (tagEl)    tagEl.textContent    = "UNLOCKED";
-    if (descEl)   descEl.textContent   = "Pick a category below to customize your Afterburn.";
-    if (statusEl) statusEl.textContent = "Select conditioning, bodyweight, pump, or recovery.";
-
-    // ⭐ Only fire this the moment it unlocks (not on every change)
     if (wasLocked) {
       showToast?.("Afterburn unlocked – pick your finisher for extra rewards. 🔥");
-      // ⛔️ removed scrollIntoView + finisher-focus here
+      onWorkoutCompleted?.();
     }
-
-    // This is where your day pulse + weekly logic happens
-    if (wasLocked) onWorkoutCompleted();
   } else {
-    // 🔒 Keep / return to locked state
     finisherCard.classList.add("locked");
-
-    doBtn.disabled   = true;
-    skipBtn.disabled = true;
-
-    const lockedTagEl = document.getElementById("finisher-tag");
-    if (lockedTagEl) lockedTagEl.textContent = "Locked";
   }
+
+  // ✅ let ONE place control labels/disabled states
+  window.updateFinisherButtons?.();
+
 }
+
+
 function restoreFocusDraftIfAny() {
   const ex = getCurrentFocusExerciseName();
   if (!ex) return;
@@ -3205,46 +3224,51 @@ function getMondayIndex(date) {
 
 
 
-  // 🔹 Central place to keep button labels + disabled state in sync
-function updateFinisherButtons() {
+ function updateFinisherButtons() {
   const todayKey = getTodayDateKey();
   const lastFinisherDay = localStorage.getItem(LAST_FINISHER_DATE_KEY);
   const decisionLocked = lastFinisherDay === todayKey;
-  const hardLocked = finisherCard.classList.contains("locked") || decisionLocked;
 
   // ✅ If today's decision is locked, explain why and bail
   if (decisionLocked) {
     doBtn.disabled = true;
     skipBtn.disabled = true;
 
-    if (typeof statusEl !== "undefined" && statusEl) {
-      statusEl.textContent = "Afterburn decision locked for today. Come back tomorrow 🔒";
-    }
-    if (typeof tagEl !== "undefined" && tagEl) {
-      tagEl.textContent = "LOCKED";
-    }
+    statusEl.textContent = "Afterburn decision locked for today. Come back tomorrow 🔒";
+    tagEl.textContent = "LOCKED";
     return;
   }
 
-  // Skip is allowed unless card is hard-locked
-  skipBtn.disabled = finisherCard.classList.contains("locked");
+  // locked until split is complete
+  const isLocked = finisherCard.classList.contains("locked");
 
-  if (!currentFinisher || !selectedCategory || !selectedDifficulty) {
-    doBtn.textContent = hasStartedFinisher ? "Mark Afterburn done" : "Lock In";
-    doBtn.disabled = true || finisherCard.classList.contains("locked");
+  // Skip is only allowed when unlocked
+  skipBtn.disabled = isLocked;
+
+  // Nothing selected yet
+  if (!selectedCategory || !selectedDifficulty || !currentFinisher) {
+    doBtn.textContent = "Lock In";
+    doBtn.disabled = true;      // must pick category + difficulty first
+    skipBtn.textContent = "Skip Afterburn today";
     return;
   }
 
+  // Selected, but not started
   if (!hasStartedFinisher) {
     doBtn.textContent = "Start Afterburn";
-    doBtn.disabled = finisherCard.classList.contains("locked");
+    doBtn.disabled = isLocked;  // only blocked by locked state
     skipBtn.textContent = "Skip Afterburn today";
-  } else {
-    doBtn.textContent = "Mark Afterburn done";
-    doBtn.disabled = finisherCard.classList.contains("locked");
-    skipBtn.textContent = "Too burned out to finish";
+    return;
   }
+
+  // Started
+  doBtn.textContent = "Mark Afterburn done";
+  doBtn.disabled = isLocked;
+  skipBtn.textContent = "Too burned out to finish";
 }
+
+// ✅ expose for other modules (like checkSplitCompletion)
+window.updateFinisherButtons = updateFinisherButtons;
 
 
   function selectFinisher(catKey, diffKey) {
@@ -3268,6 +3292,8 @@ function updateFinisherButtons() {
 
 
     updateFinisherButtons();
+    
+
   }
 
   // --- Category buttons ---
@@ -3646,14 +3672,22 @@ function showAfterburnPromptOverlay() {
             // --- Setup button in nav ---
             const settingsBtn = document.getElementById("open-settings-btn");
             if (settingsBtn) {
-                settingsBtn.addEventListener("click", (e) => {
-                    e.preventDefault();
-                    console.log("open-settings-btn clicked");
-                    showScreen("setup");
+              settingsBtn.addEventListener("click", (e) => {
+                e.preventDefault();
+                console.log("open-settings-btn clicked");
+                showScreen("setup");
+
+                // after screen switch, scroll to the right place
+                requestAnimationFrame(() => {
+                  if (isInstalledPWA()) {
+                    document.getElementById("weekly-goal")?.scrollIntoView({ behavior: "smooth" });
+                  } else {
+                    document.getElementById("install")?.scrollIntoView({ behavior: "smooth" });
+                  }
                 });
-            } else {
-                console.warn("open-settings-btn not found");
+              });
             }
+
 
             // --- Add to Home Screen button ---
             const addToHomeBtn = document.getElementById("add-to-home-btn");
@@ -5377,7 +5411,74 @@ function initStartTodayCTA() {
   btnBottom?.addEventListener("click", onClick);
 }
 
+function setWeeklyGoalLockedUI(lockedDays) {
+  const dailyScreen = document.getElementById("screen-daily");
+  if (!dailyScreen) return;
 
+  const pills = dailyScreen.querySelectorAll(".day-pill");
+  pills.forEach(p => {
+    const d = parseInt(p.getAttribute("data-days"), 10);
+    const isChosen = lockedDays && d === lockedDays;
+
+    p.classList.toggle("active", isChosen);
+
+    // lock everything except the chosen one
+    p.disabled = !!lockedDays && !isChosen;
+    p.classList.toggle("locked", !!lockedDays && !isChosen); // optional CSS hook
+  });
+}
+
+function appConfirm({
+  title = "Confirm",
+  message = "",
+  okText = "OK",
+  cancelText = "Cancel",
+  danger = false, // optional: you can style ok button differently later
+} = {}) {
+  return new Promise((resolve) => {
+    const modal = document.getElementById("app-confirm");
+    const titleEl = document.getElementById("app-confirm-title");
+    const textEl = document.getElementById("app-confirm-text");
+    const okBtn = document.getElementById("app-confirm-ok");
+    const cancelBtn = document.getElementById("app-confirm-cancel");
+    const backdrop = modal?.querySelector(".app-confirm-backdrop");
+
+    if (!modal || !titleEl || !textEl || !okBtn || !cancelBtn) {
+      // fallback if DOM missing
+      resolve(window.confirm(message));
+      return;
+    }
+
+    titleEl.textContent = title;
+    textEl.textContent = message;
+    okBtn.textContent = okText;
+    cancelBtn.textContent = cancelText;
+
+    const cleanup = () => {
+      okBtn.onclick = null;
+      cancelBtn.onclick = null;
+      backdrop?.removeEventListener("click", onCancel);
+      window.removeEventListener("keydown", onKey);
+      modal.classList.add("hidden");
+    };
+
+    const onOk = () => { cleanup(); resolve(true); };
+    const onCancel = () => { cleanup(); resolve(false); };
+
+    const onKey = (e) => {
+      if (e.key === "Escape") onCancel();
+      if (e.key === "Enter") onOk();
+    };
+
+    okBtn.onclick = onOk;
+    cancelBtn.onclick = onCancel;
+    backdrop?.addEventListener("click", onCancel);
+    window.addEventListener("keydown", onKey);
+
+    modal.classList.remove("hidden");
+    okBtn.focus();
+  });
+}
 
 
 
@@ -5390,6 +5491,7 @@ window.addEventListener("DOMContentLoaded", () => {
   reconcileUpToCurrentWeek();
   ensureWeeklyState();
   initScreens();
+  applyInstalledUI();
   initStartTodayCTA();
   initTodaysSplit();
   updatePrimaryCTAs();

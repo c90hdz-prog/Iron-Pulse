@@ -416,7 +416,11 @@ nav {
             filter: grayscale(0.3);
 }
 
-    
+.day-pill.locked {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
         /* Bottom bar CTA (mobile only) */
         .bottom-bar {
             position: fixed;
@@ -5110,6 +5114,67 @@ body.scrolled nav {
   100% { box-shadow: 0 0 0 rgba(255,255,255,0); transform: translateY(0); }
 }
 
+#weekly-focus-live,
+#weekly-focus-card,
+#weekly-goal-control {
+  scroll-margin-top: 84px; /* header height + breathing room */
+}
+.skip-today-btn.disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.skip-today-btn.disabled:hover {
+  background: inherit;
+}
+.app-confirm.hidden { display: none; }
+
+.app-confirm {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+}
+
+.app-confirm-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(6px);
+}
+
+.app-confirm-card {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(92vw, 420px);
+  border-radius: 18px;
+  padding: 1rem 1rem 0.9rem;
+  background: rgba(14, 13, 18, 0.92);
+  border: 1px solid rgba(150,150,255,0.12);
+  box-shadow: 0 18px 50px rgba(0,0,0,0.8);
+}
+
+.app-confirm-title {
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 0.02em;
+  color: var(--text-primary);
+  margin-bottom: 0.4rem;
+}
+
+.app-confirm-text {
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  line-height: 1.45;
+  margin-bottom: 0.9rem;
+  white-space: pre-line; /* keeps your line breaks */
+}
+
+.app-confirm-actions {
+  display: flex;
+  gap: 0.65rem;
+  justify-content: flex-end;
+}
 
 
     </style>
@@ -5135,7 +5200,7 @@ body.scrolled nav {
             
 
             <div class="nav-actions">
-                <button class="btn btn-outline" id="open-settings-btn">Setup</button>
+                <button class="btn btn-outline" id="open-settings-btn">Help</button>
                 <button class="btn btn-primary" id="hero-cta">Start Today</button>
             </div>
 
@@ -5553,7 +5618,7 @@ body.scrolled nav {
         </section>
     </div>
 
-<div style="padding:1rem; text-align:center; margin-top:2rem;">
+<!-- <div style="padding:1rem; text-align:center; margin-top:2rem;">
     <button type="button" id="dev-gate-btn"
         style="padding:0.8rem 1.2rem; border-radius:10px; background:#444; color:white;">
         Test Gate Encounter (from stats)
@@ -5569,7 +5634,7 @@ body.scrolled nav {
     Test: Complete Weekly Goal
 </button>
 <button id="dev-clear-volume-btn" class="btn btn-outline">Reset Volume (DEV)</button>
-<button id="dev-reset-streak-btn" class="btn btn-outline">Reset Weekly Streak (DEV)</button>
+<button id="dev-reset-streak-btn" class="btn btn-outline">Reset Weekly Streak (DEV)</button>  -->
 
         <section class="section" id="weekly-goal-control">
             <article class="workout-card">
@@ -5667,7 +5732,7 @@ body.scrolled nav {
 <script src="app.js"></script>
 
 <!-- DEBUG ONLY: streak tester -->
-<button id="debug-streak-plus" style="
+<!-- <button id="debug-streak-plus" style="
     position: fixed;
     bottom: 1rem;
     right: 1rem;
@@ -5682,10 +5747,27 @@ body.scrolled nav {
     letter-spacing: 0.08em;
   ">
     +1 Week Streak
-</button>
+</button> -->
 <body>
   ...
   <div id="history-hm-tip" class="history-hm-tip" role="status" aria-live="polite"></div>
+
+<!-- App Confirm Modal -->
+<div id="app-confirm" class="app-confirm hidden" role="dialog" aria-modal="true" aria-labelledby="app-confirm-title">
+  <div class="app-confirm-backdrop"></div>
+
+  <div class="app-confirm-card">
+    <div class="app-confirm-title" id="app-confirm-title">Confirm</div>
+    <div class="app-confirm-text" id="app-confirm-text"></div>
+
+    <div class="app-confirm-actions">
+      <button type="button" id="app-confirm-cancel" class="btn btn-outline">Cancel</button>
+      <button type="button" id="app-confirm-ok" class="btn btn-primary">OK</button>
+    </div>
+  </div>
+</div>
+
+
 </body>
 
 </body>
