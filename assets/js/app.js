@@ -1,34 +1,34 @@
 
-    const ONBOARDED_KEY = "ironPulseOnboarded";
-    const LAST_SCREEN_KEY = "ironPulseLastScreen";
-    const WEEKLY_GOAL_KEY = "ironPulseWeeklyGoalDays";
-    const DEFAULT_WEEKLY_GOAL = 4;
-    const WEEKLY_GOAL_LOCKED_KEY = "ironPulseWeeklyGoalLocked";
-    const WORKOUTS_THIS_WEEK_KEY = "ironPulseWorkoutsCompleted";
-    const ROTATION_INDEX_KEY = "ironPulseRotationIndex";
-    const WEEK_ID_KEY = "ironPulseWeekId";
-    const WEEKLY_STREAK_KEY = "ironPulseWeeklyStreak";
-    const ROTATION_ORDER = [0, 1, 2, 3];
-    const LAST_FINISHER_DATE_KEY = "ironPulseLastFinisherDate";
-    const EXERCISE_WEIGHT_KEY = "ironPulseExerciseWeights";
-    const LAST_EMBLEM_KEY = "ironPulseLastEmblem";
-    const EMBLEM_TIER_KEY = "ironPulseEmblemTier";
-    const VOLUME_TIER_KEY = "ironPulseVolumeTier";
-    const WEEKLY_GOAL_CELEBRATED_KEY = "ironPulse_weeklyGoalCelebrated";
-    const WEEKLY_DAY_LOG_KEY = "ironPulse_weeklyDayLog"
-    const WEEKDAY_LABELS_MON_FIRST = ["M", "T", "W", "T", "F", "S", "S"];
-    const VOLUME_BAND_STATE_KEY = "ironPulseVolumeBandState"; 
-    const FOCUS_VOLUME_SANITY_THRESHOLD = 60000; 
-    const VOLUME_ICON_CLASS_BY_LABEL = {
-    "Small backpack": "volume-icon-backpack",
-    "Small car": "volume-icon-car",
-    "SUV": "volume-icon-suv",
-    "Pickup truck": "volume-icon-truck",
-    "Tank": "volume-icon-tank",
-    "Fighter jet": "volume-icon-jet",
-    "Cargo plane": "volume-icon-cargo",
-    "Orbital station": "volume-icon-orbital"
-    };
+const ONBOARDED_KEY = "ironPulseOnboarded";
+const LAST_SCREEN_KEY = "ironPulseLastScreen";
+const WEEKLY_GOAL_KEY = "ironPulseWeeklyGoalDays";
+const DEFAULT_WEEKLY_GOAL = 4;
+const WEEKLY_GOAL_LOCKED_KEY = "ironPulseWeeklyGoalLocked";
+const WORKOUTS_THIS_WEEK_KEY = "ironPulseWorkoutsCompleted";
+const ROTATION_INDEX_KEY = "ironPulseRotationIndex";
+const WEEK_ID_KEY = "ironPulseWeekId";
+const WEEKLY_STREAK_KEY = "ironPulseWeeklyStreak";
+const ROTATION_ORDER = [0, 1, 2, 3];
+const LAST_FINISHER_DATE_KEY = "ironPulseLastFinisherDate";
+const EXERCISE_WEIGHT_KEY = "ironPulseExerciseWeights";
+const LAST_EMBLEM_KEY = "ironPulseLastEmblem";
+const EMBLEM_TIER_KEY = "ironPulseEmblemTier";
+const VOLUME_TIER_KEY = "ironPulseVolumeTier";
+const WEEKLY_GOAL_CELEBRATED_KEY = "ironPulse_weeklyGoalCelebrated";
+const WEEKLY_DAY_LOG_KEY = "ironPulse_weeklyDayLog"
+const WEEKDAY_LABELS_MON_FIRST = ["M", "T", "W", "T", "F", "S", "S"];
+const VOLUME_BAND_STATE_KEY = "ironPulseVolumeBandState";
+const FOCUS_VOLUME_SANITY_THRESHOLD = 60000;
+const VOLUME_ICON_CLASS_BY_LABEL = {
+  "Small backpack": "volume-icon-backpack",
+  "Small car": "volume-icon-car",
+  "SUV": "volume-icon-suv",
+  "Pickup truck": "volume-icon-truck",
+  "Tank": "volume-icon-tank",
+  "Fighter jet": "volume-icon-jet",
+  "Cargo plane": "volume-icon-cargo",
+  "Orbital station": "volume-icon-orbital"
+};
 
 const ENCOUNTER_THEMES = {
   gateDefault: {
@@ -71,11 +71,11 @@ const ENCOUNTER_THEMES = {
 
 // weapon tiers: which "skin" to use based on % of weekly target
 const WEAPON_TIERS = [
-  { id: "raw",         minPercent: 0,   maxPercent: 20,  cssClass: "weapon-tier-raw" },
-  { id: "tempered1",   minPercent: 20,  maxPercent: 50,  cssClass: "weapon-tier-1"   },
-  { id: "tempered2",   minPercent: 50,  maxPercent: 80,  cssClass: "weapon-tier-2"   },
-  { id: "forged",      minPercent: 80,  maxPercent: 100, cssClass: "weapon-tier-3"   },
-  { id: "overcharged", minPercent: 100, maxPercent: 999, cssClass: "weapon-tier-4"   },
+  { id: "raw", minPercent: 0, maxPercent: 20, cssClass: "weapon-tier-raw" },
+  { id: "tempered1", minPercent: 20, maxPercent: 50, cssClass: "weapon-tier-1" },
+  { id: "tempered2", minPercent: 50, maxPercent: 80, cssClass: "weapon-tier-2" },
+  { id: "forged", minPercent: 80, maxPercent: 100, cssClass: "weapon-tier-3" },
+  { id: "overcharged", minPercent: 100, maxPercent: 999, cssClass: "weapon-tier-4" },
 ];
 
 
@@ -89,12 +89,12 @@ function pickWeaponTier(percent) {
   return WEAPON_TIERS[0]; // fallback
 }
 // Simple turn-based encounter engine
-function runTurnBasedEncounter({ 
-  totalTurns, 
-  bossMaxHp, 
-  attackPowerPerTurn, 
-  onUpdate, 
-  onEnd 
+function runTurnBasedEncounter({
+  totalTurns,
+  bossMaxHp,
+  attackPowerPerTurn,
+  onUpdate,
+  onEnd
 }) {
   let turnsLeft = totalTurns;
   let bossHp = bossMaxHp;
@@ -126,7 +126,7 @@ function openWeeklyEncounter({
   attackPowerPerTurn = 30,
 }) {
 
-      console.log("[Encounter] openWeeklyEncounter()", {
+  console.log("[Encounter] openWeeklyEncounter()", {
     themeId: theme.id,
     weaponPercent,
     totalTurns,
@@ -183,9 +183,9 @@ function openWeeklyEncounter({
   const stageEl = overlay.querySelector(".encounter-stage");
   const targetEl = overlay.querySelector("#encounter-target");
   const weaponEl = overlay.querySelector("#encounter-weapon");
-    if (targetEl && theme.spriteClass) {
+  if (targetEl && theme.spriteClass) {
     targetEl.classList.add(theme.spriteClass);
-    }
+  }
 
   // Init engine
   const encounter = runTurnBasedEncounter({
@@ -193,37 +193,37 @@ function openWeeklyEncounter({
     bossMaxHp,
     attackPowerPerTurn,
     onUpdate: ({ bossHp, bossMaxHp, turnsLeft }) => {
-  const percent = (bossHp / bossMaxHp) * 100;
-  bossBarEl.style.width = `${percent}%`;
-  turnsEl.textContent = `${turnsLeft} turn${turnsLeft === 1 ? "" : "s"} left`;
+      const percent = (bossHp / bossMaxHp) * 100;
+      bossBarEl.style.width = `${percent}%`;
+      turnsEl.textContent = `${turnsLeft} turn${turnsLeft === 1 ? "" : "s"} left`;
 
-  // 🔁 Hit animation
-  if (targetEl && theme.hitAnimationClass) {
-    targetEl.classList.remove(theme.hitAnimationClass);
-    void targetEl.offsetWidth;
-    targetEl.classList.add(theme.hitAnimationClass);
-  }
+      // 🔁 Hit animation
+      if (targetEl && theme.hitAnimationClass) {
+        targetEl.classList.remove(theme.hitAnimationClass);
+        void targetEl.offsetWidth;
+        targetEl.classList.add(theme.hitAnimationClass);
+      }
 
-  // 🔥 Gate crack states (only for gate encounters)
-if (stageEl.dataset.encounterType === "gate") {
-  stageEl.classList.remove("encounter-gate-damaged", "encounter-gate-critical");
+      // 🔥 Gate crack states (only for gate encounters)
+      if (stageEl.dataset.encounterType === "gate") {
+        stageEl.classList.remove("encounter-gate-damaged", "encounter-gate-critical");
 
-  if (percent <= 35) {
-    stageEl.classList.add("encounter-gate-critical");
-  } else if (percent <= 70) {
-    stageEl.classList.add("encounter-gate-damaged");
-  }
-} else if (stageEl.dataset.encounterType === "boss") {
-  stageEl.classList.remove("encounter-boss-damaged", "encounter-boss-critical");
+        if (percent <= 35) {
+          stageEl.classList.add("encounter-gate-critical");
+        } else if (percent <= 70) {
+          stageEl.classList.add("encounter-gate-damaged");
+        }
+      } else if (stageEl.dataset.encounterType === "boss") {
+        stageEl.classList.remove("encounter-boss-damaged", "encounter-boss-critical");
 
-  if (percent <= 35) {
-    stageEl.classList.add("encounter-boss-critical");
-  } else if (percent <= 70) {
-    stageEl.classList.add("encounter-boss-damaged");
-  }
-}
+        if (percent <= 35) {
+          stageEl.classList.add("encounter-boss-critical");
+        } else if (percent <= 70) {
+          stageEl.classList.add("encounter-boss-damaged");
+        }
+      }
 
-},
+    },
 
 
 
@@ -356,7 +356,7 @@ function offerWeeklyEncounterCutIn({ isBossWeek = false } = {}) {
 
   const startBtn = overlay.querySelector("#cutin-start-btn");
   const laterBtn = overlay.querySelector("#cutin-later-btn");
-  const skipBtn  = overlay.querySelector("#cutin-skip-btn");
+  const skipBtn = overlay.querySelector("#cutin-skip-btn");
 
   const setState = (state) => {
     localStorage.setItem(storageKey, state);
@@ -364,14 +364,14 @@ function offerWeeklyEncounterCutIn({ isBossWeek = false } = {}) {
 
   // Enter trial immediately
   if (startBtn) {
-  startBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    console.log("[Cut-in] Enter Trial clicked. isBossWeek =", isBossWeek);
-    setState("seen");
-    overlay.remove();
-    launchWeeklyEncounterFromStats({ isBossWeek });
-  });
-}
+    startBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      console.log("[Cut-in] Enter Trial clicked. isBossWeek =", isBossWeek);
+      setState("seen");
+      overlay.remove();
+      launchWeeklyEncounterFromStats({ isBossWeek });
+    });
+  }
 
 
   // “Later” – mark pending so we can show a small CTA elsewhere later
@@ -527,113 +527,113 @@ function setWeeklyVolumeTier(tierKey) {
 }
 
 const POST_WORKOUT_QUOTES = [
-    "Small steps stack faster than you think.",
-    "Every rep leaves a mark. Today’s is a good one.",
-    "Progress doesn’t shout. It whispers — until it doesn’t.",
-    "You’re closer than yesterday. That’s the whole point.",
-    "Momentum earned, not given.",
-    "Consistency beats intensity over time.",
-    "You showed up today. That’s the hardest rep.",
-    "You didn’t wait to feel ready. You started.",
-    "Strong days are built on days like this.",
-    "Today’s work will quietly show up later.",
-    "You’re building someone you can rely on.",
-    "Discipline is a skill. You’re sharpening it.",
-    "You kept a promise to yourself today.",
-    "This session is one more vote for the person you want to be.",
-    "Tired but done is still done.",
-    "You didn’t need perfect. You just needed effort.",
-    "Progress is built on days just like this one.",
-    "You finished. Most people never started.",
-    "You turned intention into action.",
-    "Your future self notices days like today.",
-    "You moved your body. Your mind will thank you.",
-    "Strong body, clearer head, better day.",
-    "You traded comfort for progress. That adds up.",
-    "Slow progress is still real progress.",
-    "You proved you can show up when it’s easier not to.",
-    "Not every workout is loud. This one still counts.",
-    "You didn’t quit when it got boring. That matters.",
-    "You handled the hard part. The rest of the day is lighter.",
-    "You trained the muscle and the habit.",
-    "You just raised your baseline a tiny bit.",
-    "You stacked another brick on the wall.",
-    "You’re quietly getting harder to stop.",
-    "You pushed when no one was watching.",
-    "Today’s effort is tomorrow’s normal.",
-    "Your body will remember this work.",
-    "You moved more than your mood.",
-    "You finished what you started. That’s rare.",
-    "You turned a plan into a result.",
-    "You’ve got one more data point that says: I can do hard things.",
-    "You just made the next workout easier to start.",
-    "You didn’t need perfect energy — just enough.",
-    "You kept the streak of effort alive.",
-    "You showed yourself you can follow through.",
-    "You’re teaching your brain that you’re serious.",
-    "Your comfort zone shifted a little today.",
-    "You chose long-term over short-term. Again.",
-    "You did something for yourself that no one can take away.",
-    "You turned pressure into progress.",
-    "You used your time instead of losing it.",
-    "You converted fatigue into confidence.",
-    "You did the work. The results will catch up.",
-    "You chose effort instead of excuses.",
-    "You invested in strength you haven’t even needed yet.",
-    "You showed up for your goals, not your feelings.",
-    "You pushed through the part where most people stop.",
-    "You did something future you can be proud of.",
-    "You traded 1 hour for a better week.",
-    "You turned a regular day into a win.",
-    "You didn’t wait for motivation. You built it.",
-    "You treated your health like a priority, not a slogan.",
-    "You proved that low energy doesn’t mean zero effort.",
-    "You made progress that only you needed to understand.",
-    "You added one more rep to your story.",
-    "You fought the urge to skip. That’s real strength.",
-    "You showed up for yourself. Again.",
-    "You picked effort over comfort. That’s how things change.",
-    "You finished the session. The hardest part is over.",
-    "You chose growth when nobody asked you to.",
-    "You practiced doing what you said you would do.",
-    "You gave your future self a better starting point.",
-    "You built proof that you’re capable, not just hopeful.",
-    "You didn’t let the day decide for you.",
-    "You chose discipline, not default.",
-    "You created momentum that only you can feel.",
-    "You made it through the reps your mind wanted to skip.",
-    "You pushed a little past your comfort zone.",
-    "You trained even if today wasn’t perfect. That’s power.",
-    "You gave yourself one less reason to doubt tomorrow.",
-    "You turned resistance into resilience.",
-    "You added another quiet win to your week.",
-    "You didn’t coast. You contributed.",
-    "You moved the needle, even if just a notch.",
-    "You showed your limits they don’t get the final say.",
-    "You made the hard thing look normal.",
-    "You turned “I should” into “I did.”",
-    "You invested in strength you’ll use outside the gym.",
-    "You ended the session stronger than you started.",
-    "You made today count in a way most people won’t.",
-    "You took control of at least one part of your day.",
-    "You proved that effort is always available.",
-    "You made your next choice easier by finishing this one.",
-    "You added weight to your confidence, not just the bar.",
-    "You didn’t wait for the right mood. You created it.",
-    "You practiced being the type of person you respect.",
-    "You kept your word when no one was checking.",
-    "You made progress in private that will show in public.",
-    "You turned doubt into data: you can do more than you think.",
-    "You finished tired, not empty. That’s a good line to live on.",
-    "You repped out discipline one set at a time.",
-    "You went from “maybe” to “done.”",
-    "You added a chapter to your streak, not a footnote.",
-    "You treated your goals like a job, not a wish.",
-    "You gave yourself a win that can’t be scrolled away.",
-    "You walked out stronger than you walked in.",
-    "You pushed through the voice that said “skip it.”",
-    "You made effort a habit, not an event.",
-    "You did enough today to be proud. That’s enough."
+  "Small steps stack faster than you think.",
+  "Every rep leaves a mark. Today’s is a good one.",
+  "Progress doesn’t shout. It whispers — until it doesn’t.",
+  "You’re closer than yesterday. That’s the whole point.",
+  "Momentum earned, not given.",
+  "Consistency beats intensity over time.",
+  "You showed up today. That’s the hardest rep.",
+  "You didn’t wait to feel ready. You started.",
+  "Strong days are built on days like this.",
+  "Today’s work will quietly show up later.",
+  "You’re building someone you can rely on.",
+  "Discipline is a skill. You’re sharpening it.",
+  "You kept a promise to yourself today.",
+  "This session is one more vote for the person you want to be.",
+  "Tired but done is still done.",
+  "You didn’t need perfect. You just needed effort.",
+  "Progress is built on days just like this one.",
+  "You finished. Most people never started.",
+  "You turned intention into action.",
+  "Your future self notices days like today.",
+  "You moved your body. Your mind will thank you.",
+  "Strong body, clearer head, better day.",
+  "You traded comfort for progress. That adds up.",
+  "Slow progress is still real progress.",
+  "You proved you can show up when it’s easier not to.",
+  "Not every workout is loud. This one still counts.",
+  "You didn’t quit when it got boring. That matters.",
+  "You handled the hard part. The rest of the day is lighter.",
+  "You trained the muscle and the habit.",
+  "You just raised your baseline a tiny bit.",
+  "You stacked another brick on the wall.",
+  "You’re quietly getting harder to stop.",
+  "You pushed when no one was watching.",
+  "Today’s effort is tomorrow’s normal.",
+  "Your body will remember this work.",
+  "You moved more than your mood.",
+  "You finished what you started. That’s rare.",
+  "You turned a plan into a result.",
+  "You’ve got one more data point that says: I can do hard things.",
+  "You just made the next workout easier to start.",
+  "You didn’t need perfect energy — just enough.",
+  "You kept the streak of effort alive.",
+  "You showed yourself you can follow through.",
+  "You’re teaching your brain that you’re serious.",
+  "Your comfort zone shifted a little today.",
+  "You chose long-term over short-term. Again.",
+  "You did something for yourself that no one can take away.",
+  "You turned pressure into progress.",
+  "You used your time instead of losing it.",
+  "You converted fatigue into confidence.",
+  "You did the work. The results will catch up.",
+  "You chose effort instead of excuses.",
+  "You invested in strength you haven’t even needed yet.",
+  "You showed up for your goals, not your feelings.",
+  "You pushed through the part where most people stop.",
+  "You did something future you can be proud of.",
+  "You traded 1 hour for a better week.",
+  "You turned a regular day into a win.",
+  "You didn’t wait for motivation. You built it.",
+  "You treated your health like a priority, not a slogan.",
+  "You proved that low energy doesn’t mean zero effort.",
+  "You made progress that only you needed to understand.",
+  "You added one more rep to your story.",
+  "You fought the urge to skip. That’s real strength.",
+  "You showed up for yourself. Again.",
+  "You picked effort over comfort. That’s how things change.",
+  "You finished the session. The hardest part is over.",
+  "You chose growth when nobody asked you to.",
+  "You practiced doing what you said you would do.",
+  "You gave your future self a better starting point.",
+  "You built proof that you’re capable, not just hopeful.",
+  "You didn’t let the day decide for you.",
+  "You chose discipline, not default.",
+  "You created momentum that only you can feel.",
+  "You made it through the reps your mind wanted to skip.",
+  "You pushed a little past your comfort zone.",
+  "You trained even if today wasn’t perfect. That’s power.",
+  "You gave yourself one less reason to doubt tomorrow.",
+  "You turned resistance into resilience.",
+  "You added another quiet win to your week.",
+  "You didn’t coast. You contributed.",
+  "You moved the needle, even if just a notch.",
+  "You showed your limits they don’t get the final say.",
+  "You made the hard thing look normal.",
+  "You turned “I should” into “I did.”",
+  "You invested in strength you’ll use outside the gym.",
+  "You ended the session stronger than you started.",
+  "You made today count in a way most people won’t.",
+  "You took control of at least one part of your day.",
+  "You proved that effort is always available.",
+  "You made your next choice easier by finishing this one.",
+  "You added weight to your confidence, not just the bar.",
+  "You didn’t wait for the right mood. You created it.",
+  "You practiced being the type of person you respect.",
+  "You kept your word when no one was checking.",
+  "You made progress in private that will show in public.",
+  "You turned doubt into data: you can do more than you think.",
+  "You finished tired, not empty. That’s a good line to live on.",
+  "You repped out discipline one set at a time.",
+  "You went from “maybe” to “done.”",
+  "You added a chapter to your streak, not a footnote.",
+  "You treated your goals like a job, not a wish.",
+  "You gave yourself a win that can’t be scrolled away.",
+  "You walked out stronger than you walked in.",
+  "You pushed through the voice that said “skip it.”",
+  "You made effort a habit, not an event.",
+  "You did enough today to be proud. That’s enough."
 ];
 
 
@@ -646,43 +646,43 @@ function getTodayKey() {
 }
 
 
-    function saveExerciseWeights(map) {
-        try {
-            localStorage.setItem(EXERCISE_WEIGHT_KEY, JSON.stringify(map));
-        } catch {
-            // fail silently if storage is full, etc.
-        }
-    }
+function saveExerciseWeights(map) {
+  try {
+    localStorage.setItem(EXERCISE_WEIGHT_KEY, JSON.stringify(map));
+  } catch {
+    // fail silently if storage is full, etc.
+  }
+}
 
-    function loadWeeklyGoalFromStorageOrDefault() {
-    const raw = localStorage.getItem(WEEKLY_GOAL_KEY);
-    const n = parseInt(raw ?? "", 10);
-    if (!Number.isFinite(n) || n <= 0) return DEFAULT_WEEKLY_GOAL;
-    return n;
+function loadWeeklyGoalFromStorageOrDefault() {
+  const raw = localStorage.getItem(WEEKLY_GOAL_KEY);
+  const n = parseInt(raw ?? "", 10);
+  if (!Number.isFinite(n) || n <= 0) return DEFAULT_WEEKLY_GOAL;
+  return n;
 }
 
 
 
-        // === Rest tokens ===
-    const REST_TOKENS_KEY = "ironPulseRestTokens";
-    const REST_TOKEN_PROGRESS_KEY = "ironPulseRestTokenProgress";
+// === Rest tokens ===
+const REST_TOKENS_KEY = "ironPulseRestTokens";
+const REST_TOKEN_PROGRESS_KEY = "ironPulseRestTokenProgress";
 
-    const WEEKLY_WEIGHT_BY_DAY_KEY = "ironPulseWeeklyWeightByDay";
+const WEEKLY_WEIGHT_BY_DAY_KEY = "ironPulseWeeklyWeightByDay";
 // =============================
 // 4) VOLUME & WEEKLY CHALLENGE
 // =============================
 
 // ---- Volume tiers (objects you are "moving") ----
 const VOLUME_OBJECTS = [
-  { id: "backpack", label: "Small Backpack",  emoji: "🎒", threshold: 0 },
-  { id: "car",      label: "Small Car",       emoji: "🚗", threshold: 4000 },
-  { id: "pickup",   label: "Pickup Truck",    emoji: "🛻", threshold: 10000 },
-  { id: "suv",      label: "SUV",             emoji: "🚙", threshold: 20000 },
-  { id: "truck",    label: "Delivery Truck",  emoji: "🚚", threshold: 35000 },
-  { id: "tank",     label: "Battle Tank",     emoji: "🛡️", threshold: 50000 },
-  { id: "jet",      label: "Fighter Jet",     emoji: "✈️", threshold: 75000 },
-  { id: "cargo",    label: "Cargo Plane",     emoji: "🛩️", threshold: 100000 },
-  { id: "orbital",  label: "Orbital Station", emoji: "🛰️", threshold: 150000 }
+  { id: "backpack", label: "Small Backpack", emoji: "🎒", threshold: 0 },
+  { id: "car", label: "Small Car", emoji: "🚗", threshold: 4000 },
+  { id: "pickup", label: "Pickup Truck", emoji: "🛻", threshold: 10000 },
+  { id: "suv", label: "SUV", emoji: "🚙", threshold: 20000 },
+  { id: "truck", label: "Delivery Truck", emoji: "🚚", threshold: 35000 },
+  { id: "tank", label: "Battle Tank", emoji: "🛡️", threshold: 50000 },
+  { id: "jet", label: "Fighter Jet", emoji: "✈️", threshold: 75000 },
+  { id: "cargo", label: "Cargo Plane", emoji: "🛩️", threshold: 100000 },
+  { id: "orbital", label: "Orbital Station", emoji: "🛰️", threshold: 150000 }
 ];
 
 // Optional CSS-based icon skins (for PNGs later)
@@ -738,9 +738,9 @@ function applyVolumeIconTier(tierId) {
 
 // ---- Simple difficulty “bands” just for copy tone ----
 const VOLUME_DIFFICULTY_BANDS = {
-  novice:       { id: "novice",       label: "Finding your base" },
+  novice: { id: "novice", label: "Finding your base" },
   intermediate: { id: "intermediate", label: "Dialed in" },
-  advanced:     { id: "advanced",     label: "Heavy hitter" }
+  advanced: { id: "advanced", label: "Heavy hitter" }
 };
 
 function getVolumeDifficultyBand(totalLbs) {
@@ -756,18 +756,18 @@ const EXERCISE_LOG_KEY = "ironpulse.exerciseLog.v1";
 
 // Optional: which muscle group each exercise hits
 const EXERCISE_MUSCLE_MAP = {
-  "Squat":        "Legs",
-  "Bench Press":  "Chest",
-  "Row":          "Back",
-  "Plank":        "Core"
+  "Squat": "Legs",
+  "Bench Press": "Chest",
+  "Row": "Back",
+  "Plank": "Core"
   // add more as needed
 };
 
 const MUSCLE_EMOJI_MAP = {
-  "Legs":      "🦵",
-  "Chest":     "💪",
-  "Back":      "🏹",
-  "Core":      "🛡️",
+  "Legs": "🦵",
+  "Chest": "💪",
+  "Back": "🏹",
+  "Core": "🛡️",
   "Full Body": "🔥"
 };
 
@@ -807,8 +807,8 @@ function recordExerciseSetsForToday(exerciseName, cleanedSets) {
   log[todayKey][exerciseName] = cleanedSets;
   saveExerciseLog(log);
   setDailySummary(getTodayKey(), {
-  totalVolume: Math.round(getTotalVolumeForDay(getTodayKey()) || 0)
-});
+    totalVolume: Math.round(getTotalVolumeForDay(getTodayKey()) || 0)
+  });
 
   // Recompute weekly volume + refresh Weekly Challenge UI
   updateWeeklyVolumeSummaryFromLog();
@@ -882,14 +882,14 @@ function hideTip() {
 }
 
 function renderWeeklyVolumeChallenge(totalVolume) {
-  const iconEl    = document.getElementById("volume-object-icon");
-  const labelEl   = document.getElementById("volume-object-label");
+  const iconEl = document.getElementById("volume-object-icon");
+  const labelEl = document.getElementById("volume-object-label");
   const barFillEl = document.getElementById("volume-bar-fill");
   const captionEl = document.getElementById("volume-bar-caption");
-  const cardEl    = document.querySelector(".weekly-volume-card");
+  const cardEl = document.querySelector(".weekly-volume-card");
 
   const nextWrapper = document.getElementById("volume-next");
-  const nextIconEl  = document.getElementById("volume-object-next");
+  const nextIconEl = document.getElementById("volume-object-next");
   const nextLabelEl = document.getElementById("volume-object-next-label");
 
   if (!iconEl || !labelEl || !barFillEl || !captionEl) {
@@ -924,26 +924,26 @@ function renderWeeklyVolumeChallenge(totalVolume) {
   const pct = Math.round(progress * 100);
   barFillEl.style.width = `${pct}%`;
   // --- Animate bar on tier shift ---
-    if (cardEl) {
+  if (cardEl) {
     cardEl.classList.add("tier-shift");
     setTimeout(() => cardEl.classList.remove("tier-shift"), 900);
-    }
+  }
 
 
   const totalRounded = Math.round(safeTotal).toLocaleString();
 
 
   // --- Tooltip hint for next tier ---
-    if (next) {
+  if (next) {
     const remaining = Math.max(0, next.threshold - safeTotal);
     const remainingRounded = Math.round(remaining).toLocaleString();
     iconEl.setAttribute(
-        "data-next-tier",
-        `Next: ${next.label} (${remainingRounded} lbs to go)`
+      "data-next-tier",
+      `Next: ${next.label} (${remainingRounded} lbs to go)`
     );
-    } else {
+  } else {
     iconEl.removeAttribute("data-next-tier");
-    }
+  }
 
   if (next) {
     const remaining = Math.max(0, next.threshold - safeTotal);
@@ -1079,8 +1079,8 @@ function getVolumeTierInfo(totalLbs) {
 
 
 
-    // Splits by day (you already had this)
-  const trainingPrograms = {
+// Splits by day (you already had this)
+const trainingPrograms = {
   /* =============================
    *  3-DAY FULL BODY (A / B / C)
    * ============================= */
@@ -1475,13 +1475,13 @@ function getVolumeTierInfo(totalLbs) {
 
 
 
-    function getTodayDateKey() {
-            const d = new Date();
-            const y = d.getFullYear();
-            const m = String(d.getMonth() + 1).padStart(2, "0");
-            const day = String(d.getDate()).padStart(2, "0");
-            return `${y}-${m}-${day}`; // e.g. "2025-11-24"
-        }
+function getTodayDateKey() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`; // e.g. "2025-11-24"
+}
 
 // Exercise Behaviors
 const STORAGE_KEYS = {
@@ -1536,91 +1536,91 @@ function advanceRecommendedSession(programId) {
   localStorage.setItem(STORAGE_KEYS.nextIndex, String(nextIndex));
 }
 
-    function getRestTokenProgress() {
-        const raw = localStorage.getItem(REST_TOKEN_PROGRESS_KEY);
-        const num = parseFloat(raw ?? "0");
-        if (Number.isNaN(num)) return 0;
-        return Math.min(Math.max(num, 0), 1);
-    }
+function getRestTokenProgress() {
+  const raw = localStorage.getItem(REST_TOKEN_PROGRESS_KEY);
+  const num = parseFloat(raw ?? "0");
+  if (Number.isNaN(num)) return 0;
+  return Math.min(Math.max(num, 0), 1);
+}
 
-    function setRestTokenProgress(value) {
-        const clamped = Math.min(Math.max(value, 0), 1);
-        localStorage.setItem(REST_TOKEN_PROGRESS_KEY, String(clamped));
-    }
-
-
-    // ----- Weekly weight helpers -----
-    function getWeeklyWeightByDay() {
-        try {
-            const raw = localStorage.getItem(WEEKLY_WEIGHT_BY_DAY_KEY);
-            if (!raw) return {};
-            const parsed = JSON.parse(raw);
-            return parsed && typeof parsed === "object" ? parsed : {};
-        } catch {
-            return {};
-        }
-    }
-
-    function setWeeklyWeightByDay(map) {
-        try {
-            localStorage.setItem(WEEKLY_WEIGHT_BY_DAY_KEY, JSON.stringify(map));
-        } catch {
-            // ignore
-        }
-    }
-
-    function resetWeeklyWeightByDay() {
-        localStorage.removeItem(WEEKLY_WEIGHT_BY_DAY_KEY);
-    }
-
-    function addTodayWeight(volumeLbs) {
-        const dayIndex = new Date().getDay(); // 0-6
-        const map = getWeeklyWeightByDay();
-        const prev = parseFloat(map[dayIndex] ?? "0") || 0;
-        map[dayIndex] = prev + Math.max(0, volumeLbs);
-        setWeeklyWeightByDay(map);
-    }
-
-    function getWeeklyTotalWeight() {
-        const map = getWeeklyWeightByDay();
-        return Object.values(map).reduce((sum, v) => sum + (parseFloat(v) || 0), 0);
-    }
-
-    function getWeeklyStreak() {
-            const raw = localStorage.getItem(WEEKLY_STREAK_KEY);
-            const num = parseInt(raw ?? "0", 10);
-            return Number.isNaN(num) ? 0 : num;
-        }
-
-    function setWeeklyStreak(value) {
-        const safe = Math.max(0, value);
-        localStorage.setItem(WEEKLY_STREAK_KEY, String(safe));
-        }
-
-    function getLastEmblemClass() {
-            return localStorage.getItem(LAST_EMBLEM_KEY) || "";
-        }
-
-    function setLastEmblemClass(cls) {
-        localStorage.setItem(LAST_EMBLEM_KEY, cls);
-    }
+function setRestTokenProgress(value) {
+  const clamped = Math.min(Math.max(value, 0), 1);
+  localStorage.setItem(REST_TOKEN_PROGRESS_KEY, String(clamped));
+}
 
 
+// ----- Weekly weight helpers -----
+function getWeeklyWeightByDay() {
+  try {
+    const raw = localStorage.getItem(WEEKLY_WEIGHT_BY_DAY_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
+  }
+}
 
-    function getCurrentWeekId() {
-            const today = new Date();
+function setWeeklyWeightByDay(map) {
+  try {
+    localStorage.setItem(WEEKLY_WEIGHT_BY_DAY_KEY, JSON.stringify(map));
+  } catch {
+    // ignore
+  }
+}
 
-            // Treat week as starting Monday
-            const dayIndex = (today.getDay() + 6) % 7; // Sun=0 → 6, Mon=1 → 0, etc.
-            const monday = new Date(today);
-            monday.setDate(today.getDate() - dayIndex);
+function resetWeeklyWeightByDay() {
+  localStorage.removeItem(WEEKLY_WEIGHT_BY_DAY_KEY);
+}
 
-            const y = monday.getFullYear();
-            const m = String(monday.getMonth() + 1).padStart(2, "0");
-            const d = String(monday.getDate()).padStart(2, "0");
+function addTodayWeight(volumeLbs) {
+  const dayIndex = new Date().getDay(); // 0-6
+  const map = getWeeklyWeightByDay();
+  const prev = parseFloat(map[dayIndex] ?? "0") || 0;
+  map[dayIndex] = prev + Math.max(0, volumeLbs);
+  setWeeklyWeightByDay(map);
+}
 
-            return `${y}-${m}-${d}`; // e.g. "2025-11-17"
-        }
+function getWeeklyTotalWeight() {
+  const map = getWeeklyWeightByDay();
+  return Object.values(map).reduce((sum, v) => sum + (parseFloat(v) || 0), 0);
+}
+
+function getWeeklyStreak() {
+  const raw = localStorage.getItem(WEEKLY_STREAK_KEY);
+  const num = parseInt(raw ?? "0", 10);
+  return Number.isNaN(num) ? 0 : num;
+}
+
+function setWeeklyStreak(value) {
+  const safe = Math.max(0, value);
+  localStorage.setItem(WEEKLY_STREAK_KEY, String(safe));
+}
+
+function getLastEmblemClass() {
+  return localStorage.getItem(LAST_EMBLEM_KEY) || "";
+}
+
+function setLastEmblemClass(cls) {
+  localStorage.setItem(LAST_EMBLEM_KEY, cls);
+}
+
+
+
+function getCurrentWeekId() {
+  const today = new Date();
+
+  // Treat week as starting Monday
+  const dayIndex = (today.getDay() + 6) % 7; // Sun=0 → 6, Mon=1 → 0, etc.
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - dayIndex);
+
+  const y = monday.getFullYear();
+  const m = String(monday.getMonth() + 1).padStart(2, "0");
+  const d = String(monday.getDate()).padStart(2, "0");
+
+  return `${y}-${m}-${d}`; // e.g. "2025-11-17"
+}
 
 
 function getWorkoutsForWeekId(weekId) {
@@ -1635,18 +1635,18 @@ function setWorkoutsCompletedThisWeek(value) {
   localStorage.setItem(WORKOUTS_THIS_WEEK_KEY, String(Math.max(0, value)));
 }
 
-        function getRotationIndex() {
-            const raw = localStorage.getItem(ROTATION_INDEX_KEY);
-            const num = parseInt(raw ?? "0", 10);
-            if (Number.isNaN(num)) return 0;
-            // Make sure it always stays within the rotation length
-            return num % ROTATION_ORDER.length;
-        }
+function getRotationIndex() {
+  const raw = localStorage.getItem(ROTATION_INDEX_KEY);
+  const num = parseInt(raw ?? "0", 10);
+  if (Number.isNaN(num)) return 0;
+  // Make sure it always stays within the rotation length
+  return num % ROTATION_ORDER.length;
+}
 
-        function setRotationIndex(value) {
-            const normalized = value % ROTATION_ORDER.length;
-            localStorage.setItem(ROTATION_INDEX_KEY, String(normalized));
-        }
+function setRotationIndex(value) {
+  const normalized = value % ROTATION_ORDER.length;
+  localStorage.setItem(ROTATION_INDEX_KEY, String(normalized));
+}
 
 
 function getVolumeBandState() {
@@ -1813,14 +1813,14 @@ function getCurrentVolumeBand() {
   return state.band || "novice";
 }
 
-    function getWeeklyGoal() {
-            const stored = localStorage.getItem(WEEKLY_GOAL_KEY);
-            if (!stored) {
-                return null; // 🔹 explicit “no goal set”
-            }
-            const num = parseInt(stored, 10);
-            return isNaN(num) ? null : num;
-        }
+function getWeeklyGoal() {
+  const stored = localStorage.getItem(WEEKLY_GOAL_KEY);
+  if (!stored) {
+    return null; // 🔹 explicit “no goal set”
+  }
+  const num = parseInt(stored, 10);
+  return isNaN(num) ? null : num;
+}
 
 
 function renderWeeklyDayMarkers() {
@@ -2069,11 +2069,11 @@ function openWeeklyDaySheet({ dateStr, label, isWorked }) {
 
 
 function setWeeklyGoal(days) {
-    localStorage.setItem(WEEKLY_GOAL_KEY, String(days));
+  localStorage.setItem(WEEKLY_GOAL_KEY, String(days));
 }
 function hasWeeklyGoal() {
-        return localStorage.getItem(WEEKLY_GOAL_KEY) !== null;
-    }
+  return localStorage.getItem(WEEKLY_GOAL_KEY) !== null;
+}
 
 function repositionWeeklyGoalSection() {
   const days = getWeeklyGoal();
@@ -2101,9 +2101,9 @@ function repositionWeeklyGoalSection() {
 
 
 
-    // =============================
-    // 5) WEEKLY FOCUS LIVE CARD
-    // =============================
+// =============================
+// 5) WEEKLY FOCUS LIVE CARD
+// =============================
 function renderWeeklyProgressText() {
   const progressEl = document.getElementById("weekly-progress-text");
   if (!progressEl) return;
@@ -2294,74 +2294,74 @@ function hasLoggedAnythingToday() {
 
 
 
-    // ===== SPLIT TEMPLATES =====
+// ===== SPLIT TEMPLATES =====
 
-        const FINISHERS = {
-                conditioning: {
-                    easy: {
-                        title: "5-Min Incline Walk",
-                        description: "Walk on the treadmill or around the gym for 5 minutes at a steady pace.",
-                        tokenReward: 0
-                    },
-                    standard: {
-                        title: "10-Min Cardio Block",
-                        description: "Bike, rower, or stair master for 10 minutes at a moderate pace.",
-                        tokenReward: 0.25
-                    },
-                    hard: {
-                        title: "1-Mile Push",
-                        description: "Walk or jog 1 mile. Keep it honest but sustainable.",
-                        tokenReward: 1
-                    }
-                },
-                bodyweight: {
-                    easy: {
-                        title: "Core Check-In",
-                        description: "1 minute plank (can be broken into two 30s holds).",
-                        tokenReward: 0
-                    },
-                    standard: {
-                        title: "Simple Bodyweight Circuit",
-                        description: "3 rounds: 10 push-ups, 15 bodyweight squats, 20 jumping jacks.",
-                        tokenReward: 0.25
-                    },
-                    hard: {
-                        title: "Burpee Challenge",
-                        description: "50 burpees for time, or as many as you can in 4 minutes.",
-                        tokenReward: 1
-                    }
-                },
-                pump: {
-                    easy: {
-                        title: "30-Rep Pump",
-                        description: "Pick any machine or dumbbell movement and do 30 controlled reps.",
-                        tokenReward: 0
-                    },
-                    standard: {
-                        title: "50-Rep Combo",
-                        description: "Superset biceps and triceps for a total of 50 reps.",
-                        tokenReward: 0.25
-                    },
-                    hard: {
-                        title: "100-Rep Afterburn",
-                        description: "Choose one movement (curls, pushdowns, lateral raises, etc.) and complete 100 total reps.",
-                        tokenReward: 1
-                    }
-                },
-                recovery: {
-                    easy: {
-                        title: "3-Min Stretch Reset",
-                        description: "Spend at least 3 minutes stretching hips, hamstrings, and chest.",
-                        tokenReward: 0
-                    },
-                    standard: {
-                        title: "Mobility Flow",
-                        description: "5–8 minutes of light mobility work: cat-cow, world’s greatest stretch, shoulder circles.",
-                        tokenReward: 0
-                    },
-                    hard: null // no hard tier for recovery; hard work earns tokens elsewhere
-                }
-            };
+const FINISHERS = {
+  conditioning: {
+    easy: {
+      title: "5-Min Incline Walk",
+      description: "Walk on the treadmill or around the gym for 5 minutes at a steady pace.",
+      tokenReward: 0
+    },
+    standard: {
+      title: "10-Min Cardio Block",
+      description: "Bike, rower, or stair master for 10 minutes at a moderate pace.",
+      tokenReward: 0.25
+    },
+    hard: {
+      title: "1-Mile Push",
+      description: "Walk or jog 1 mile. Keep it honest but sustainable.",
+      tokenReward: 1
+    }
+  },
+  bodyweight: {
+    easy: {
+      title: "Core Check-In",
+      description: "1 minute plank (can be broken into two 30s holds).",
+      tokenReward: 0
+    },
+    standard: {
+      title: "Simple Bodyweight Circuit",
+      description: "3 rounds: 10 push-ups, 15 bodyweight squats, 20 jumping jacks.",
+      tokenReward: 0.25
+    },
+    hard: {
+      title: "Burpee Challenge",
+      description: "50 burpees for time, or as many as you can in 4 minutes.",
+      tokenReward: 1
+    }
+  },
+  pump: {
+    easy: {
+      title: "30-Rep Pump",
+      description: "Pick any machine or dumbbell movement and do 30 controlled reps.",
+      tokenReward: 0
+    },
+    standard: {
+      title: "50-Rep Combo",
+      description: "Superset biceps and triceps for a total of 50 reps.",
+      tokenReward: 0.25
+    },
+    hard: {
+      title: "100-Rep Afterburn",
+      description: "Choose one movement (curls, pushdowns, lateral raises, etc.) and complete 100 total reps.",
+      tokenReward: 1
+    }
+  },
+  recovery: {
+    easy: {
+      title: "3-Min Stretch Reset",
+      description: "Spend at least 3 minutes stretching hips, hamstrings, and chest.",
+      tokenReward: 0
+    },
+    standard: {
+      title: "Mobility Flow",
+      description: "5–8 minutes of light mobility work: cat-cow, world’s greatest stretch, shoulder circles.",
+      tokenReward: 0
+    },
+    hard: null // no hard tier for recovery; hard work earns tokens elsewhere
+  }
+};
 function getWorkoutsCompletedThisWeek() {
   return getWeeklyBannerState().workoutsThisWeek;
 }
@@ -2463,7 +2463,7 @@ function initTodaysSplit() {
   renderSessionIntoSplitCard(session, weeklyGoal);
 }
 
-function handleSkipToday() {
+function handleChangeWorkout() {
   if (!currentSessionMeta) return;
 
   // 1) Mark this day as skipped in your weekly state (no streak credit)
@@ -2513,10 +2513,10 @@ function updateSkipTodayState(skipBtn) {
 
 
 function renderSessionIntoSplitCard(session, weeklyGoal) {
-  const listEl  = document.getElementById("exercise-list");
-  const nameEl  = document.getElementById("split-name");
+  const listEl = document.getElementById("exercise-list");
+  const nameEl = document.getElementById("split-name");
   const skipBtn = document.getElementById("split-days");
-  const descEl  = document.getElementById("split-description");
+  const descEl = document.getElementById("split-description");
 
   if (!listEl || !session) return;
 
@@ -2525,24 +2525,27 @@ function renderSessionIntoSplitCard(session, weeklyGoal) {
   if (descEl) descEl.textContent = session.description || "";
 
   // Turn the old "3 days / week" chip into a Skip button
-if (skipBtn) {
-  skipBtn.textContent = "Skip today";
+  if (skipBtn) {
+    skipBtn.textContent = "Change Workout";
 
-  skipBtn.onclick = () => {
-    if (hasLoggedAnythingToday()) {
-      showToast?.("You’ve already logged work today — skipping is disabled.");
-      return;
-    }
+    skipBtn.onclick = async () => {
+      if (hasLoggedAnythingToday()) {
+        showToast?.("You've already logged work today — skipping is disabled.");
+        return;
+      }
 
-    const ok = window.confirm(
-      "Skip today's workout?\n(It won’t count toward your streak.)"
-    );
-    if (!ok) return;
+      const ok = await appConfirm(
+        "Switch to a different workout for today?\nYour progress and streak stay intact.",
+        "Change workout?"
+      );
+      if (!ok) return;
 
-    handleSkipToday();
-  };
-  updateSkipTodayState();
-}
+      handleChangeWorkout();
+    };
+
+    updateSkipTodayState();
+  }
+
 
 
   // Clear previous rows
@@ -2669,59 +2672,59 @@ function applyInstalledUI() {
 
 
 function getEmblemVisualForTier(tier) {
-// Default if somehow no tier
-if (!tier) {
-  return {
+  // Default if somehow no tier
+  if (!tier) {
+    return {
       icon: "🔥",
       label: "Keep showing up"
-  };
-}
+    };
+  }
 
-// Group tiers into “Iron Pulse” progressions
-if (tier.startsWith("emblem-weekly")) {
-  // Very first weeks – simple iron plate
-  return {
+  // Group tiers into “Iron Pulse” progressions
+  if (tier.startsWith("emblem-weekly")) {
+    // Very first weeks – simple iron plate
+    return {
       icon: "⬢",
       label: "Bronze – Iron Spark"
-  };
-}
+    };
+  }
 
-if (tier.startsWith("emblem-monthly")) {
-  // 1–3 months – reinforced shield
-  return {
+  if (tier.startsWith("emblem-monthly")) {
+    // 1–3 months – reinforced shield
+    return {
       icon: "🛡️",
       label: "Silver – Iron Guard"
-  };
-}
+    };
+  }
 
-if (tier.startsWith("emblem-quarterly")) {
-  // 4–9 months – crossed weapons / reaper feel
-  return {
+  if (tier.startsWith("emblem-quarterly")) {
+    // 4–9 months – crossed weapons / reaper feel
+    return {
       icon: "⚔️",
       label: "Gold – Iron Vanguard"
-  };
-}
+    };
+  }
 
-if (tier.startsWith("emblem-annual")) {
-  // 1+ year – skull-shield
-  return {
+  if (tier.startsWith("emblem-annual")) {
+    // 1+ year – skull-shield
+    return {
       icon: "💀",
       label: "Mythic – Iron Warden"
-  };
-}
+    };
+  }
 
-if (tier.startsWith("emblem-legendary")) {
-  // 2+ years – fully cracked, COD-zombie vibes
-  return {
+  if (tier.startsWith("emblem-legendary")) {
+    // 2+ years – fully cracked, COD-zombie vibes
+    return {
       icon: "☠️",
       label: "Legendary – Eternal Grind"
-  };
-}
+    };
+  }
 
-return {
-  icon: "🔥",
-  label: "Streak Active"
-};
+  return {
+    icon: "🔥",
+    label: "Streak Active"
+  };
 }
 
 
@@ -2757,15 +2760,15 @@ function getEmblemTierForStreak(streak) {
 }
 
 function getStoredEmblemTier() {
-return localStorage.getItem(EMBLEM_TIER_KEY) || "";
+  return localStorage.getItem(EMBLEM_TIER_KEY) || "";
 }
 
 function setStoredEmblemTier(tier) {
-if (!tier) {
-  localStorage.removeItem(EMBLEM_TIER_KEY);
-} else {
-  localStorage.setItem(EMBLEM_TIER_KEY, tier);
-}
+  if (!tier) {
+    localStorage.removeItem(EMBLEM_TIER_KEY);
+  } else {
+    localStorage.setItem(EMBLEM_TIER_KEY, tier);
+  }
 }
 
 function applyEmblemTierClass(banner, tier) {
@@ -2773,42 +2776,42 @@ function applyEmblemTierClass(banner, tier) {
   const targets = [banner, emblem].filter(Boolean);
 
   targets.forEach(el => {
-      const toRemove = [];
-      el.classList.forEach(cls => {
-          if (cls.startsWith("emblem-")) {
-              toRemove.push(cls);
-          }
-      });
-      toRemove.forEach(cls => el.classList.remove(cls));
-
-      if (tier) {
-          el.classList.add(tier);
+    const toRemove = [];
+    el.classList.forEach(cls => {
+      if (cls.startsWith("emblem-")) {
+        toRemove.push(cls);
       }
+    });
+    toRemove.forEach(cls => el.classList.remove(cls));
+
+    if (tier) {
+      el.classList.add(tier);
+    }
   });
 }
 
 
 // Friendly name for overlay text
 function getEmblemLabelForTier(tier) {
-const map = {
-  "emblem-weekly-1": "Week 1 – Ember Spark",
-  "emblem-weekly-2": "Week 2 – Warming Forge",
-  "emblem-weekly-3": "Week 3 – Steady Flame",
+  const map = {
+    "emblem-weekly-1": "Week 1 – Ember Spark",
+    "emblem-weekly-2": "Week 2 – Warming Forge",
+    "emblem-weekly-3": "Week 3 – Steady Flame",
 
-  "emblem-monthly-1": "Monthly Rank I – Kindled Core",
-  "emblem-monthly-2": "Monthly Rank II – Flow State",
-  "emblem-monthly-3": "Monthly Rank III – Iron Rhythm",
+    "emblem-monthly-1": "Monthly Rank I – Kindled Core",
+    "emblem-monthly-2": "Monthly Rank II – Flow State",
+    "emblem-monthly-3": "Monthly Rank III – Iron Rhythm",
 
-  "emblem-quarterly-1": "Quarter Rank I – Forged Focus",
-  "emblem-quarterly-2": "Quarter Rank II – Relentless Drive",
-  "emblem-quarterly-3": "Quarter Rank III – Unbroken Arc",
+    "emblem-quarterly-1": "Quarter Rank I – Forged Focus",
+    "emblem-quarterly-2": "Quarter Rank II – Relentless Drive",
+    "emblem-quarterly-3": "Quarter Rank III – Unbroken Arc",
 
-  "emblem-annual-1": "Annual Rank I – Iron Pulse Year One",
-  "emblem-annual-2": "Annual Rank II – Iron Pulse Veteran",
+    "emblem-annual-1": "Annual Rank I – Iron Pulse Year One",
+    "emblem-annual-2": "Annual Rank II – Iron Pulse Veteran",
 
-  "emblem-legendary-1": "Legendary – Eternal Grind"
-};
-return map[tier] || "New Emblem Unlocked";
+    "emblem-legendary-1": "Legendary – Eternal Grind"
+  };
+  return map[tier] || "New Emblem Unlocked";
 }
 
 
@@ -2848,11 +2851,11 @@ function handleEmblemTier(streak) {
 
   // No streak → clear emblem + label
   if (!newTier) {
-      applyEmblemTierClass(banner, null);
-      setStoredEmblemTier("");
-      if (emblemIconSpan) emblemIconSpan.textContent = "🔥";
-      if (emblemLabelEl) emblemLabelEl.textContent = "Keep showing up";
-      return;
+    applyEmblemTierClass(banner, null);
+    setStoredEmblemTier("");
+    if (emblemIconSpan) emblemIconSpan.textContent = "🔥";
+    if (emblemLabelEl) emblemLabelEl.textContent = "Keep showing up";
+    return;
   }
 
   // Always apply tier classes
@@ -2865,8 +2868,8 @@ function handleEmblemTier(streak) {
 
   // First emblem ever → just store it, no pop
   if (!prevTier) {
-      setStoredEmblemTier(newTier);
-      return;
+    setStoredEmblemTier(newTier);
+    return;
   }
 
   if (prevTier !== newTier) {
@@ -2912,8 +2915,8 @@ function updateStreak() {
 
   progressTextEl.textContent = s.weekCompleted
     ? (done >= tokenThresh
-        ? `Week complete • Recovery earned (${done}/${tokenThresh})`
-        : `Week complete (${done}/${minComplete})`)
+      ? `Week complete • Recovery earned (${done}/${tokenThresh})`
+      : `Week complete (${done}/${minComplete})`)
     : `This week: ${done}/${minComplete} sessions`;
 
   // 3) Token label
@@ -3027,12 +3030,12 @@ const FOCUS_DRAFT_PREFIX = "ip_focus_draft_v1";
 function getFocusDraftKey(exerciseName) {
   const d = dateToKey(new Date());
   const prog = currentSessionMeta?.programId ?? "na";
-  const idx  = currentSessionMeta?.recommendedIndex ?? "na";
+  const idx = currentSessionMeta?.recommendedIndex ?? "na";
   return `${FOCUS_DRAFT_PREFIX}:${d}:${prog}:${idx}:${exerciseName}`;
 }
 
 function saveFocusDraft(exerciseName, draft) {
-  try { localStorage.setItem(getFocusDraftKey(exerciseName), JSON.stringify(draft)); } catch {}
+  try { localStorage.setItem(getFocusDraftKey(exerciseName), JSON.stringify(draft)); } catch { }
 }
 
 function loadFocusDraft(exerciseName) {
@@ -3043,70 +3046,70 @@ function loadFocusDraft(exerciseName) {
 }
 
 function clearFocusDraft(exerciseName) {
-  try { localStorage.removeItem(getFocusDraftKey(exerciseName)); } catch {}
+  try { localStorage.removeItem(getFocusDraftKey(exerciseName)); } catch { }
 }
 
 
 function onWorkoutCompleted() {
-    if (isWorkoutDoneToday()) return;
-    setWorkoutDoneToday();
+  if (isWorkoutDoneToday()) return;
+  setWorkoutDoneToday();
 
-    if (hasRecordedCompletionForCurrentSplit) return;
-    hasRecordedCompletionForCurrentSplit = true;
+  if (hasRecordedCompletionForCurrentSplit) return;
+  hasRecordedCompletionForCurrentSplit = true;
 
 
-    markWorkoutCompletedToday();
-    renderTrainingGoalWeekRow();
-    renderWeeklyFocusLive();
-   
+  markWorkoutCompletedToday();
+  renderTrainingGoalWeekRow();
+  renderWeeklyFocusLive();
 
-    // 2) Advance rotation if recommended session
-    if (currentSessionMeta.isRecommended && currentSessionMeta.programId) {
-        advanceRecommendedSession(currentSessionMeta.programId);
+
+  // 2) Advance rotation if recommended session
+  if (currentSessionMeta.isRecommended && currentSessionMeta.programId) {
+    advanceRecommendedSession(currentSessionMeta.programId);
+  }
+
+  // 3) Estimate today's training volume
+  const exerciseListEl = document.getElementById("exercise-list");
+  if (exerciseListEl) {
+    const weightInputs = exerciseListEl.querySelectorAll(
+      'input[type="number"][data-exercise]'
+    );
+    let todayVolume = 0;
+    const EST_REPS_PER_EXERCISE = 30;
+
+    weightInputs.forEach(input => {
+      const w = parseFloat(input.value || "0");
+      if (!Number.isNaN(w) && w > 0) {
+        todayVolume += w * EST_REPS_PER_EXERCISE;
+      }
+    });
+
+    if (todayVolume > 0) {
+      addTodayWeight(todayVolume);
     }
+  }
 
-    // 3) Estimate today's training volume
-    const exerciseListEl = document.getElementById("exercise-list");
-    if (exerciseListEl) {
-        const weightInputs = exerciseListEl.querySelectorAll(
-            'input[type="number"][data-exercise]'
-        );
-        let todayVolume = 0;
-        const EST_REPS_PER_EXERCISE = 30;
+  // 4) UI updates
+  logWorkoutAndUpdateWeeklySystems();   // ✅ update weekly counts/streak/token FIRST
+  updateStreak();                       // ✅ render banner from new state
+  updateWeeklyVolumeSummaryFromLog();   // keep
 
-        weightInputs.forEach(input => {
-            const w = parseFloat(input.value || "0");
-            if (!Number.isNaN(w) && w > 0) {
-                todayVolume += w * EST_REPS_PER_EXERCISE;
-            }
-        });
+  render90DayHeatmap();
+  flashDayComplete(); // per-workout animation
+  persistTodaySummary();
 
-        if (todayVolume > 0) {
-            addTodayWeight(todayVolume);
-        }
-    }
-
-    // 4) UI updates
-    logWorkoutAndUpdateWeeklySystems();   // ✅ update weekly counts/streak/token FIRST
-    updateStreak();                       // ✅ render banner from new state
-    updateWeeklyVolumeSummaryFromLog();   // keep
-
-    render90DayHeatmap();
-    flashDayComplete(); // per-workout animation
-    persistTodaySummary();
-
-    // 5) Weekly goal celebration + overlay + quote
-    setTimeout(() => {
-        checkWeeklyCompletion();       // ✨ card aura + dot wave (once per week)
-        celebrateWeeklyGoalHit();      // 🎉 weekly overlay (when goal is hit)
-        showAfterburnPromptOverlay();  // 🔥 bring back the "Do Afterburn?" card
-    }, 900);
+  // 5) Weekly goal celebration + overlay + quote
+  setTimeout(() => {
+    checkWeeklyCompletion();       // ✨ card aura + dot wave (once per week)
+    celebrateWeeklyGoalHit();      // 🎉 weekly overlay (when goal is hit)
+    showAfterburnPromptOverlay();  // 🔥 bring back the "Do Afterburn?" card
+  }, 900);
 
 }
 
 function checkSplitCompletion() {
   const exerciseListEl = document.getElementById("exercise-list");
-  const finisherCard   = document.getElementById("finisher-card");
+  const finisherCard = document.getElementById("finisher-card");
   if (!exerciseListEl || !finisherCard) return;
 
   const checkboxes = exerciseListEl.querySelectorAll('input[type="checkbox"]');
@@ -3187,27 +3190,27 @@ function restoreTodayCompletionUI() {
 
 
 
-    // If you have extra finisher-specific controls, they can live here:
+// If you have extra finisher-specific controls, they can live here:
 function initFinisherControls() {
   const finisherCard = document.getElementById("finisher-card");
   if (!finisherCard) return;
 
-  const titleEl       = document.getElementById("finisher-title");
-  const tagEl         = document.getElementById("finisher-tag");
-  const descEl        = document.getElementById("finisher-description");
-  const statusEl      = document.getElementById("finisher-status");
-  const catButtons    = document.querySelectorAll(".finisher-cat-btn");
-  const diffButtons   = document.querySelectorAll(".finisher-diff-btn");
+  const titleEl = document.getElementById("finisher-title");
+  const tagEl = document.getElementById("finisher-tag");
+  const descEl = document.getElementById("finisher-description");
+  const statusEl = document.getElementById("finisher-status");
+  const catButtons = document.querySelectorAll(".finisher-cat-btn");
+  const diffButtons = document.querySelectorAll(".finisher-diff-btn");
   const diffContainer = document.getElementById("finisher-difficulties");
-  const doBtn         = document.getElementById("finisher-do-btn");
-  const skipBtn       = document.getElementById("finisher-skip-btn");
+  const doBtn = document.getElementById("finisher-do-btn");
+  const skipBtn = document.getElementById("finisher-skip-btn");
 
   if (!titleEl || !tagEl || !descEl || !statusEl || !diffContainer || !doBtn || !skipBtn) return;
 
   // --- Local state for this card ---
-  let selectedCategory   = null;
+  let selectedCategory = null;
   let selectedDifficulty = null;
-  let currentFinisher    = null;
+  let currentFinisher = null;
   let hasStartedFinisher = false; // 🔹 NEW: tracks "in progress" state
 
   function clearDiffSelection() {
@@ -3217,58 +3220,58 @@ function initFinisherControls() {
   function clearCatSelection() {
     catButtons.forEach(btn => btn.classList.remove("btn-primary"));
   }
-// Converts JS getDay() (Sun=0..Sat=6) → Monday-first index (Mon=0..Sun=6)
-function getMondayIndex(date) {
-  return (date.getDay() + 6) % 7;
-}
-
-
-
- function updateFinisherButtons() {
-  const todayKey = getTodayDateKey();
-  const lastFinisherDay = localStorage.getItem(LAST_FINISHER_DATE_KEY);
-  const decisionLocked = lastFinisherDay === todayKey;
-
-  // ✅ If today's decision is locked, explain why and bail
-  if (decisionLocked) {
-    doBtn.disabled = true;
-    skipBtn.disabled = true;
-
-    statusEl.textContent = "Afterburn decision locked for today. Come back tomorrow 🔒";
-    tagEl.textContent = "LOCKED";
-    return;
+  // Converts JS getDay() (Sun=0..Sat=6) → Monday-first index (Mon=0..Sun=6)
+  function getMondayIndex(date) {
+    return (date.getDay() + 6) % 7;
   }
 
-  // locked until split is complete
-  const isLocked = finisherCard.classList.contains("locked");
 
-  // Skip is only allowed when unlocked
-  skipBtn.disabled = isLocked;
 
-  // Nothing selected yet
-  if (!selectedCategory || !selectedDifficulty || !currentFinisher) {
-    doBtn.textContent = "Lock In";
-    doBtn.disabled = true;      // must pick category + difficulty first
-    skipBtn.textContent = "Skip Afterburn today";
-    return;
+  function updateFinisherButtons() {
+    const todayKey = getTodayDateKey();
+    const lastFinisherDay = localStorage.getItem(LAST_FINISHER_DATE_KEY);
+    const decisionLocked = lastFinisherDay === todayKey;
+
+    // ✅ If today's decision is locked, explain why and bail
+    if (decisionLocked) {
+      doBtn.disabled = true;
+      skipBtn.disabled = true;
+
+      statusEl.textContent = "Afterburn decision locked for today. Come back tomorrow 🔒";
+      tagEl.textContent = "LOCKED";
+      return;
+    }
+
+    // locked until split is complete
+    const isLocked = finisherCard.classList.contains("locked");
+
+    // Skip is only allowed when unlocked
+    skipBtn.disabled = isLocked;
+
+    // Nothing selected yet
+    if (!selectedCategory || !selectedDifficulty || !currentFinisher) {
+      doBtn.textContent = "Lock In";
+      doBtn.disabled = true;      // must pick category + difficulty first
+      skipBtn.textContent = "Skip Afterburn today";
+      return;
+    }
+
+    // Selected, but not started
+    if (!hasStartedFinisher) {
+      doBtn.textContent = "Start Afterburn";
+      doBtn.disabled = isLocked;  // only blocked by locked state
+      skipBtn.textContent = "Skip Afterburn today";
+      return;
+    }
+
+    // Started
+    doBtn.textContent = "Mark Afterburn done";
+    doBtn.disabled = isLocked;
+    skipBtn.textContent = "Too burned out to finish";
   }
 
-  // Selected, but not started
-  if (!hasStartedFinisher) {
-    doBtn.textContent = "Start Afterburn";
-    doBtn.disabled = isLocked;  // only blocked by locked state
-    skipBtn.textContent = "Skip Afterburn today";
-    return;
-  }
-
-  // Started
-  doBtn.textContent = "Mark Afterburn done";
-  doBtn.disabled = isLocked;
-  skipBtn.textContent = "Too burned out to finish";
-}
-
-// ✅ expose for other modules (like checkSplitCompletion)
-window.updateFinisherButtons = updateFinisherButtons;
+  // ✅ expose for other modules (like checkSplitCompletion)
+  window.updateFinisherButtons = updateFinisherButtons;
 
 
   function selectFinisher(catKey, diffKey) {
@@ -3278,21 +3281,21 @@ window.updateFinisherButtons = updateFinisherButtons;
     const data = cat[diffKey];
     if (!data) return;
 
-    currentFinisher    = data;
-    selectedCategory   = catKey;
+    currentFinisher = data;
+    selectedCategory = catKey;
     selectedDifficulty = diffKey;
     hasStartedFinisher = false; // reset if they change their mind
 
     titleEl.textContent = data.title;
-    descEl.textContent  = data.description;
-    tagEl.textContent   = "Unlocked"
+    descEl.textContent = data.description;
+    tagEl.textContent = "Unlocked"
 
     statusEl.textContent =
-  "Complete this Afterburn session to earn 33% of a Rest Token. (3 Afterburns = 1 token)";
+      "Complete this Afterburn session to earn 33% of a Rest Token. (3 Afterburns = 1 token)";
 
 
     updateFinisherButtons();
-    
+
 
   }
 
@@ -3310,14 +3313,14 @@ window.updateFinisherButtons = updateFinisherButtons;
       // Reset difficulty + finisher when switching categories
       diffContainer.classList.add("is-visible");
       clearDiffSelection();
-      selectedCategory   = cat;
+      selectedCategory = cat;
       selectedDifficulty = null;
-      currentFinisher    = null;
+      currentFinisher = null;
       hasStartedFinisher = false;
 
       titleEl.textContent = "Pick your Afterburn difficulty";
-      descEl.textContent  = "Choose how hard you want to push today. Harder options can earn Rest Tokens.";
-      tagEl.textContent   = "Unlocked";
+      descEl.textContent = "Choose how hard you want to push today. Harder options can earn Rest Tokens.";
+      tagEl.textContent = "Unlocked";
       statusEl.textContent = "Rest is important. But you have to earn it!";
 
       updateFinisherButtons();
@@ -3346,30 +3349,27 @@ window.updateFinisherButtons = updateFinisherButtons;
   });
 
   // === PRIMARY BUTTON: two-stage behavior ===
-  doBtn.addEventListener("click", () => {
+  doBtn.addEventListener("click", async () => {
     if (finisherCard.classList.contains("locked")) return;
 
     const todayKey = getTodayDateKey();
     const lastFinisherDay = localStorage.getItem(LAST_FINISHER_DATE_KEY);
 
-    // Already made a decision (completed or skipped) today
     if (lastFinisherDay === todayKey) {
       showToast("You already locked in today's Afterburn session. Extra work now is pure bonus. 💪");
       return;
     }
 
-    // No finisher chosen yet – shouldn’t happen if updateFinisherButtons is working,
-    // but let's guard anyway
     if (!currentFinisher || !selectedCategory || !selectedDifficulty) {
-      showToast("Pick an Afterburn catetory and difficulty first.");
+      showToast("Pick an Afterburn category and difficulty first.");
       return;
     }
 
     // Stage 1: Start finisher
     if (!hasStartedFinisher) {
-      const ok = window.confirm(
-        "Start this Afterburn session now?\n\n" +
-        "Do the work, then come back and mark it done."
+      const ok = await appConfirm(
+        "Start this Afterburn session now?\n\nDo the work, then come back and mark it done.",
+        "Start Afterburn?"
       );
       if (!ok) return;
 
@@ -3383,37 +3383,32 @@ window.updateFinisherButtons = updateFinisherButtons;
       return;
     }
 
-    // Stage 2: Mark done (final commit)
-    const confirmDone = window.confirm(
-      "Mark this Afterburn session as completed for today?\n\n" +
-      "This will award Rest Token progress."
+    // Stage 2: Mark done
+    const confirmDone = await appConfirm(
+      "Mark this Afterburn session as completed for today?\n\nThis will award Rest Token progress.",
+      "Complete Afterburn?"
     );
     if (!confirmDone) return;
 
-    onAfterburnCompleted();  // ✅ uses AFTERBURN_TOKEN_PROGRESS = 1/3 inside the new module
-    updateStreak();          // ✅ re-renders banner
+    onAfterburnCompleted();
+    updateStreak();
 
-
-    // Lock today's finisher decision
     localStorage.setItem(LAST_FINISHER_DATE_KEY, todayKey);
 
     statusEl.textContent = "Finisher completed. Nice work.";
-    tagEl.textContent    = "DONE";
+    tagEl.textContent = "DONE";
 
-    finisherCard.classList.add("completed-pulse");
-    finisherCard.classList.add("locked");
-    doBtn.disabled   = true;
+    finisherCard.classList.add("completed-pulse", "locked");
+    doBtn.disabled = true;
     skipBtn.disabled = true;
 
-    setTimeout(() => {
-      finisherCard.classList.remove("completed-pulse");
-    }, 800);
+    setTimeout(() => finisherCard.classList.remove("completed-pulse"), 800);
 
     celebrateFinisher?.();
   });
 
   // === SECONDARY BUTTON: skip / "I didn't do it" ===
-  skipBtn.addEventListener("click", () => {
+  skipBtn.addEventListener("click", async () => {
     if (finisherCard.classList.contains("locked")) return;
 
     const todayKey = getTodayDateKey();
@@ -3424,27 +3419,27 @@ window.updateFinisherButtons = updateFinisherButtons;
       return;
     }
 
-    const confirmSkip = window.confirm(
-      "Skip today's Afterburn session for the day?\n\n" +
-      "You won't be able to come back and complete it later."
+    const confirmSkip = await appConfirm(
+      "Skip today's Afterburn session for the day?\n\nYou won't be able to come back and complete it later.",
+      "Skip Afterburn?"
     );
 
     if (!confirmSkip) {
-      statusEl.textContent = "Finisher is still optional for today.";
+      statusEl.textContent = "Afterburn is still optional for today.";
       return;
     }
 
-    // Mark that today’s finisher decision is made (even though it was a skip)
     localStorage.setItem(LAST_FINISHER_DATE_KEY, todayKey);
 
     statusEl.textContent =
-      "You skipped the Afterburn sesssion today. Main work still counts — come back stronger tomorrow.";
+      "You skipped the Afterburn session today. Main work still counts — come back stronger tomorrow.";
     tagEl.textContent = "SKIPPED";
 
     finisherCard.classList.add("locked");
-    doBtn.disabled   = true;
+    doBtn.disabled = true;
     skipBtn.disabled = true;
   });
+
 
   // Initial button state on load
   updateFinisherButtons();
@@ -3495,7 +3490,7 @@ function updatePrimaryCTAs() {
   if (s.allDone) label = s.afterburnLocked ? "View Today" : "Afterburn";
   else if (s.hasAny) label = "Continue";
 
-    [topBtn, bottomBtn].forEach(btn => {
+  [topBtn, bottomBtn].forEach(btn => {
     if (!btn) return;
     btn.textContent = label;
     // ✅ do NOT set btn.onclick here
@@ -3598,7 +3593,7 @@ function showAfterburnPromptOverlay() {
 
   const closeOverlay = () => overlay.remove();
 
-  const doBtn  = overlay.querySelector("#afterburn-do-btn");
+  const doBtn = overlay.querySelector("#afterburn-do-btn");
   const skipBtn = overlay.querySelector("#afterburn-skip-btn");
 
   if (doBtn) {
@@ -3625,152 +3620,173 @@ function showAfterburnPromptOverlay() {
 }
 
 
-        // =============================
-        // 2) SHOW SCREEN
-        // =============================
-        function showScreen(name) {
-            const setup = document.getElementById("screen-setup");
-            const daily = document.getElementById("screen-daily");
-            if (!setup || !daily) {
-                console.warn("screen elements not found");
-                return;
-            }
+// =============================
+// 2) SHOW SCREEN
+// =============================
+function showScreen(name) {
+  const setup = document.getElementById("screen-setup");
+  const daily = document.getElementById("screen-daily");
+  if (!setup || !daily) {
+    console.warn("screen elements not found");
+    return;
+  }
 
-            if (name === "setup") {
-                setup.style.display = "block";
-                daily.style.display = "none";
-            } else {
-                setup.style.display = "none";
-                daily.style.display = "block";
-            }
+  if (name === "setup") {
+    setup.style.display = "block";
+    daily.style.display = "none";
+  } else {
+    setup.style.display = "none";
+    daily.style.display = "block";
+  }
 
-            localStorage.setItem(LAST_SCREEN_KEY, name);
-            window.scrollTo({ top: 0, behavior: "smooth" });
-        }
+  localStorage.setItem(LAST_SCREEN_KEY, name);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
 
-        // =============================
-        // 3) INIT SCREENS + BUTTONS
-        // =============================
-        function initScreens() {
-            console.log("initScreens running");
+// =============================
+// 3) INIT SCREENS + BUTTONS
+// =============================
+function initScreens() {
+  console.log("initScreens running");
 
-            const onboarded = localStorage.getItem(ONBOARDED_KEY) === "true";
-            const last = localStorage.getItem(LAST_SCREEN_KEY);
+  // ✅ Installed PWA: skip setup screen entirely
+  if (isInstalledPWA()) {
+    localStorage.setItem(ONBOARDED_KEY, "true");
+    localStorage.setItem(LAST_SCREEN_KEY, "daily");
+    showScreen("daily");
+    return; // stop the rest of initScreens from flipping screens
+  }
 
-            if (!onboarded) {
-                console.log("Not onboarded → show setup");
-                showScreen("setup");
-            } else if (last === "daily" || last === "setup") {
-                console.log("Onboarded, last:", last);
-                showScreen(last);
-            } else {
-                console.log("Onboarded, no last → daily");
-                showScreen("daily");
-            }
+  const onboarded = localStorage.getItem(ONBOARDED_KEY) === "true";
+  const last = localStorage.getItem(LAST_SCREEN_KEY);
 
-
-            // --- Setup button in nav ---
-            const settingsBtn = document.getElementById("open-settings-btn");
-            if (settingsBtn) {
-              settingsBtn.addEventListener("click", (e) => {
-                e.preventDefault();
-                console.log("open-settings-btn clicked");
-                showScreen("setup");
-
-                // after screen switch, scroll to the right place
-                requestAnimationFrame(() => {
-                  if (isInstalledPWA()) {
-                    document.getElementById("weekly-goal")?.scrollIntoView({ behavior: "smooth" });
-                  } else {
-                    document.getElementById("install")?.scrollIntoView({ behavior: "smooth" });
-                  }
-                });
-              });
-            }
+  if (!onboarded) {
+    console.log("Not onboarded → show setup");
+    showScreen("setup");
+  } else if (last === "daily" || last === "setup") {
+    console.log("Onboarded, last:", last);
+    showScreen(last);
+  } else {
+    console.log("Onboarded, no last → daily");
+    showScreen("daily");
+  }
 
 
-            // --- Add to Home Screen button ---
-            const addToHomeBtn = document.getElementById("add-to-home-btn");
-            if (addToHomeBtn) {
-                addToHomeBtn.addEventListener("click", () => {
-                    console.log("add-to-home-btn clicked");
-                    const installSection = document.getElementById("install");
-                    if (installSection) {
-                        installSection.scrollIntoView({ behavior: "smooth" });
-                    } else {
-                        console.warn("#install section not found");
-                    }
-                });
-            } else {
-                console.warn("add-to-home-btn not found");
-            }
-        }
+  // --- Setup button in nav ---
+  const settingsBtn = document.getElementById("open-settings-btn");
+  if (settingsBtn) {
+    settingsBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      console.log("open-settings-btn clicked");
+
+      // ✅ Installed: stay on daily and jump to settings/goal controls
+      if (isInstalledPWA()) {
+        showScreen("daily");
+
+        requestAnimationFrame(() => {
+          document
+            .getElementById("weekly-goal-control")
+            ?.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+
+        return;
+      }
+
+      // ✅ Browser: show setup screen and scroll to install instructions
+      showScreen("setup");
+
+      requestAnimationFrame(() => {
+        document
+          .getElementById("install")
+          ?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    });
+  }
 
 
-    
-        // --- Small toast at bottom of screen ---
-            function showToast(message, timeout = 2200) {
-                let container = document.getElementById("toast-container");
-                if (!container) {
-                    container = document.createElement("div");
-                    container.id = "toast-container";
-                    container.className = "toast-container";
-                    document.body.appendChild(container);
-                }
 
-                const toast = document.createElement("div");
-                toast.className = "toast";
-                toast.textContent = message;
-                container.appendChild(toast);
+  // --- Add to Home Screen button ---
+  const addToHomeBtn = document.getElementById("add-to-home-btn");
+  if (addToHomeBtn) {
+    addToHomeBtn.addEventListener("click", () => {
+      console.log("add-to-home-btn clicked");
+      const installSection = document.getElementById("install");
+      if (installSection) {
+        installSection.scrollIntoView({ behavior: "smooth" });
+      } else {
+        console.warn("#install section not found");
+      }
+    });
+  } else {
+    console.warn("add-to-home-btn not found");
+  }
+}
 
-                setTimeout(() => {
-                    toast.classList.add("out");
-                    setTimeout(() => {
-                        toast.remove();
-                        if (!container.hasChildNodes()) {
-                            container.remove();
-                        }
-                    }, 220);
-                }, timeout);
-            }
 
-            // --- Daily completion pulse on Today's Split card ---
-            function flashDayComplete() {
-                const splitCard = document.querySelector("#split .workout-card");
-                if (!splitCard) return;
 
-                // reset animation if it was already applied
-                splitCard.classList.remove("day-complete-boost");
-                void splitCard.offsetWidth; // force reflow
-                splitCard.classList.add("day-complete-boost");
-            }
+// --- Small toast at bottom of screen ---
+function showToast(message, timeout = 2200) {
+  let container = document.getElementById("toast-container");
+  if (!container) {
+    container = document.createElement("div");
+    container.id = "toast-container";
+    container.className = "toast-container";
+    document.body.appendChild(container);
+  }
 
-            // --- Finisher micro celebration ---
-            function celebrateFinisher() {
-                const finisherCard = document.getElementById("finisher-card");
-                if (!finisherCard) return;
+  const toast = document.createElement("div");
+  toast.className = "toast";
+  toast.textContent = message;
+  container.appendChild(toast);
 
-                finisherCard.classList.remove("finisher-celebrate");
-                void finisherCard.offsetWidth;
-                finisherCard.classList.add("finisher-celebrate");
+  setTimeout(() => {
+    toast.classList.add("out");
+    setTimeout(() => {
+      toast.remove();
+      if (!container.hasChildNodes()) {
+        container.remove();
+      }
+    }, 220);
+  }, timeout);
+}
 
-                showToast("Finisher complete. That’s extra work in the bank. 💪");
-            }
+// --- Daily completion pulse on Today's Split card ---
+function flashDayComplete() {
+  const splitCard = document.querySelector("#split .workout-card");
+  if (!splitCard) return;
+
+  // reset animation if it was already applied
+  splitCard.classList.remove("day-complete-boost");
+  void splitCard.offsetWidth; // force reflow
+  splitCard.classList.add("day-complete-boost");
+}
+
+// --- Finisher micro celebration ---
+function celebrateFinisher() {
+  const finisherCard = document.getElementById("finisher-card");
+  if (!finisherCard) return;
+
+  finisherCard.classList.remove("finisher-celebrate");
+  void finisherCard.offsetWidth;
+  finisherCard.classList.add("finisher-celebrate");
+
+  showToast("Finisher complete. That’s extra work in the bank. 💪");
+}
 
 
 function celebrateWeeklyGoalHit() {
-    const goal = getWeeklyGoal();
-    const done = getWorkoutsCompletedThisWeek();
+  const goal = getWeeklyGoal();
+  const done = getWorkoutsCompletedThisWeek();
 
-    // Only fire the moment you *hit* the goal, not on extra sessions
-    if (!goal || done !== goal) return;
+  // Only fire the moment you *hit* the goal, not on extra sessions
+  if (!goal || done !== goal) return;
 
-    // If one is already open, don’t stack them
-    if (document.querySelector(".weekly-overlay")) return;
+  // If one is already open, don’t stack them
+  if (document.querySelector(".weekly-overlay")) return;
 
-    const overlay = document.createElement("div");
-    overlay.className = "weekly-overlay";
-    overlay.innerHTML = `
+  const overlay = document.createElement("div");
+  overlay.className = "weekly-overlay";
+  overlay.innerHTML = `
       <div class="weekly-overlay-card">
           <h2>Weekly goal hit 🎉</h2>
           <p>You showed up for all ${goal} planned sessions. That's how streaks are built.</p>
@@ -3778,27 +3794,27 @@ function celebrateWeeklyGoalHit() {
       </div>
     `;
 
-    document.body.appendChild(overlay);
+  document.body.appendChild(overlay);
 
-    // 🔹 Button closes the overlay
-    const continueBtn = overlay.querySelector("#weekly-overlay-continue");
-    if (continueBtn) {
-        continueBtn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            overlay.remove();
+  // 🔹 Button closes the overlay
+  const continueBtn = overlay.querySelector("#weekly-overlay-continue");
+  if (continueBtn) {
+    continueBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      overlay.remove();
 
-            // 🔥 After closing celebration, offer the RPG cut-in
-            const isBossWeek = false; // TODO: hook real logic later
-            offerWeeklyEncounterCutIn({ isBossWeek });
-        });
-    }
-
-    // 🔹 Click outside the card also closes it
-    overlay.addEventListener("click", (e) => {
-        if (e.target === overlay) {
-            overlay.remove();
-        }
+      // 🔥 After closing celebration, offer the RPG cut-in
+      const isBossWeek = false; // TODO: hook real logic later
+      offerWeeklyEncounterCutIn({ isBossWeek });
     });
+  }
+
+  // 🔹 Click outside the card also closes it
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) {
+      overlay.remove();
+    }
+  });
 }
 
 const TODAY_SESSION_KEY = "ip_today_session_v1";
@@ -3809,7 +3825,7 @@ function saveTodaySession(meta) {
       dateKey: dateToKey(new Date()),
       ...meta
     }));
-  } catch {}
+  } catch { }
 }
 
 function loadTodaySession() {
@@ -3875,7 +3891,7 @@ let historyHeatmapInitialized = false;
 
 function initTrainingHistoryToggle() {
   const card = document.getElementById("history-card");
-  const btn  = document.getElementById("history-toggle-btn");
+  const btn = document.getElementById("history-toggle-btn");
 
   if (!card || !btn) {
     console.warn("[History] missing #history-card or #history-toggle-btn");
@@ -3903,27 +3919,27 @@ function initTrainingHistoryToggle() {
 }
 
 
-    // =============================
-    // 8) PWA / SERVICE WORKER
-    // =============================
-    function initServiceWorker() {
-        if ("serviceWorker" in navigator) {
-            window.addEventListener("load", () => {
-                navigator.serviceWorker
-                    .register("./sw.js")
-                    .then((registration) => {
-                        console.log("Service worker registered:", registration.scope);
-                    })
-                    .catch((err) => {
-                        console.log("Service worker registration failed:", err);
-                    });
-            });
-        }
-    }
+// =============================
+// 8) PWA / SERVICE WORKER
+// =============================
+function initServiceWorker() {
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker
+        .register("./sw.js")
+        .then((registration) => {
+          console.log("Service worker registered:", registration.scope);
+        })
+        .catch((err) => {
+          console.log("Service worker registration failed:", err);
+        });
+    });
+  }
+}
 
 function initWeeklyVolumeScrollTrigger() {
   const sectionEl = document.getElementById("weekly-volume");
-  const iconEl    = document.getElementById("volume-object-icon");
+  const iconEl = document.getElementById("volume-object-icon");
 
   if (!sectionEl || !iconEl) return;
 
@@ -3959,26 +3975,26 @@ function initWeeklyVolumeScrollTrigger() {
 }
 
 
-    function initDebugStreakButton() {
-        const btn = document.getElementById("debug-streak-plus");
-        if (!btn) return;
+function initDebugStreakButton() {
+  const btn = document.getElementById("debug-streak-plus");
+  if (!btn) return;
 
-        btn.addEventListener("click", () => {
-            const current = getWeeklyStreak();
-            const next = current + 1;
-            setWeeklyStreak(next);
+  btn.addEventListener("click", () => {
+    const current = getWeeklyStreak();
+    const next = current + 1;
+    setWeeklyStreak(next);
 
-            // Update banner + aura
-            updateStreak();
+    // Update banner + aura
+    updateStreak();
 
-            // If emblem system is wired in, this will trigger rank up overlays / power-up
-            if (typeof handleEmblemTier === "function") {
-                handleEmblemTier(next);
-            }
-
-            showToast?.(`Debug: weekly streak is now ${next} week(s).`);
-        });
+    // If emblem system is wired in, this will trigger rank up overlays / power-up
+    if (typeof handleEmblemTier === "function") {
+      handleEmblemTier(next);
     }
+
+    showToast?.(`Debug: weekly streak is now ${next} week(s).`);
+  });
+}
 
 
 // === Focus Card Logic ==========================================
@@ -3995,7 +4011,7 @@ const focusCloseBtn = document.getElementById('focus-close-btn');
 const MAX_FOCUS_SETS = 5;
 
 // 🕒 Rest timer
-const focusRestTimerBtn  = document.getElementById("focus-rest-timer-btn");
+const focusRestTimerBtn = document.getElementById("focus-rest-timer-btn");
 const focusRestTimerText = document.getElementById("focus-rest-timer-text");
 
 let focusRestTimerId = null;
@@ -4059,7 +4075,7 @@ function maybeConfirmInsaneFocusVolume(totalVolume, onConfirm) {
   const close = () => overlay.remove();
 
   const keepBtn = overlay.querySelector("#focus-volume-keep");
-  const fixBtn  = overlay.querySelector("#focus-volume-fix");
+  const fixBtn = overlay.querySelector("#focus-volume-fix");
 
   if (keepBtn) {
     keepBtn.addEventListener("click", (e) => {
@@ -4135,63 +4151,63 @@ function persistTodaySummary() {
 }
 
 // Open the overlay for a given exercise
-    window.openFocusCardForExercise = function (name, options = {}) {
-    const {
-        modalities = ['Barbell', 'Dumbbell'],
-        description = 'Log your working sets and we’ll add them to your weekly volume.',
-        suggestedReps = 10,
-        existingSets
-    } = options;
+window.openFocusCardForExercise = function (name, options = {}) {
+  const {
+    modalities = ['Barbell', 'Dumbbell'],
+    description = 'Log your working sets and we’ll add them to your weekly volume.',
+    suggestedReps = 10,
+    existingSets
+  } = options;
 
-    currentFocusExercise = {
-        name,
-        modalities,
-        description,
-        suggestedReps,
-        sets:
-        existingSets && existingSets.length
-            ? existingSets.map(s => ({ weight: s.weight || '', reps: s.reps || suggestedReps }))
-            : [
-                { weight: '', reps: suggestedReps },
-                { weight: '', reps: suggestedReps },
-                { weight: '', reps: suggestedReps }
-            ]
-    };
+  currentFocusExercise = {
+    name,
+    modalities,
+    description,
+    suggestedReps,
+    sets:
+      existingSets && existingSets.length
+        ? existingSets.map(s => ({ weight: s.weight || '', reps: s.reps || suggestedReps }))
+        : [
+          { weight: '', reps: suggestedReps },
+          { weight: '', reps: suggestedReps },
+          { weight: '', reps: suggestedReps }
+        ]
+  };
 
-    // Fill header
-    focusNameEl.textContent = name;
-    focusModalitiesEl.textContent = modalities.join(' · ');
-    focusDescEl.textContent = description;
+  // Fill header
+  focusNameEl.textContent = name;
+  focusModalitiesEl.textContent = modalities.join(' · ');
+  focusDescEl.textContent = description;
 
-    renderFocusSets();
-    restoreFocusDraftIfAny();
-    clearRestTimer();      
-    updateRestTimerUI();
+  renderFocusSets();
+  restoreFocusDraftIfAny();
+  clearRestTimer();
+  updateRestTimerUI();
 
 
-    // Show overlay
-    focusOverlayEl.classList.remove('hidden');
-    focusOverlayEl.classList.add('active');
-    document.body.style.overflow = 'hidden';
-    };
+  // Show overlay
+  focusOverlayEl.classList.remove('hidden');
+  focusOverlayEl.classList.add('active');
+  document.body.style.overflow = 'hidden';
+};
 
 function closeFocusCard() {
-focusOverlayEl.classList.add('hidden');
-focusOverlayEl.classList.remove('active');
-document.body.style.overflow = '';
-currentFocusExercise = null;
-clearRestTimer();
+  focusOverlayEl.classList.add('hidden');
+  focusOverlayEl.classList.remove('active');
+  document.body.style.overflow = '';
+  currentFocusExercise = null;
+  clearRestTimer();
 }
 
 // === Rest Timer (Focus Card) ==========================
 const REST_TIMER_DEFAULT_SECS = 120; // 2 minutes
 
 let restTimerRemaining = 0;
-let restTimerRunning   = false;
-let restTimerInterval  = null;
+let restTimerRunning = false;
+let restTimerInterval = null;
 
-const focusRestBtn    = document.getElementById("focus-rest-btn");
-const focusRestLabel  = document.getElementById("focus-rest-label");
+const focusRestBtn = document.getElementById("focus-rest-btn");
+const focusRestLabel = document.getElementById("focus-rest-label");
 
 function formatMmSs(totalSeconds) {
   const s = Math.max(0, Math.floor(totalSeconds));
@@ -4219,7 +4235,7 @@ function updateRestTimerUI() {
     btn.textContent = `Rest • ${formatMmSs(restTimerRemaining)}`;
     btn.classList.add("running");
     btn.classList.remove("finished");
-  } 
+  }
   else if (!restTimerRunning && restTimerRemaining === 0) {
     btn.textContent = "Rest Timer";
     btn.classList.remove("running", "finished");
@@ -4254,14 +4270,14 @@ function clearRestTimer() {
     restTimerInterval = null;
   }
   restTimerRemaining = 0;
-  restTimerRunning   = false;
+  restTimerRunning = false;
   updateRestTimerUI();
 }
 function toggleRestTimer() {
   // If idle or finished → start a fresh 2:00
   if (!restTimerRunning && restTimerRemaining === 0) {
     restTimerRemaining = REST_TIMER_DEFAULT_SECS;
-    restTimerRunning   = true;
+    restTimerRunning = true;
 
     if (restTimerInterval) clearInterval(restTimerInterval);
 
@@ -4296,9 +4312,9 @@ function initFocusRestTimerControls() {
 
   clearRestTimer();
 
-    focusRestBtn.addEventListener("click", () => {
+  focusRestBtn.addEventListener("click", () => {
     toggleRestTimer();
-    });
+  });
 
 }
 
@@ -4484,7 +4500,7 @@ function finalizeFocusExerciseCompletion() {
   closeFocusCard();
 }
 
-function getTodayKey(){
+function getTodayKey() {
   return getTodayDateKey();
 }
 /* Dev tools!!!!!!!!!!!! */
@@ -4507,7 +4523,7 @@ function getHistoryIntensityBucket(totalVolume) {
   if (!totalVolume || totalVolume <= 0) return 0;
 
   // tweak thresholds as you see real data
-  if (totalVolume < 5000)  return 1; // light
+  if (totalVolume < 5000) return 1; // light
   if (totalVolume < 15000) return 2; // medium
   return 3;                           // heavy
 }
@@ -4576,7 +4592,7 @@ function renderTrainingGoalWeekRow() {
   if (!row) return;
 
   const start = getStartOfWeek(new Date()); // Monday start
-  const labels = ["M","T","W","T","F","S","S"];
+  const labels = ["M", "T", "W", "T", "F", "S", "S"];
   const todayKey = getTodayKey();
 
   row.innerHTML = "";
@@ -4644,9 +4660,9 @@ function getLocalDateKey(d) {
 
 
 function render90DayHeatmap() {
-  const gridEl   = document.getElementById("history-heatmap-grid");
+  const gridEl = document.getElementById("history-heatmap-grid");
   const monthsEl = document.getElementById("history-month-row");
-  const daysEl   = document.getElementById("history-days-logged");
+  const daysEl = document.getElementById("history-days-logged");
   if (!gridEl || !monthsEl || !daysEl) return;
 
   gridEl.innerHTML = "";
@@ -4719,8 +4735,8 @@ function render90DayHeatmap() {
 
         const summary = getDailySummary?.(key);
         const volume =
-        summary?.totalVolume ??
-        (didWorkout ? (getTotalVolumeForDay?.(key) || 0) : 0);
+          summary?.totalVolume ??
+          (didWorkout ? (getTotalVolumeForDay?.(key) || 0) : 0);
 
         let intensity = intensityFromVolume?.(volume) ?? (didWorkout ? 2 : 0);
         if (didWorkout && intensity === 0) intensity = 1;
@@ -4728,14 +4744,14 @@ function render90DayHeatmap() {
         dot.classList.remove("history-hm-i0");
         dot.classList.add(`history-hm-i${intensity}`);
 
-          // ✅ Tooltip + accessibility
+        // ✅ Tooltip + accessibility
         const friendly = d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
         const volText = Math.round(volume).toLocaleString();
         btn.title = didWorkout
           ? `${friendly} • ${volText} lbs`
           : `${friendly} • No workout`;
 
-  btn.setAttribute("aria-label", btn.title);
+        btn.setAttribute("aria-label", btn.title);
 
         if (getLocalDateKey(today) === key) btn.classList.add("history-hm-today");
       } else {
@@ -4773,12 +4789,12 @@ function getDailySummary(dateKey) {
 
 }
 function initHeatmapMiniTip() {
-    const tip = document.getElementById("history-hm-tip");
-    const main = document.querySelector(".history-heatmap-main");
-    const grid = document.getElementById("history-heatmap-grid");
-    if (!tip || !main || !grid) return;
+  const tip = document.getElementById("history-hm-tip");
+  const main = document.querySelector(".history-heatmap-main");
+  const grid = document.getElementById("history-heatmap-grid");
+  if (!tip || !main || !grid) return;
 
-    const showTip = (btn) => {
+  const showTip = (btn) => {
     if (!btn || btn.classList.contains("history-hm-pad")) return;
 
     const title = btn.getAttribute("aria-label") || btn.title;
@@ -4786,7 +4802,7 @@ function initHeatmapMiniTip() {
 
     const parts = title.split("•").map(s => s.trim());
     const dateTxt = parts[0] || "";
-    const volTxt  = parts[1] || "";
+    const volTxt = parts[1] || "";
 
     tip.innerHTML = `
       <div class="hm-tip-date">${dateTxt}</div>
@@ -4800,7 +4816,7 @@ function initHeatmapMiniTip() {
     const y = rect.top;
 
     tip.style.left = `${x}px`;
-    tip.style.top  = `${y}px`;
+    tip.style.top = `${y}px`;
     tip.style.transform = `translate(-50%, -12px)`;
 
     tip.classList.add("is-visible");
@@ -5111,7 +5127,7 @@ function getCompletedExercisesForDay(dayKey) {
 
 function setExerciseCompletedForDay(dayKey, exerciseName) {
   let all = {};
-  try { all = JSON.parse(localStorage.getItem(COMPLETED_EXERCISES_KEY) || "{}"); } catch {}
+  try { all = JSON.parse(localStorage.getItem(COMPLETED_EXERCISES_KEY) || "{}"); } catch { }
 
   const set = new Set(all[dayKey] || []);
   set.add(exerciseName);
@@ -5126,7 +5142,7 @@ function isExerciseCompletedForDay(dayKey, exerciseName) {
 
 function clearExerciseCompletedForDay(dayKey, exerciseName) {
   let all = {};
-  try { all = JSON.parse(localStorage.getItem(COMPLETED_EXERCISES_KEY) || "{}"); } catch {}
+  try { all = JSON.parse(localStorage.getItem(COMPLETED_EXERCISES_KEY) || "{}"); } catch { }
 
   const set = new Set(all[dayKey] || []);
   set.delete(exerciseName);
@@ -5396,7 +5412,7 @@ function initStartTodayCTA() {
         goalSection.scrollIntoView({ behavior: "smooth", block: "start" });
         pulseEl?.(goalSection);
       }
-      
+
 
       showToast?.("Set your weekly goal to start your streak 🔥");
       return;
@@ -5427,14 +5443,7 @@ function setWeeklyGoalLockedUI(lockedDays) {
     p.classList.toggle("locked", !!lockedDays && !isChosen); // optional CSS hook
   });
 }
-
-function appConfirm({
-  title = "Confirm",
-  message = "",
-  okText = "OK",
-  cancelText = "Cancel",
-  danger = false, // optional: you can style ok button differently later
-} = {}) {
+function appConfirm(message, title = "Confirm") {
   return new Promise((resolve) => {
     const modal = document.getElementById("app-confirm");
     const titleEl = document.getElementById("app-confirm-title");
@@ -5444,41 +5453,29 @@ function appConfirm({
     const backdrop = modal?.querySelector(".app-confirm-backdrop");
 
     if (!modal || !titleEl || !textEl || !okBtn || !cancelBtn) {
-      // fallback if DOM missing
       resolve(window.confirm(message));
       return;
     }
 
     titleEl.textContent = title;
     textEl.textContent = message;
-    okBtn.textContent = okText;
-    cancelBtn.textContent = cancelText;
 
-    const cleanup = () => {
+    const cleanup = (val) => {
       okBtn.onclick = null;
       cancelBtn.onclick = null;
-      backdrop?.removeEventListener("click", onCancel);
-      window.removeEventListener("keydown", onKey);
+      if (backdrop) backdrop.onclick = null;
       modal.classList.add("hidden");
+      resolve(val);
     };
 
-    const onOk = () => { cleanup(); resolve(true); };
-    const onCancel = () => { cleanup(); resolve(false); };
-
-    const onKey = (e) => {
-      if (e.key === "Escape") onCancel();
-      if (e.key === "Enter") onOk();
-    };
-
-    okBtn.onclick = onOk;
-    cancelBtn.onclick = onCancel;
-    backdrop?.addEventListener("click", onCancel);
-    window.addEventListener("keydown", onKey);
+    okBtn.onclick = () => cleanup(true);
+    cancelBtn.onclick = () => cleanup(false);
+    if (backdrop) backdrop.onclick = () => cleanup(false);
 
     modal.classList.remove("hidden");
-    okBtn.focus();
   });
 }
+
 
 
 

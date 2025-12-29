@@ -9,7 +9,7 @@
   "theme_color": "#040405",
   "icons": [
     {
-      "src": "icons/icon-512.png",
+      "src": "assets/icons/pulse.png",
       "sizes": "512x512",
       "type": "image/png"
     },
