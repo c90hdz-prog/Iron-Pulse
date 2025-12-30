@@ -1,37 +1,36 @@
-const CACHE_NAME = "iron-pulse-v1";
+const CACHE_NAME = "iron-pulse-v2"; // bump when you ship updates
+
 const ASSETS = [
   "./",
   "./index.html",
-  "./manifest.webmanifest",
-  "./icons/icon-192.png",
-  "./icons/icon-512.png"
+  "./manifest.json",
+  "./assets/js/app.js",
+  "./assets/icons/pulse.png",
+
 ];
 
-// Install - cache core assets
+// Install - cache core assets + activate new SW immediately
 self.addEventListener("install", (event) => {
+  self.skipWaiting();
+
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS).catch(() => {
-        // If some assets fail (like missing icons), just skip them
-      });
-    })
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
   );
 });
 
-// Activate - cleanup old caches if you change CACHE_NAME later
+// Activate - remove old caches + take control immediately
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(
-        keys
-          .filter((key) => key !== CACHE_NAME)
-          .map((key) => caches.delete(key))
-      )
-    )
+    Promise.all([
+      caches.keys().then((keys) =>
+        Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
+      ),
+      self.clients.claim()
+    ])
   );
 });
 
-// Fetch - try network first, fallback to cache
+// Fetch - network first, fallback to cache
 self.addEventListener("fetch", (event) => {
   event.respondWith(
     fetch(event.request).catch(() => caches.match(event.request))
